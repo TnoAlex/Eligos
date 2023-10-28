@@ -31,19 +31,7 @@ jobs:
         with:
           repositories: '[{ "id": "alex-snapshots", "url": "http://47.115.213.131:8080/repository/alex-snapshots/" }]'
           servers: '[{ "id": "alex-snapshots", "username": "githubPuber", "password": "meEFQ1$0tp!h%HNu" }]'
-          mirrors: >
-            [
-              {
-                "id": "alex-snapshots",
-                "mirrorOf": "central-repos",
-                "url": "http://47.115.213.131:8080/repository/alex-snapshots/"
-              },
-              {
-                "id": "central-repos",
-                "mirrorOf": "*",
-                "url": "https://repo.maven.apache.org/maven2"
-              }
-            ]
+
 
       - name: Build with Maven
         run: mvn -B package --file pom.xml -DskipTests

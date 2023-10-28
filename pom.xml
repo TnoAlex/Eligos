@@ -15,6 +15,20 @@
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
     </properties>
+    <repositories>
+        <repository>
+            <!-- id必须唯一 -->
+            <id>central-repos</id>
+            <!-- 仓库的url地址 -->
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <!-- id必须唯一 -->
+            <id>alex-snapshots</id>
+            <!-- 仓库的url地址 -->
+            <url>http://47.115.213.131:8080/repository/alex-snapshots/</url>
+        </repository>
+    </repositories>
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
