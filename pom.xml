@@ -9,6 +9,12 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>alex-snapshots</id>
+            <url>http://47.115.213.131:8080/repository/alex-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
