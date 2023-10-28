@@ -34,15 +34,16 @@ jobs:
           mirrors: >
             [
               {
+                "id": "central-repos",
+                "mirrorOf": "*",
+                "url": "https://repo.maven.apache.org/maven2"
+              },
+              {
                 "id": "alex-snapshots",
                 "mirrorOf": "*",
                 "url": "http://47.115.213.131:8080/repository/alex-snapshots/"
-              },
-              {
-                "id": "central-repos",
-                "mirrorOf": "*",
-                "url": "http://repo.maven.apache.org/maven2"
               }
+              
             ]
 
       - name: Build with Maven
