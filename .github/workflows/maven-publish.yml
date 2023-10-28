@@ -39,7 +39,7 @@ jobs:
                 "url": "http://47.115.213.131:8080/repository/alex-snapshots/"
               },
               {
-                "id": "",
+                "id": "central-repos",
                 "mirrorOf": "*",
                 "url": "http://repo.maven.apache.org/maven2"
               }
