@@ -1,8 +1,12 @@
 package com.github.tnoalex.analyzer
 
-import com.github.tnoalex.utils.getAllSubClass
+import com.github.tnoalex.cli.CommandParser
+import com.github.tnoalex.utils.getClassAnnotation
+import com.github.tnoalex.utils.loadClassByPackageName
 import org.slf4j.LoggerFactory
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.full.superclasses
+import kotlin.system.exitProcess
 
 
 class SmellAnalyzerRegister private constructor() {
@@ -18,21 +22,26 @@ class SmellAnalyzerRegister private constructor() {
 
     fun getAllSupportedLanguages() = analyzers.keys.toList()
 
-    init {
-        register()
-    }
+    fun init() {
+        val annotations = getClassAnnotation(CommandParser::class) { it.annotationClass == SmellAnalyzerScanner::class }
+        if (annotations.isEmpty()) {
+            logger.error("Can not find analyzer base package")
+            exitProcess(-1)
+        }
+        val basePackage = (annotations[0] as SmellAnalyzerScanner).value
+        val classes = loadClassByPackageName(basePackage) { it.superclasses.contains(AbstractSmellAnalyzer::class) }
 
-    private fun register() {
-        val classes = getAllSubClass(AbstractSmellAnalyzer::class)
         classes.forEach {
-            if (it.primaryConstructor != null && it.primaryConstructor!!.parameters.isEmpty()) {
-                register((it.primaryConstructor!!.call()) as AbstractSmellAnalyzer)
-            } else {
-                logger.warn("${it.simpleName} : There is a non-empty primary constructor that cannot be auto-registered")
+            if (it.superclasses.contains(AbstractSmellAnalyzer::class)) {
+                if (it.primaryConstructor != null && it.primaryConstructor!!.parameters.isEmpty()) {
+                    register((it.primaryConstructor!!.call()) as AbstractSmellAnalyzer)
+                    logger.info("Registered analyzer: ${it.simpleName}")
+                } else {
+                    logger.warn("${it.simpleName} : There is a non-empty primary constructor that cannot be auto-registered")
+                }
             }
         }
     }
-
 
     companion object {
         @JvmStatic
