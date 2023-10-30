@@ -18,7 +18,7 @@ class SmellAnalyzerRegister private constructor() {
         analyzers[lang] = analyzer
     }
 
-    fun getAnalyzerByLang(lang: String) = analyzers[lang.lowercase()]
+    fun getAnalyzerByLang(lang: String): AbstractSmellAnalyzer? = analyzers[lang.lowercase()]
 
     fun getAllSupportedLanguages() = analyzers.keys.toList()
 

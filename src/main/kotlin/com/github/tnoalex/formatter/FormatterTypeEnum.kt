@@ -1,6 +1,6 @@
 package com.github.tnoalex.formatter
 
-enum class OutputFormatterType {
+enum class FormatterTypeEnum {
     JSON,
     XML,
     HTML

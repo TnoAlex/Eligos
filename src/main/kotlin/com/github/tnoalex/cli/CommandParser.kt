@@ -1,19 +1,18 @@
 package com.github.tnoalex.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.PrintHelpMessage
-import com.github.ajalt.clikt.core.context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.switch
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.tnoalex.analyzer.SmellAnalyzerRegister
 import com.github.tnoalex.analyzer.SmellAnalyzerScanner
-import com.github.tnoalex.formatter.OutputFormatterType
+import com.github.tnoalex.formatter.FormatterTypeEnum
+import org.slf4j.LoggerFactory
 import kotlin.io.path.Path
+import kotlin.system.exitProcess
 
 @SmellAnalyzerScanner("com.github.tnoalex.analyzer")
 class CommandParser : CliktCommand() {
@@ -43,9 +42,20 @@ class CommandParser : CliktCommand() {
         "-f",
         "--format",
         help = "The Presentation of results"
-    ).enum<OutputFormatterType> { it.name }.default(OutputFormatterType.JSON)
+    ).enum<FormatterTypeEnum> { it.name }.default(FormatterTypeEnum.JSON)
 
     override fun run() {
+        val analyzer = SmellAnalyzerRegister.INSTANCE.getAnalyzerByLang(lang)
+        if (analyzer == null) {
+            logger.error("Not support language:${lang}")
+            logger.error("Supported languages are:${SmellAnalyzerRegister.INSTANCE.getAllSupportedLanguages()}")
+            exitProcess(-1)
+        }
+        analyzer.createAnalyticsContext(lang, srcPath.toFile(), outputName, outPath.toFile(), outFormat)
+    }
 
+    companion object {
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(CommandParser::class.java)
     }
 }
