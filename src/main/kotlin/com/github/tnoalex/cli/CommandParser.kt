@@ -9,7 +9,7 @@ import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.tnoalex.analyzer.SmellAnalyzerRegister
 import com.github.tnoalex.analyzer.SmellAnalyzerScanner
-import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.entity.enums.FormatterTypeEnum
 import org.slf4j.LoggerFactory
 import kotlin.io.path.Path
 import kotlin.system.exitProcess

@@ -1,12 +1,15 @@
 package com.github.tnoalex.analyzer
 
+import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum
+import com.github.tnoalex.entity.enums.AntiPatternEnum
 import com.github.tnoalex.formatter.FormatterFactory
-import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.entity.enums.FormatterTypeEnum
+import depends.deptypes.DependencyType
 import java.io.File
 
 
 abstract class AbstractSmellAnalyzer(val supportedLanguages: String) {
-    private var context: AnalyzerContext? = null
+    protected var context: AnalyzerContext? = null
     abstract fun analyze()
 
     fun createAnalyticsContext(
@@ -23,5 +26,15 @@ abstract class AbstractSmellAnalyzer(val supportedLanguages: String) {
             outputPath,
             FormatterFactory.getFormatter(formatter)
         )
+    }
+
+    fun findUselessImport() {
+        val fileDependency = context!!.getDependencyMatrix(AnalysisHierarchyEnum.FILE)
+        fileDependency?.dependencyPairs?.filter {
+            it.dependencies.size == 1 && it.dependencies.first().type.equals(DependencyType.IMPORT)
+        }.orEmpty().forEach {
+            context!!.foundUnusedImportPattern(listOf(it.from, it.to))
+        }
+        println()
     }
 }

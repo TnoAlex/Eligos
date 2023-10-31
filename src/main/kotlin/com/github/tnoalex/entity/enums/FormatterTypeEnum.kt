@@ -1,4 +1,4 @@
-package com.github.tnoalex.formatter
+package com.github.tnoalex.entity.enums
 
 enum class FormatterTypeEnum {
     JSON,

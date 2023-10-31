@@ -1,4 +1,4 @@
-package com.github.tnoalex.analyzer
+package com.github.tnoalex.entity.enums
 
 enum class AnalysisHierarchyEnum {
     FILE,

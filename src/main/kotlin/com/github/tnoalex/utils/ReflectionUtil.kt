@@ -41,9 +41,9 @@ fun loadClassByPackageName(packageName: String, filter: (KClass<*>) -> Boolean):
             val classFiles = file.walkTopDown().filter { it.isFile && it.extension == "class" }
             classFiles.forEach { classFile ->
                 val className = "$packageName." + classFile.relativeTo(file).path
-                    .removeSuffix(".class").replace('/', '.')
+                    .removeSuffix(".class").replace('/', '.').replace('\\', '.')
                 val loadedClass = classLoader.loadClass(className)
-                if (!loadedClass.isAnonymousClass) {
+                if (!className.contains("$")) {
                     if (filter(loadedClass.kotlin)) {
                         result.add(loadedClass.kotlin)
                     }
