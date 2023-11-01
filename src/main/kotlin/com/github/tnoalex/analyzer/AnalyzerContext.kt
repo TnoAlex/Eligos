@@ -104,6 +104,10 @@ class AnalyzerContext(
         }
     }
 
+    fun foundCircularReferences(){
+
+    }
+
 
     companion object {
         @JvmStatic

@@ -4,6 +4,7 @@ import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum
 import com.github.tnoalex.entity.enums.AntiPatternEnum
 import com.github.tnoalex.formatter.FormatterFactory
 import com.github.tnoalex.entity.enums.FormatterTypeEnum
+import com.github.tnoalex.utils.toAdjacencyList
 import depends.deptypes.DependencyType
 import java.io.File
 
@@ -35,6 +36,14 @@ abstract class AbstractSmellAnalyzer(val supportedLanguages: String) {
         }.orEmpty().forEach {
             context!!.foundUnusedImportPattern(listOf(it.from, it.to))
         }
-        println()
+    }
+
+    fun findCircularReferences() {
+        val fileDependency = context!!.getDependencyMatrix(AnalysisHierarchyEnum.FILE) ?: return
+        val adjacencyList = fileDependency.toAdjacencyList()
+        val scc = adjacencyList.solveSCC()
+        scc.forEach {
+
+        }
     }
 }
