@@ -1,0 +1,71 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.9.20'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'maven-publish'
+    id 'application'
+}
+
+group = 'com.github.tnoalex'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenLocal()
+    maven {
+        url 'http://47.115.213.131:8080/repository/alex-snapshots/'
+        allowInsecureProtocol = true
+    }
+    maven {
+        url 'http://47.115.213.131:8080/repository/alex-release/'
+        allowInsecureProtocol = true
+    }
+    maven {
+        url 'https://maven.aliyun.com/repository/public/'
+    }
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'cn.emergentdesign.se:depends-kotlin:1.0.0-SNAPSHOT'
+    implementation 'cn.emergentdesign.se:depends-core:0.9.7'
+    implementation 'cn.emergentdesign.se:utils:0.1.1'
+    implementation 'org.jetbrains.kotlin:kotlin-reflect:1.9.10'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '2.0.9'
+    implementation 'com.github.ajalt.clikt:clikt:3.5.4'
+    implementation 'ch.qos.logback:logback-classic:1.4.11'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+}
+
+shadowJar {
+    minimize()
+}
+
+publishing {
+    repositories {
+        maven {
+            name = 'Snapshots'
+            url = 'http://47.115.213.131:8080/repository/alex-snapshots/'
+            credentials {
+                username = mavenUsername.toString()
+                password = mavenPassword.toString()
+                allowInsecureProtocol = true
+            }
+        }
+    }
+    publications {
+        shadow(MavenPublication) { publication ->
+            project.shadow.component(publication)
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+kotlin {
+    jvmToolchain(17)
+}
+
+application {
+    mainClass = 'com.github.tnoalex.MainKt'
+}

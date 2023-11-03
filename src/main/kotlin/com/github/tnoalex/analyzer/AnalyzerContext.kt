@@ -37,7 +37,7 @@ class AnalyzerContext(
         EnumMap(AntiPatternEnum::class.java)
 
     init {
-        LangRegister().register()
+        LangRegister.register()
         generateDependencyMatrices()
     }
 
