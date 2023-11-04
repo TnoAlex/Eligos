@@ -1,12 +1,11 @@
 package com.github.tnoalex.algorithm
 
 import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy
-import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy.*
+import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy.APPEND
+import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy.DISCARD
 import com.github.tnoalex.utils.encodeBySHA1
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.min
-import kotlin.text.StringBuilder
 
 
 class AdjacencyList<T : Any> {
@@ -237,10 +236,15 @@ class AdjacencyList<T : Any> {
     private fun generateId(): String {
         val builder = StringBuilder()
         nodesArray.forEach {
+            var arc = it.firstArc
             builder.append(it.id)
+            while (arc != null) {
+                builder.append(arc.info.hashCode())
+                arc = arc.nextArc
+            }
         }
         depthFirstTraversal().forEach {
-            builder.append(it.toString())
+            builder.append(it.hashCode())
         }
         return encodeBySHA1(builder.toString())
     }

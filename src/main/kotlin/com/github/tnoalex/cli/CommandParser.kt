@@ -11,6 +11,7 @@ import com.github.tnoalex.analyzer.SmellAnalyzerRegister
 import com.github.tnoalex.analyzer.SmellAnalyzerScanner
 import com.github.tnoalex.entity.enums.FormatterTypeEnum
 import org.slf4j.LoggerFactory
+import java.util.*
 import kotlin.io.path.Path
 import kotlin.system.exitProcess
 
@@ -57,5 +58,15 @@ class CommandParser : CliktCommand() {
     companion object {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(CommandParser::class.java)
+
+        private fun showBanner() {
+            val inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("banner.txt")
+            if (inputStream != null) {
+                val scanner = Scanner(inputStream)
+                println(scanner.next())
+            } else {
+                println("File not found.")
+            }
+        }
     }
 }

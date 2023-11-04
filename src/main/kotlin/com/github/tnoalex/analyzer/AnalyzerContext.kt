@@ -23,8 +23,7 @@ import depends.relations.RelationCounter
 import multilang.depends.util.file.path.EmptyFilenameWritter
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.lang.ref.SoftReference
-import java.util.EnumMap
+import java.util.*
 
 class AnalyzerContext(
     private val language: String,
@@ -65,8 +64,7 @@ class AnalyzerContext(
 
                 CLASS -> {
 //                    if (language.lowercase() == "kotlin") {
-//                        dependencyMatrices[it] =
-//                            ClassDependencyGenerator().identifyDependencies(entityRepo, emptyList())
+//                           dependencyGenerator = ClassDependencyGenerator()
 //                    } else {
 //                        logger.warn("Non-kotlin projects are not supported at this time")
 //                    }
