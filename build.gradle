@@ -9,7 +9,6 @@ group = 'com.github.tnoalex'
 version = '1.0-SNAPSHOT'
 
 repositories {
-    mavenLocal()
     maven {
         url 'http://47.115.213.131:8080/repository/alex-snapshots/'
         allowInsecureProtocol = true
@@ -18,10 +17,17 @@ repositories {
         url 'http://47.115.213.131:8080/repository/alex-release/'
         allowInsecureProtocol = true
     }
+    mavenLocal()
     maven {
         url 'https://maven.aliyun.com/repository/public/'
     }
     mavenCentral()
+}
+
+configurations {
+    configureEach {
+        resolutionStrategy.cacheChangingModulesFor 3600, 'seconds'
+    }
 }
 
 dependencies {

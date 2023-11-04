@@ -7,7 +7,7 @@ import depends.matrix.core.DependencyMatrix
 
 fun DependencyMatrix.toAdjacencyList(): AdjacencyList<Int> {
     val adjacencyList = AdjacencyList<Int>()
-    for (i in 0 until nodes.size) {
+    for (i in 0..<nodes.size) {
         adjacencyList.addNode(i)
     }
     dependencyPairs.forEach {

@@ -2,13 +2,15 @@ package com.github.tnoalex.algorithm
 
 import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy
 import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy.*
+import com.github.tnoalex.utils.encodeBySHA1
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.min
+import kotlin.text.StringBuilder
 
 
 class AdjacencyList<T : Any> {
-    private inner class VHead(val data: T, var firstArc: ArcNode?)
+    private inner class VHead(val data: T, var firstArc: ArcNode?, val id: Int)
 
     private inner class ArcNode(val adjVex: Int, var nextArc: ArcNode?, val info: LinkedList<Any> = LinkedList())
 
@@ -19,6 +21,9 @@ class AdjacencyList<T : Any> {
     var arcNum: Int = 0
         private set
 
+    val identifier: String
+        get() = generateId()
+
     fun addNodes(nodes: Collection<T>) {
         nodes.forEach {
             addNode(it)
@@ -26,7 +31,7 @@ class AdjacencyList<T : Any> {
     }
 
     fun addNode(node: T) {
-        nodesArray.add(VHead(node, null))
+        nodesArray.add(VHead(node, null, nodeNum))
         nodeNum++
     }
 
@@ -64,11 +69,15 @@ class AdjacencyList<T : Any> {
     }
 
 
-    fun addArc(from: T, to: T,) {
+    fun addArc(from: T, to: T) {
         addArc(from, to, null, DISCARD)
     }
 
-    fun isExistArc(from: Int, to: Int): Boolean {
+    fun isExistArc(from: T, to: T): Boolean {
+        return isExistArc(locatingNode(from), locatingNode(to))
+    }
+
+    private fun isExistArc(from: Int, to: Int): Boolean {
         var arc: ArcNode? = nodesArray[from].firstArc ?: return false
         while (arc != null) {
             if (arc.adjVex == to)
@@ -78,7 +87,11 @@ class AdjacencyList<T : Any> {
         return false
     }
 
-    fun getArcInfoBetween(from: Int, to: Int): LinkedList<Any> {
+    fun getArcInfoBetween(from: T, to: T): LinkedList<Any> {
+        return getArcInfoBetween(locatingNode(from), locatingNode(to))
+    }
+
+    private fun getArcInfoBetween(from: Int, to: Int): LinkedList<Any> {
         return getArcBetween(from, to).info
     }
 
@@ -106,7 +119,7 @@ class AdjacencyList<T : Any> {
                 arcNode = arcNode.nextArc
             }
         }
-        for (i in 0 until nodeNum) {
+        for (i in 0..<nodeNum) {
             if (!visited[i]) {
                 dfs(i, visited)
             }
@@ -120,7 +133,7 @@ class AdjacencyList<T : Any> {
 
         val res = ArrayList<T>()
 
-        for (i in 0 until nodeNum) {
+        for (i in 0..<nodeNum) {
             if (!visited[i]) {
                 queue.offer(i)
                 visited[i] = true
@@ -142,6 +155,27 @@ class AdjacencyList<T : Any> {
             }
         }
         return res
+    }
+
+    fun subPartOfNodes(nodes: List<Int>): AdjacencyList<T> {
+        val subPart = AdjacencyList<T>()
+        nodes.forEach {
+            subPart.addNode(nodesArray[it].data)
+        }
+        for (i in nodes) {
+            for (j in nodes) {
+                if (isExistArc(i, j)) {
+                    val info = getArcInfoBetween(i, j)
+                    subPart.addArc(nodesArray[i].data, nodesArray[j].data)
+                    if (!info.isEmpty()) {
+                        info.forEach {
+                            subPart.addArc(nodesArray[i].data, nodesArray[j].data, it, APPEND)
+                        }
+                    }
+                }
+            }
+        }
+        return subPart
     }
 
 
@@ -182,7 +216,7 @@ class AdjacencyList<T : Any> {
                 } while (pos != v)
             }
         }
-        for (i in 0 until nodeNum) {
+        for (i in 0..<nodeNum) {
             if (dfn[i] == -1)
                 tarjan(i)
         }
@@ -190,7 +224,7 @@ class AdjacencyList<T : Any> {
         val res = ArrayList<ArrayList<Int>>(cnt)
         for (i in 1..cnt) {
             val scc = ArrayList<Int>()
-            for (j in 0 until nodeNum) {
+            for (j in 0..<nodeNum) {
                 if (visited[j] == i) {
                     scc.add(j)
                 }
@@ -198,6 +232,17 @@ class AdjacencyList<T : Any> {
             res.add(scc)
         }
         return res
+    }
+
+    private fun generateId(): String {
+        val builder = StringBuilder()
+        nodesArray.forEach {
+            builder.append(it.id)
+        }
+        depthFirstTraversal().forEach {
+            builder.append(it.toString())
+        }
+        return encodeBySHA1(builder.toString())
     }
 
     private fun locatingNode(data: T): Int {

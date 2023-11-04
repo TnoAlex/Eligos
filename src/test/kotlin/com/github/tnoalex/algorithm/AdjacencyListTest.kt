@@ -44,11 +44,22 @@ class AdjacencyListTest {
     @Test
     fun depthFirstTraversal() {
         val res = graph.depthFirstTraversal()
-        println(res)
         assertArrayEquals(
             arrayOf(
                 'a', 'f', 'g', 'b', 'c', 'e', 'd'
             ), res.toArray()
         )
+    }
+
+    @Test
+    fun testSubPartOfNodes() {
+        val res = graph.subPartOfNodes(listOf(0, 1, 2))
+        val accGraph = AdjacencyList<Char>()
+        for (i in 'a'..'c') {
+            accGraph.addNode(i)
+        }
+        accGraph.addArc('a', 'b')
+        accGraph.addArc('b', 'c')
+        assertArrayEquals(accGraph.depthFirstTraversal().toArray(), res.depthFirstTraversal().toArray())
     }
 }

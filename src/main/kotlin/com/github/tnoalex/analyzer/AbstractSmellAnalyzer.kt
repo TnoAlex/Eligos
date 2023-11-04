@@ -42,8 +42,8 @@ abstract class AbstractSmellAnalyzer(val supportedLanguages: String) {
         val fileDependency = context!!.getDependencyMatrix(AnalysisHierarchyEnum.FILE) ?: return
         val adjacencyList = fileDependency.toAdjacencyList()
         val scc = adjacencyList.solveSCC()
-        scc.forEach {
-
+        scc.filter { it.size > 1 }.forEach {
+            context!!.foundCircularReferences(it,adjacencyList.subPartOfNodes(it))
         }
     }
 }

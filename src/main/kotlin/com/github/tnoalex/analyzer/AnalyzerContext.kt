@@ -1,6 +1,8 @@
 package com.github.tnoalex.analyzer
 
+import com.github.tnoalex.algorithm.AdjacencyList
 import com.github.tnoalex.entity.AntiPatternEntity
+import com.github.tnoalex.entity.CircularRefEntity
 import com.github.tnoalex.entity.UnusedImportPatternEntity
 import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum
 import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum.*
@@ -21,6 +23,7 @@ import depends.relations.RelationCounter
 import multilang.depends.util.file.path.EmptyFilenameWritter
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.lang.ref.SoftReference
 import java.util.EnumMap
 
 class AnalyzerContext(
@@ -91,7 +94,7 @@ class AnalyzerContext(
         val affectedFiles = affectedFilesIndexes.map { dependencyMatrices[FILE]!!.getNodeName(it) }
         if (patterns == null) {
             antiPatterns[AntiPatternEnum.UNUSED_IMPORT] =
-                linkedSetOf((UnusedImportPatternEntity(affectedFiles.toHashSet(), affectedFiles[0])))
+                linkedSetOf(UnusedImportPatternEntity(affectedFiles.toHashSet(), affectedFiles[0]))
         } else {
             val pattern = patterns.filter { it.identifier == affectedFiles[0] }
             if (pattern.isEmpty()) {
@@ -104,8 +107,20 @@ class AnalyzerContext(
         }
     }
 
-    fun foundCircularReferences(){
-
+    fun foundCircularReferences(affectedFilesIndexes: List<Int>, subReference: AdjacencyList<Int>) {
+        val patterns = antiPatterns[AntiPatternEnum.CIRCULAR_REFS]
+        val affectedFiles = affectedFilesIndexes.map { dependencyMatrices[FILE]!!.getNodeName(it) }
+        if (patterns == null) {
+            antiPatterns[AntiPatternEnum.CIRCULAR_REFS] =
+                linkedSetOf(CircularRefEntity(affectedFiles.toHashSet(), subReference))
+        } else {
+            antiPatterns[AntiPatternEnum.CIRCULAR_REFS]!!.add(
+                CircularRefEntity(
+                    affectedFiles.toHashSet(),
+                    subReference
+                )
+            )
+        }
     }
 
 
