@@ -1,4 +1,4 @@
-package com.github.tnoalex.algorithm
+package com.github.tnoalex.foundation.algorithm
 
 import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy
 import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy.APPEND
@@ -9,19 +9,16 @@ import kotlin.math.min
 
 
 class AdjacencyList<T : Any> {
-    private inner class VHead(val data: T, var firstArc: ArcNode?, val id: Int)
-
-    private inner class ArcNode(val adjVex: Int, var nextArc: ArcNode?, val info: LinkedList<Any> = LinkedList())
-
-    private val nodesArray: ArrayList<VHead> = ArrayList()
+    private val nodesArray: ArrayList<AdjacencyHead<T>> = ArrayList()
     var nodeNum: Int = 0
         private set
 
     var arcNum: Int = 0
         private set
 
-    val identifier: String
-        get() = generateId()
+    val identifier by lazy {
+        generateId()
+    }
 
     fun addNodes(nodes: Collection<T>) {
         nodes.forEach {
@@ -30,7 +27,7 @@ class AdjacencyList<T : Any> {
     }
 
     fun addNode(node: T) {
-        nodesArray.add(VHead(node, null, nodeNum))
+        nodesArray.add(AdjacencyHead(node, null, nodeNum))
         nodeNum++
     }
 
@@ -38,8 +35,8 @@ class AdjacencyList<T : Any> {
         val fromNode = locatingNode(from)
         val toNode = locatingNode(to)
 
-        fun action(act: (ArcNode) -> Unit) {
-            val newArc = ArcNode(toNode, nodesArray[fromNode].firstArc)
+        fun action(act: (AdjacencyArc<T>) -> Unit) {
+            val newArc = AdjacencyArc(toNode, nodesArray[fromNode].firstArc)
             val oldArc = newArc.nextArc
             nodesArray[fromNode].firstArc = newArc
             oldArc?.nextArc = null
@@ -77,7 +74,7 @@ class AdjacencyList<T : Any> {
     }
 
     private fun isExistArc(from: Int, to: Int): Boolean {
-        var arc: ArcNode? = nodesArray[from].firstArc ?: return false
+        var arc: AdjacencyArc<T>? = nodesArray[from].firstArc ?: return false
         while (arc != null) {
             if (arc.adjVex == to)
                 return true
@@ -94,8 +91,9 @@ class AdjacencyList<T : Any> {
         return getArcBetween(from, to).info
     }
 
-    private fun getArcBetween(from: Int, to: Int): ArcNode {
-        var arc: ArcNode? = nodesArray[from].firstArc ?: throw RuntimeException("Unanticipated indexes exception")
+    private fun getArcBetween(from: Int, to: Int): AdjacencyArc<T> {
+        var arc: AdjacencyArc<T>? =
+            nodesArray[from].firstArc ?: throw RuntimeException("Unanticipated indexes exception")
         while (arc != null && arc.adjVex != to) {
             arc = arc.nextArc
         }

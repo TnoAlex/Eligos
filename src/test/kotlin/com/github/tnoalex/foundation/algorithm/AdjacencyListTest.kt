@@ -1,9 +1,8 @@
-package com.github.tnoalex.algorithm
+package com.github.tnoalex.foundation.algorithm
 
-import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class AdjacencyListTest {
 

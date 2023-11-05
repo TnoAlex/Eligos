@@ -1,4 +1,4 @@
-package com.github.tnoalex.entity
+package com.github.tnoalex.entity.antipatterns
 
 import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum
 import com.github.tnoalex.entity.enums.AntiPatternEnum

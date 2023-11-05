@@ -1,11 +1,14 @@
 package com.github.tnoalex.analyzer
 
 import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum
-import com.github.tnoalex.entity.enums.AntiPatternEnum
-import com.github.tnoalex.formatter.FormatterFactory
 import com.github.tnoalex.entity.enums.FormatterTypeEnum
+import com.github.tnoalex.formatter.FormatterFactory
+import com.github.tnoalex.rules.FunctionRule
+import com.github.tnoalex.rules.RuleContainer
+import com.github.tnoalex.utils.getEntitiesByType
 import com.github.tnoalex.utils.toAdjacencyList
 import depends.deptypes.DependencyType
+import depends.entity.FunctionEntity
 import java.io.File
 
 
@@ -43,7 +46,18 @@ abstract class AbstractSmellAnalyzer(val supportedLanguages: String) {
         val adjacencyList = fileDependency.toAdjacencyList()
         val scc = adjacencyList.solveSCC()
         scc.filter { it.size > 1 }.forEach {
-            context!!.foundCircularReferences(it,adjacencyList.subPartOfNodes(it))
+            context!!.foundCircularReferences(it, adjacencyList.subPartOfNodes(it))
+        }
+    }
+
+    fun findTooManyParameters() {
+        val functionEntities = context!!.entityRepo?.getEntitiesByType(FunctionEntity::class.java) ?: return
+        val functionDependency = context!!.getDependencyMatrix(AnalysisHierarchyEnum.METHOD)
+        functionEntities.map { it as FunctionEntity }.filter {
+            it.parameters.size > (RuleContainer.INSTANT.getRuleByType(FunctionRule::class) as FunctionRule).arity
+        }.forEach {
+            val file = functionDependency!!.nodes.first { f -> f.split("(")[1] == it.qualifiedName + ")" }.split("(")[0]
+            context!!.foundTooManyParameters(file, it.parameters.size, it.qualifiedName.split(".").last())
         }
     }
 }

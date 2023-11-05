@@ -1,7 +1,7 @@
 package com.github.tnoalex.analyzer
 
+import com.github.tnoalex.utils.loadServices
 import org.slf4j.LoggerFactory
-import java.util.*
 
 
 class SmellAnalyzerRegister private constructor() {
@@ -18,7 +18,7 @@ class SmellAnalyzerRegister private constructor() {
     fun getAllSupportedLanguages() = analyzers.keys.toList()
 
     fun init() {
-        val loader = ServiceLoader.load(AbstractSmellAnalyzer::class.java)
+        val loader = loadServices(AbstractSmellAnalyzer::class.java)
         loader.forEach {
             register(it)
             logger.info("Registered analyzer: ${it::class.simpleName}")

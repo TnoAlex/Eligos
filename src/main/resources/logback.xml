@@ -2,7 +2,7 @@
 <configuration debug="false">
 
     <property name="STDOUT_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %color(%5.5level) %magenta(%pid) --- [%4.15thread] %color(%-40.40logger{39} [%4.4line]) : %color(%msg%n)"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %color(%5.5level) %magenta(%pid) --- [%4.15thread] %color(%-40.40logger{39} [%2.4line]) : %color(%msg%n)"/>
 
     <appender name="STDOUT"
               class="ch.qos.logback.core.ConsoleAppender">

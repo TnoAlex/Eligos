@@ -6,16 +6,15 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
+import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.tnoalex.analyzer.SmellAnalyzerRegister
-import com.github.tnoalex.analyzer.SmellAnalyzerScanner
 import com.github.tnoalex.entity.enums.FormatterTypeEnum
+import com.github.tnoalex.rules.RulerParser
 import org.slf4j.LoggerFactory
-import java.util.*
 import kotlin.io.path.Path
 import kotlin.system.exitProcess
 
-@SmellAnalyzerScanner("com.github.tnoalex.analyzer")
 class CommandParser : CliktCommand() {
 
     private val lang: String by argument(
@@ -45,6 +44,11 @@ class CommandParser : CliktCommand() {
         help = "The Presentation of results"
     ).enum<FormatterTypeEnum> { it.name }.default(FormatterTypeEnum.JSON)
 
+    private val extendRules by option("-r", "--rules", help = "Specify the rules to use").file(
+        mustExist = true,
+        mustBeReadable = true
+    )
+
     override fun run() {
         val analyzer = SmellAnalyzerRegister.INSTANCE.getAnalyzerByLang(lang)
         if (analyzer == null) {
@@ -52,21 +56,12 @@ class CommandParser : CliktCommand() {
             logger.error("Supported languages are:${SmellAnalyzerRegister.INSTANCE.getAllSupportedLanguages()}")
             exitProcess(-1)
         }
+        RulerParser.parserRules(extendRules)
         analyzer.createAnalyticsContext(lang, srcPath.toFile(), outputName, outPath.toFile(), outFormat)
     }
 
     companion object {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(CommandParser::class.java)
-
-        private fun showBanner() {
-            val inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("banner.txt")
-            if (inputStream != null) {
-                val scanner = Scanner(inputStream)
-                println(scanner.next())
-            } else {
-                println("File not found.")
-            }
-        }
     }
 }

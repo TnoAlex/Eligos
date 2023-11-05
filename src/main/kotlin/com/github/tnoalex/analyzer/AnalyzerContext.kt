@@ -1,13 +1,14 @@
 package com.github.tnoalex.analyzer
 
-import com.github.tnoalex.algorithm.AdjacencyList
-import com.github.tnoalex.entity.AntiPatternEntity
-import com.github.tnoalex.entity.CircularRefEntity
-import com.github.tnoalex.entity.UnusedImportPatternEntity
+import com.github.tnoalex.entity.antipatterns.AntiPatternEntity
+import com.github.tnoalex.entity.antipatterns.CircularRefEntity
+import com.github.tnoalex.entity.antipatterns.ExcessiveParamsEntity
+import com.github.tnoalex.entity.antipatterns.UnusedImportPatternEntity
 import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum
 import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum.*
 import com.github.tnoalex.entity.enums.AntiPatternEnum
 import com.github.tnoalex.formatter.IFormatter
+import com.github.tnoalex.foundation.algorithm.AdjacencyList
 import depends.LangRegister
 import depends.deptypes.DependencyType
 import depends.entity.repo.EntityRepo
@@ -32,7 +33,8 @@ class AnalyzerContext(
     private val outputPath: File,
     private val formatter: IFormatter?
 ) {
-    private var entityRepo: EntityRepo? = null
+    var entityRepo: EntityRepo? = null
+        private set
     private val dependencyMatrices: EnumMap<AnalysisHierarchyEnum, DependencyMatrix> =
         EnumMap(AnalysisHierarchyEnum::class.java)
     private val antiPatterns: EnumMap<AntiPatternEnum, LinkedHashSet<AntiPatternEntity>> =
@@ -117,6 +119,18 @@ class AnalyzerContext(
                     affectedFiles.toHashSet(),
                     subReference
                 )
+            )
+        }
+    }
+
+    fun foundTooManyParameters(affectedFile: String, arity: Int, funcName: String) {
+        val patterns = antiPatterns[AntiPatternEnum.TOO_MANY_PARAMS]
+        if (patterns == null) {
+            antiPatterns[AntiPatternEnum.TOO_MANY_PARAMS] =
+                linkedSetOf(ExcessiveParamsEntity(affectedFile, funcName, arity))
+        } else {
+            antiPatterns[AntiPatternEnum.TOO_MANY_PARAMS]!!.add(
+                ExcessiveParamsEntity(affectedFile, funcName, arity)
             )
         }
     }

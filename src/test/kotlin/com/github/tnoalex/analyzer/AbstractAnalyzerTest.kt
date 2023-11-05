@@ -1,6 +1,7 @@
 package com.github.tnoalex.analyzer
 
 import com.github.tnoalex.entity.enums.FormatterTypeEnum
+import com.github.tnoalex.rules.RulerParser
 import com.github.tnoalex.utils.StdOutErrWrapper
 import java.io.File
 
@@ -10,6 +11,7 @@ abstract class AbstractAnalyzerTest(lang: String) {
     init {
         StdOutErrWrapper.init()
         SmellAnalyzerRegister.INSTANCE.init()
+        RulerParser.parserRules(null)
         analyzer = SmellAnalyzerRegister.INSTANCE.getAnalyzerByLang(lang)
     }
 
