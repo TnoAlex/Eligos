@@ -56,7 +56,9 @@ abstract class AbstractSmellAnalyzer(val supportedLanguages: String) {
         functionEntities.map { it as FunctionEntity }.filter {
             it.parameters.size > (RuleContainer.INSTANT.getRuleByType(FunctionRule::class) as FunctionRule).arity
         }.forEach {
-            val file = functionDependency!!.nodes.first { f -> f.split("(")[1] == it.qualifiedName + ")" }.split("(")[0]
+            val file = functionDependency!!.nodes.first { f ->
+                f.split("(")[1] == it.qualifiedName + ")"
+            }.split("(")[0]
             context!!.foundTooManyParameters(file, it.parameters.size, it.qualifiedName.split(".").last())
         }
     }

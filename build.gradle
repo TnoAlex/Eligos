@@ -32,7 +32,7 @@ configurations {
 
 dependencies {
     implementation 'cn.emergentdesign.se:depends-kotlin:1.0.0-SNAPSHOT'
-    implementation 'cn.emergentdesign.se:depends-core:0.9.7'
+    implementation 'cn.emergentdesign.se:depends-core:0.9.8-SNAPSHOT'
     implementation 'cn.emergentdesign.se:utils:0.1.1'
     implementation 'org.jetbrains.kotlin:kotlin-reflect:1.9.10'
     implementation 'org.slf4j:slf4j-api:2.0.9'
@@ -40,6 +40,7 @@ dependencies {
     implementation 'org.yaml:snakeyaml:2.2'
     implementation 'com.github.ajalt.clikt:clikt:3.5.4'
     implementation 'ch.qos.logback:logback-classic:1.4.11'
+    implementation 'org.antlr:antlr4-runtime:4.13.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 }
 

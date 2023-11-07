@@ -3,7 +3,7 @@ package com.github.tnoalex.foundation.algorithm
 import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy
 import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy.APPEND
 import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy.DISCARD
-import com.github.tnoalex.utils.encodeBySHA1
+import com.github.tnoalex.utils.encodeBySHA1ToString
 import java.util.*
 import kotlin.math.min
 
@@ -244,7 +244,7 @@ class AdjacencyList<T : Any> {
         depthFirstTraversal().forEach {
             builder.append(it.hashCode())
         }
-        return encodeBySHA1(builder.toString())
+        return encodeBySHA1ToString(builder.toString())
     }
 
     private fun locatingNode(data: T): Int {
