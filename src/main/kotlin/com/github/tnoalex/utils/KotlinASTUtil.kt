@@ -39,19 +39,23 @@ fun getCurrentPackageName(ctx: ParserRuleContext): String? {
 }
 
 fun FunctionDeclarationContext.visibilityModifier(): String? {
-    return modifiers().modifier().firstOrNull { it.visibilityModifier() != null }?.text
+    return modifiers()?.modifier()?.firstOrNull { it.visibilityModifier() != null }?.text
 }
 
 fun FunctionDeclarationContext.functionModifier(): String? {
-    return modifiers().modifier().firstOrNull { it.functionModifier() != null }?.text
+    return modifiers()?.modifier()?.firstOrNull { it.functionModifier() != null }?.text
 }
 
 fun FunctionDeclarationContext.inheritanceModifier(): String? {
-    return modifiers().modifier().firstOrNull { it.inheritanceModifier() != null }?.text
+    return modifiers()?.modifier()?.firstOrNull { it.inheritanceModifier() != null }?.text
 }
 
 fun FunctionDeclarationContext.paramsNum(): Int {
     return functionValueParameters().functionValueParameter().size
+}
+
+fun FunctionDeclarationContext.id(): String {
+    return simpleIdentifier().text + paramsNum()
 }
 
 fun ExpressionContext.ifExpression(): IfExpressionContext? {
