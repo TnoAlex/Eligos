@@ -9,6 +9,7 @@ import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum.*
 import com.github.tnoalex.entity.enums.AntiPatternEnum
 import com.github.tnoalex.formatter.IFormatter
 import com.github.tnoalex.foundation.algorithm.AdjacencyList
+import com.github.tnoalex.foundation.filetools.FileContainer.sourceFilePath
 import depends.LangRegister
 import depends.deptypes.DependencyType
 import depends.entity.repo.EntityRepo
@@ -23,15 +24,11 @@ import depends.relations.IBindingResolver
 import depends.relations.RelationCounter
 import multilang.depends.util.file.path.EmptyFilenameWritter
 import org.slf4j.LoggerFactory
-import java.io.File
 import java.util.*
 
 class AnalyzerContext(
     private val language: String,
-    private val sourcePath: File,
-    private val outputName: String,
-    private val outputPath: File,
-    private val formatter: IFormatter?
+    private val formatter: IFormatter
 ) {
     var entityRepo: EntityRepo? = null
         private set
@@ -54,7 +51,7 @@ class AnalyzerContext(
             BindingResolver(langProcessor, false, true)
 
         logger.info("Starting Generate dependency matrices")
-        entityRepo = langProcessor.buildDependencies(sourcePath.path, arrayOf(), bindingResolver)
+        entityRepo = langProcessor.buildDependencies(sourceFilePath!!.path, arrayOf(), bindingResolver)
         RelationCounter(entityRepo, langProcessor, bindingResolver).computeRelations()
         val dependencyType = DependencyType.allDependencies()
         AnalysisHierarchyEnum.entries.forEach {

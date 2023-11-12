@@ -1,6 +1,6 @@
-package com.github.tnoalex.foundation.astprocessor.kotlin
+package com.github.tnoalex.foundation.asttools.kotlin
 
-import com.github.tnoalex.foundation.astprocessor.AstParser
+import com.github.tnoalex.foundation.asttools.AstParser
 import depends.extractor.kotlin.KotlinLexer
 import depends.extractor.kotlin.KotlinParser
 import org.antlr.v4.runtime.CharStreams

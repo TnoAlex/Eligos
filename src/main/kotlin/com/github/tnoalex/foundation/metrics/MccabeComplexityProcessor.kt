@@ -1,13 +1,13 @@
 package com.github.tnoalex.foundation.metrics
 
-abstract class MccabeComplexityProcessor {
+import com.github.tnoalex.foundation.asttools.AstProcessor
+
+abstract class MccabeComplexityProcessor : AstProcessor {
     private val functionMap = HashMap<String, ArrayList<Int>>()
     private val closureFunctionMap = HashMap<String, ArrayList<String>>()
 
     private val terminatedMap = HashSet<String>()
-    protected abstract fun hookAst()
-    abstract fun processFile(fullFileName: String)
-
+    abstract override fun hookAst()
     fun getMccabeComplex(): Map<String, Int> {
         return margeFunction().map {
             it.key to it.value[ARC_INDEX] - it.value[NODE_INDEX] + 2

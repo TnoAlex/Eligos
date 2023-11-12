@@ -29,6 +29,7 @@ class SmellAnalyzerRegister private constructor() {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(SmellAnalyzerRegister::class.java)
 
+        @JvmStatic
         val INSTANCE by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             SmellAnalyzerRegister()
         }

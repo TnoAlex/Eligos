@@ -9,7 +9,6 @@ import com.github.tnoalex.utils.getEntitiesByType
 import com.github.tnoalex.utils.toAdjacencyList
 import depends.deptypes.DependencyType
 import depends.entity.FunctionEntity
-import java.io.File
 
 
 abstract class AbstractSmellAnalyzer(val supportedLanguages: String) {
@@ -18,17 +17,11 @@ abstract class AbstractSmellAnalyzer(val supportedLanguages: String) {
 
     fun createAnalyticsContext(
         language: String,
-        sourcePath: File,
-        outputName: String?,
-        outputPath: File,
         formatter: FormatterTypeEnum
     ) {
         context = AnalyzerContext(
             language,
-            sourcePath,
-            outputName ?: "${language}_analysis_result",
-            outputPath,
-            FormatterFactory.getFormatter(formatter)
+            FormatterFactory.getFormatter(formatter) ?: throw RuntimeException("Unknown result formatter")
         )
     }
 

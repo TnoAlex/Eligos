@@ -1,4 +1,4 @@
-package com.github.tnoalex.foundation.astprocessor.kotlin
+package com.github.tnoalex.foundation.asttools.kotlin
 
 import depends.extractor.kotlin.KotlinParser
 import depends.extractor.kotlin.KotlinParserBaseListener

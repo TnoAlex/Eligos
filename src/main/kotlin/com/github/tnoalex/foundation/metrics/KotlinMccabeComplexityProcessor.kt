@@ -1,33 +1,30 @@
 package com.github.tnoalex.foundation.metrics
 
-import com.github.tnoalex.foundation.astprocessor.kotlin.KotlinAstHook
-import com.github.tnoalex.foundation.astprocessor.kotlin.KotlinAstParser
+import com.github.tnoalex.foundation.asttools.kotlin.KotlinAstHook
 import com.github.tnoalex.utils.*
 import depends.extractor.kotlin.KotlinParser.*
 
 class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
 
-    init {
-        hookAst()
-    }
-
-
     override fun hookAst() {
-        KotlinAstHook.hookEnterFunctionDeclaration { processFunctionDeclaration(it) }
-        KotlinAstHook.hookEnterElvisExpression { processElvisExpression(it) }
-        KotlinAstHook.hookEnterWhenExpression { processWhenExpression(it) }
-        KotlinAstHook.hookEnterIfExpression { processIfExpression(it) }
-        KotlinAstHook.hookEnterForStatement { processForStatement(it) }
-        KotlinAstHook.hookEnterDoWhileStatement { processDoWhileStatement(it) }
-        KotlinAstHook.hookEnterWhileStatement { processWhileStatement(it) }
-        KotlinAstHook.hookEnterJumpExpression { processJumpExpression(it) }
-        KotlinAstHook.hookEnterTryExpression { processTryExpression(it) }
-        KotlinAstHook.hookEnterAssignment { processAssignment(it) }
-        KotlinAstHook.hookEnterPropertyDeclaration { processPropertyDeclaration(it) }
-        KotlinAstHook.hookEnterExpression { processExpression(it) }
-        KotlinAstHook.hookExitFunctionBody { processExitFunction(it) }
+        KotlinAstHook.hookEnterFunctionDeclaration({ processFunctionDeclaration(it) }, this)
+        KotlinAstHook.hookEnterElvisExpression({ processElvisExpression(it) }, this)
+        KotlinAstHook.hookEnterWhenExpression({ processWhenExpression(it) }, this)
+        KotlinAstHook.hookEnterIfExpression({ processIfExpression(it) }, this)
+        KotlinAstHook.hookEnterForStatement({ processForStatement(it) }, this)
+        KotlinAstHook.hookEnterDoWhileStatement({ processDoWhileStatement(it) }, this)
+        KotlinAstHook.hookEnterWhileStatement({ processWhileStatement(it) }, this)
+        KotlinAstHook.hookEnterJumpExpression({ processJumpExpression(it) }, this)
+        KotlinAstHook.hookEnterTryExpression({ processTryExpression(it) }, this)
+        KotlinAstHook.hookEnterAssignment({ processAssignment(it) }, this)
+        KotlinAstHook.hookEnterPropertyDeclaration({ processPropertyDeclaration(it) }, this)
+        KotlinAstHook.hookEnterExpression({ processExpression(it) }, this)
+        KotlinAstHook.hookExitFunctionBody({ processExitFunction(it) }, this)
     }
 
+    override fun removeHooks() {
+        KotlinAstHook.removeHook(this)
+    }
 
     private fun processFunctionDeclaration(ctx: FunctionDeclarationContext) {
         val parentFunc = getParentFunction(ctx) // determine whether it is a closure function
@@ -154,9 +151,5 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
             addNode(id)
             addArc(id)
         }
-    }
-
-    override fun processFile(fullFileName: String) {
-        KotlinAstParser.parseAst(fullFileName)
     }
 }

@@ -23,6 +23,7 @@ class RuleContainer private constructor() {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(RuleContainer::class.java)
 
+        @JvmStatic
         val INSTANT by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             RuleContainer()
         }

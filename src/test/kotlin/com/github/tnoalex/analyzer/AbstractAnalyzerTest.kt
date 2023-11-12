@@ -1,6 +1,7 @@
 package com.github.tnoalex.analyzer
 
 import com.github.tnoalex.entity.enums.FormatterTypeEnum
+import com.github.tnoalex.foundation.filetools.FileContainer
 import com.github.tnoalex.rules.RulerParser
 import com.github.tnoalex.utils.StdOutErrWrapper
 import java.io.File
@@ -22,6 +23,7 @@ abstract class AbstractAnalyzerTest(lang: String) {
         outPath: String,
         outFormat: FormatterTypeEnum
     ) {
-        analyzer!!.createAnalyticsContext(lang, File(srcPath), outputName, File(outPath), outFormat)
+        analyzer!!.createAnalyticsContext(lang, outFormat)
+        FileContainer.initFileContainer(File(srcPath), File(outPath), outputName)
     }
 }

@@ -1,14 +1,17 @@
 package com.github.tnoalex.foundation.metrics
 
+import com.github.tnoalex.foundation.asttools.AstProcessorContainer
+import com.github.tnoalex.foundation.asttools.kotlin.KotlinAstParser
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class KotlinMccabeComplexityProcessorTest {
-    private val processor = KotlinMccabeComplexityProcessor()
 
     @Test
     fun testMccabe() {
-        processor.processFile("E:\\code\\depends-smell\\src\\test\\resources\\metrics-samples\\MccabeSample0.kt")
+        val processor =
+            AstProcessorContainer.getProcessByType(KotlinMccabeComplexityProcessor::class.java) as KotlinMccabeComplexityProcessor
+        KotlinAstParser.parseAst("E:\\code\\depends-smell\\src\\test\\resources\\metrics-samples\\MccabeSample0.kt")
         val cc = processor.getMccabeComplex()
         assertEquals(cc["ccSample0@0"], 3)
         assertEquals(cc["ccSample1@2"], 9)

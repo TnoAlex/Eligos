@@ -10,9 +10,9 @@ import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.tnoalex.analyzer.SmellAnalyzerRegister
 import com.github.tnoalex.entity.enums.FormatterTypeEnum
+import com.github.tnoalex.foundation.filetools.FileContainer
 import com.github.tnoalex.rules.RulerParser
 import org.slf4j.LoggerFactory
-import kotlin.io.path.Path
 import kotlin.system.exitProcess
 
 class CommandParser : CliktCommand() {
@@ -29,14 +29,14 @@ class CommandParser : CliktCommand() {
         mustBeReadable = true
     )
 
-    private val outputName by argument(name = "outputName", help = "The result file name")
+    private val outputPrefix by option("-p", "--prefix", help = "The result file name prefix")
 
     private val outPath by option("-d", "--outDir", help = "The result output path").path(
         mustExist = true,
         canBeFile = false,
         canBeDir = true,
         mustBeWritable = true
-    ).default(Path("."))
+    )
 
     private val outFormat by option(
         "-f",
@@ -56,8 +56,9 @@ class CommandParser : CliktCommand() {
             logger.error("Supported languages are:${SmellAnalyzerRegister.INSTANCE.getAllSupportedLanguages()}")
             exitProcess(-1)
         }
+        FileContainer.initFileContainer(srcPath.toFile(), outPath?.toFile(), outputPrefix)
         RulerParser.parserRules(extendRules)
-        analyzer.createAnalyticsContext(lang, srcPath.toFile(), outputName, outPath.toFile(), outFormat)
+        analyzer.createAnalyticsContext(lang, outFormat)
     }
 
     companion object {
