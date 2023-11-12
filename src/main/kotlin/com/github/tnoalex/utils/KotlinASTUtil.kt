@@ -4,7 +4,7 @@ import depends.extractor.kotlin.KotlinParser.*
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.RuleContext
 
-fun getCurrentFunction(ctx: RuleContext): FunctionDeclarationContext? {
+fun getParentFunction(ctx: RuleContext): FunctionDeclarationContext? {
     var parent = ctx.parent
     while (parent != null) {
         if (parent is FunctionDeclarationContext) {
@@ -55,7 +55,7 @@ fun FunctionDeclarationContext.paramsNum(): Int {
 }
 
 fun FunctionDeclarationContext.id(): String {
-    return simpleIdentifier().text + paramsNum()
+    return simpleIdentifier().text + "@" + paramsNum()
 }
 
 fun ExpressionContext.ifExpression(): IfExpressionContext? {
@@ -91,11 +91,7 @@ fun ExpressionContext.jumpExpression(): JumpExpressionContext? {
     return null
 }
 
-fun ExpressionContext.isPropertyOrFunctionCall() {
-
-}
-
-fun ExpressionContext.isElvisExpression(): ElvisExpressionContext? {
+fun ExpressionContext.elvisExpression(): ElvisExpressionContext? {
     children.forEach {
         if (it is ElvisExpressionContext)
             return it

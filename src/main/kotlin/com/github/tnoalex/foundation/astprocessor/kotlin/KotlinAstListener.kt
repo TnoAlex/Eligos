@@ -101,4 +101,11 @@ class KotlinAstListener : KotlinParserBaseListener() {
         }
         super.enterTryExpression(ctx)
     }
+
+    override fun enterExpression(ctx: KotlinParser.ExpressionContext) {
+        KotlinAstHook.getHook(this::enterExpression.name).forEach {
+            it(ctx)
+        }
+        super.enterExpression(ctx)
+    }
 }

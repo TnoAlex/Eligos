@@ -53,6 +53,14 @@ object KotlinAstHook : AbstractAstHook() {
         addHook(getHookedName(this::hookEnterPropertyDeclaration.name), adaptedCallback)
     }
 
+    fun hookEnterExpression(hook: (ExpressionContext) -> Unit) {
+        val adaptedCallback: (ParserRuleContext) -> Unit = { parentContext ->
+            val functionContext: ExpressionContext = parentContext as ExpressionContext
+            hook(functionContext)
+        }
+        addHook(getHookedName(this::hookEnterExpression.name), adaptedCallback)
+    }
+
     fun hookEnterElvisExpression(hook: (ElvisExpressionContext) -> Unit) {
         val adaptedCallback: (ParserRuleContext) -> Unit = { parentContext ->
             val functionContext: ElvisExpressionContext = parentContext as ElvisExpressionContext
