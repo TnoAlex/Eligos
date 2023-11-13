@@ -1,4 +1,4 @@
-package com.github.tnoalex.foundation.metrics
+package com.github.tnoalex.foundation.algorithm.metrics
 
 import com.github.tnoalex.foundation.asttools.AstProcessor
 

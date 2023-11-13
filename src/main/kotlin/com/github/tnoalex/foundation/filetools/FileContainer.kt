@@ -17,4 +17,22 @@ object FileContainer {
         outputPath = outPath ?: File(sourcePath.path + File.pathSeparator + "out")
         outputFilePrefix = prefix ?: outputFilePrefix
     }
+
+    fun visitSourcesFile(hook: (File) -> Unit) {
+        fun visit(file: File) {
+            if (file.isDirectory()) {
+                val files = file.listFiles()
+                if (files != null) {
+                    for (f in files) {
+                        if (f.isDirectory()) {
+                            visit(f)
+                        } else {
+                            hook(f)
+                        }
+                    }
+                }
+            }
+        }
+        visit(sourceFilePath!!)
+    }
 }

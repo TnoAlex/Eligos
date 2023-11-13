@@ -8,6 +8,9 @@ import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 
 object KotlinAstParser : AstParser {
+    override val supportLanguage: String
+        get() = "kotlin"
+
     override fun parseAst(fileName: String) {
         val input = CharStreams.fromFileName(fileName)
         val lexer = KotlinLexer(input)

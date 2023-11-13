@@ -1,5 +1,6 @@
 package com.github.tnoalex.foundation.metrics
 
+import com.github.tnoalex.foundation.algorithm.metrics.KotlinMccabeComplexityProcessor
 import com.github.tnoalex.foundation.asttools.AstProcessorContainer
 import com.github.tnoalex.foundation.asttools.kotlin.KotlinAstParser
 import org.junit.jupiter.api.Assertions.assertEquals

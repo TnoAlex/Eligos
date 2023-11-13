@@ -1,6 +1,8 @@
 package com.github.tnoalex.foundation.asttools
 
-interface AstProcessor {
+import com.github.tnoalex.foundation.common.LanguageSupportInfo
+
+interface AstProcessor : LanguageSupportInfo {
     fun hookAst()
     fun removeHooks()
 }

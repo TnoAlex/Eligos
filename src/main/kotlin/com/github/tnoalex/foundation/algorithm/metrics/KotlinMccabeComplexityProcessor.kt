@@ -1,10 +1,12 @@
-package com.github.tnoalex.foundation.metrics
+package com.github.tnoalex.foundation.algorithm.metrics
 
 import com.github.tnoalex.foundation.asttools.kotlin.KotlinAstHook
 import com.github.tnoalex.utils.*
 import depends.extractor.kotlin.KotlinParser.*
 
 class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
+    override val supportLanguage: String
+        get() = "kotlin"
 
     override fun hookAst() {
         KotlinAstHook.hookEnterFunctionDeclaration({ processFunctionDeclaration(it) }, this)

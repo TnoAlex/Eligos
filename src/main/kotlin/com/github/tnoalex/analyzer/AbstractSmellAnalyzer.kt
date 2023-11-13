@@ -3,6 +3,7 @@ package com.github.tnoalex.analyzer
 import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum
 import com.github.tnoalex.entity.enums.FormatterTypeEnum
 import com.github.tnoalex.formatter.FormatterFactory
+import com.github.tnoalex.foundation.common.LanguageSupportInfo
 import com.github.tnoalex.rules.FunctionRule
 import com.github.tnoalex.rules.RuleContainer
 import com.github.tnoalex.utils.getEntitiesByType
@@ -11,7 +12,7 @@ import depends.deptypes.DependencyType
 import depends.entity.FunctionEntity
 
 
-abstract class AbstractSmellAnalyzer(val supportedLanguages: String) {
+abstract class AbstractSmellAnalyzer : LanguageSupportInfo {
     protected var context: AnalyzerContext? = null
     abstract fun analyze()
 

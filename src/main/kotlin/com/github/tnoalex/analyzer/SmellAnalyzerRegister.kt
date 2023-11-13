@@ -8,7 +8,7 @@ class SmellAnalyzerRegister private constructor() {
     private val analyzers = HashMap<String, AbstractSmellAnalyzer>()
 
     private fun register(analyzer: AbstractSmellAnalyzer) {
-        val lang = analyzer.supportedLanguages.lowercase()
+        val lang = analyzer.supportLanguage.lowercase()
         if (analyzers.containsKey(lang)) return
         analyzers[lang] = analyzer
     }
