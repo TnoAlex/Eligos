@@ -1,31 +1,25 @@
 package com.github.tnoalex.rules
 
+import com.github.tnoalex.foundation.common.Container
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
-class RuleContainer private constructor() {
+object RuleContainer : Container<Rule> {
 
     private val rules = HashMap<String, Rule>()
 
-    fun allRuleNames() = rules.keys
-
-    fun getRuleByName(name: String) = rules[name]
-    fun <T : Rule> getRuleByType(clazz: KClass<T>): Rule {
+    override fun getByType(clazz: KClass<out Rule>): Rule {
         return rules.entries.first { it.value.javaClass == clazz.java }.value
     }
 
-    fun registerRule(rule: Rule) {
-        rules[rule.ruleName] = rule
-        logger.info("Registered rule: ${rule.ruleName}")
+    override fun register(entity: Rule) {
+        rules[entity.ruleName] = entity
+        logger.info("Registered rule: ${entity.ruleName}")
     }
 
-    companion object {
-        @JvmStatic
-        private val logger = LoggerFactory.getLogger(RuleContainer::class.java)
+    private val logger = LoggerFactory.getLogger(RuleContainer::class.java)
 
-        @JvmStatic
-        val INSTANT by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
-            RuleContainer()
-        }
-    }
+    override fun getByKey(key: String): Rule? = rules[key]
+
+    override fun getKeys(): List<String> = rules.keys.toList()
 }

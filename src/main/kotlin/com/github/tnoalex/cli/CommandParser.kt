@@ -8,8 +8,8 @@ import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
-import com.github.tnoalex.analyzer.SmellAnalyzerRegister
-import com.github.tnoalex.entity.enums.FormatterTypeEnum
+import com.github.tnoalex.analyzer.singlelang.SingleSmellAnalyzerContainer
+import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.filetools.FileContainer
 import com.github.tnoalex.rules.RulerParser
 import org.slf4j.LoggerFactory
@@ -20,7 +20,7 @@ class CommandParser : CliktCommand() {
     private val lang: String by argument(
         name = "lang",
         help = "The language of project files"
-    ).choice(*SmellAnalyzerRegister.INSTANCE.getAllSupportedLanguages().toTypedArray(), ignoreCase = true)
+    ).choice(*SingleSmellAnalyzerContainer.getAllSupportedLanguages().toTypedArray(), ignoreCase = true)
 
     private val srcPath by argument(name = "srcPath", help = "The source path").path(
         mustExist = true,
@@ -50,10 +50,10 @@ class CommandParser : CliktCommand() {
     )
 
     override fun run() {
-        val analyzer = SmellAnalyzerRegister.INSTANCE.getAnalyzerByLang(lang)
+        val analyzer = SingleSmellAnalyzerContainer.getByKey(lang)
         if (analyzer == null) {
             logger.error("Not support language:${lang}")
-            logger.error("Supported languages are:${SmellAnalyzerRegister.INSTANCE.getAllSupportedLanguages()}")
+            logger.error("Supported languages are:${SingleSmellAnalyzerContainer.getAllSupportedLanguages()}")
             exitProcess(-1)
         }
         FileContainer.initFileContainer(srcPath.toFile(), outPath?.toFile(), outputPrefix)

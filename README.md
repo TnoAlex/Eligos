@@ -1,5 +1,8 @@
 # depends-smell
 
+![GitHub License](https://img.shields.io/github/license/TnoAlex/depends-smell)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/TnoAlex/depends-smell/gradle-publish.yml)
+
 _depends-smell_, a static code analysis tool for the [_Kotlin_ programming language](https://kotlinlang.org/).
 
 ### Quick Start ...

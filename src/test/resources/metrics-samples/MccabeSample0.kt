@@ -1,7 +1,7 @@
 package `metrics-samples`
 
-import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy
 import com.github.tnoalex.foundation.algorithm.AdjacencyArc
+import com.github.tnoalex.foundation.algorithm.DuplicateEdgeStrategy
 import com.github.tnoalex.utils.getParentFunction
 import com.github.tnoalex.utils.id
 import depends.extractor.kotlin.KotlinParser

@@ -1,4 +1,4 @@
-package com.github.tnoalex.entity.enums
+package com.github.tnoalex.foundation.algorithm
 
 /**
  * Used to describe how information on the edge of an adjacency table is handled when it encounters a duplicate edge

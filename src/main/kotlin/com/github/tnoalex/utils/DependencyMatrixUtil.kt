@@ -1,7 +1,7 @@
 package com.github.tnoalex.utils
 
-import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy
 import com.github.tnoalex.foundation.algorithm.AdjacencyList
+import com.github.tnoalex.foundation.algorithm.DuplicateEdgeStrategy
 import depends.matrix.core.DependencyMatrix
 
 

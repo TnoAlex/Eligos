@@ -1,7 +1,6 @@
-package com.github.tnoalex.entity.antipatterns
+package com.github.tnoalex.antipatterns
 
-import com.github.tnoalex.entity.enums.AnalysisHierarchyEnum
-import com.github.tnoalex.entity.enums.AntiPatternEnum
+import com.github.tnoalex.analyzer.AnalysisHierarchyEnum
 
 abstract class AntiPatternEntity(
     val type: AntiPatternEnum,

@@ -1,8 +1,7 @@
 package com.github.tnoalex.foundation.algorithm
 
-import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy
-import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy.APPEND
-import com.github.tnoalex.entity.enums.DuplicateEdgeStrategy.DISCARD
+import com.github.tnoalex.foundation.algorithm.DuplicateEdgeStrategy.APPEND
+import com.github.tnoalex.foundation.algorithm.DuplicateEdgeStrategy.DISCARD
 import com.github.tnoalex.utils.encodeBySHA1ToString
 import java.util.*
 import kotlin.math.min

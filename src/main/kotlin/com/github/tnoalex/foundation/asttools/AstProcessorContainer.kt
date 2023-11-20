@@ -1,35 +1,39 @@
 package com.github.tnoalex.foundation.asttools
 
+import com.github.tnoalex.foundation.common.CollectionContainer
 import com.github.tnoalex.utils.loadServices
 import java.util.*
+import kotlin.reflect.KClass
 
-object AstProcessorContainer {
+object AstProcessorContainer : CollectionContainer<AstProcessor> {
     private val processors = HashMap<String, LinkedList<AstProcessor>>()
 
     init {
         loadServices(AstProcessor::class.java).forEach {
             it.hookAst()
-            addProcess(it.supportLanguage, it)
+            register(it)
         }
     }
 
-    fun addProcess(supportLang: String, processor: AstProcessor) {
-        if (processors[supportLang] == null) {
-            processors[supportLang] = LinkedList(listOf(processor))
+    override fun register(entity: AstProcessor) {
+        if (processors[entity.supportLanguage] == null) {
+            processors[entity.supportLanguage] = LinkedList(listOf(entity))
         } else {
-            processors[supportLang]!!.add(processor)
+            processors[entity.supportLanguage]!!.add(entity)
         }
     }
 
-    fun getProcessors() = processors.values.toList()
+    override fun getByKey(key: String): LinkedList<AstProcessor>? = processors[key]
 
-    fun <T : AstProcessor> getProcessByType(type: Class<T>): AstProcessor? {
+    override fun getKeys(): List<String> = processors.keys.toList()
+
+    override fun getByType(clazz: KClass<out AstProcessor>): List<AstProcessor>? {
         processors.values.forEach {
             val res = it.filter { p ->
-                p.javaClass == type
+                p::class == clazz
             }
             if (res.isNotEmpty()) {
-                return res[0]
+                return res
             }
         }
         return null

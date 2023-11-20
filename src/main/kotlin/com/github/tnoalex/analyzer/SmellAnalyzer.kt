@@ -1,4 +1,4 @@
 package com.github.tnoalex.analyzer
 
-interface AnalyzerContext {
+interface SmellAnalyzer {
 }

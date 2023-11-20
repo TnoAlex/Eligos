@@ -1,10 +1,10 @@
 package com.github.tnoalex.foundation.asttools
 
-import com.github.tnoalex.foundation.filetools.FileContainer
+import com.github.tnoalex.foundation.common.Container
 import com.github.tnoalex.utils.loadServices
-import java.io.File
+import kotlin.reflect.KClass
 
-object AstParserContainer {
+object AstParserContainer : Container<AstParser> {
     private val parsers = HashMap<String, AstParser>()
 
     init {
@@ -13,41 +13,28 @@ object AstParserContainer {
         }
     }
 
-    fun parseFilesByLang(lang: String) {
+    fun parseFilesByLang(lang: String, filePath: String) {
         val parser = parsers[lang] ?: return
         AstProcessorContainer.hookAstByLang(lang)
-        FileContainer.visitSourcesFile {
-            parser.parseAst(it.absolutePath)
-        }
+        parser.parseAst(filePath)
     }
 
-    fun parseFilesByLang(lang: String, filter: (File) -> Boolean) {
-        val parser = parsers[lang] ?: return
-        AstProcessorContainer.hookAstByLang(lang)
-        FileContainer.visitSourcesFile {
-            if (filter(it)) {
-                parser.parseAst(it.absolutePath)
-            }
-        }
-    }
-
-    fun parseFiles() {
+    fun parseFiles(filePath: String) {
         AstProcessorContainer.hookAllProcessor()
-        FileContainer.visitSourcesFile {
-            parsers.values.forEach { p ->
-                p.parseAst(it.absolutePath)
-            }
+        parsers.values.forEach { p ->
+            p.parseAst(filePath)
         }
     }
 
-    fun parseFile(filter: (File) -> Boolean) {
-        AstProcessorContainer.hookAllProcessor()
-        FileContainer.visitSourcesFile {
-            parsers.values.forEach { p ->
-                if (filter(it)) {
-                    p.parseAst(it.absolutePath)
-                }
-            }
-        }
+    override fun register(entity: AstParser) {
+        parsers[entity.supportLanguage] = entity
+    }
+
+    override fun getByKey(key: String): AstParser? = parsers[key]
+
+    override fun getKeys(): List<String> = parsers.keys.toList()
+
+    override fun getByType(clazz: KClass<out AstParser>): AstParser {
+        return parsers.entries.first { it.value.javaClass == clazz.java }.value
     }
 }

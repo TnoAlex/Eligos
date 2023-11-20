@@ -37,7 +37,7 @@ object RulerParser {
             rule.forEach { r ->
                 setClassProperty(r.key, r.value, it)
             }
-            RuleContainer.INSTANT.registerRule(it)
+            RuleContainer.register(it)
         }
     }
 }
