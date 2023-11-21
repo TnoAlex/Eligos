@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test
 class CircularReferencesTest : AbstractAnalyzerTest("kotlin") {
     @Test
     fun findCircularReferences() {
+        init()
         createTestContext(
-            "kotlin",
             "E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\circularceferences",
             "out",
             "./",

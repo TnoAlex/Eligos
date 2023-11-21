@@ -8,8 +8,8 @@ class TooManyParametersTest : AbstractAnalyzerTest("kotlin") {
 
     @Test
     fun tesFindTooManyParameters() {
+        init()
         super.createTestContext(
-            "kotlin",
             "E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\toomanyparams",
             "out",
             "./",

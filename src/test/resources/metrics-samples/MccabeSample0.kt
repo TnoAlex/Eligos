@@ -5,6 +5,8 @@ import com.github.tnoalex.foundation.algorithm.DuplicateEdgeStrategy
 import com.github.tnoalex.utils.getParentFunction
 import com.github.tnoalex.utils.id
 import depends.extractor.kotlin.KotlinParser
+import java.util.*
+import kotlin.math.min
 
 fun ccSample0() {
     for (i in 0..10) {
@@ -95,4 +97,59 @@ fun ccSample3(from: T, to: T, info: Any?, strategy: DuplicateEdgeStrategy) {
         }
     }
     action {}
+}
+
+fun solveSCC(): List<List<Int>> {
+    val dfn = IntArray(nodeNum) { -1 }
+    val low = IntArray(nodeNum) { -1 }
+    val visited = IntArray(nodeNum) { -1 }
+    var index = 0
+    val inStack = BooleanArray(nodeNum) { false }
+    val stack = Stack<Int>()
+    var cnt = 0
+
+    fun tarjan(pos: Int) {
+        var v: Int
+        dfn[pos] = ++index
+        low[pos] = dfn[pos]
+        stack.push(pos)
+        inStack[pos] = true
+
+        var edge = nodesArray[pos].firstArc
+        while (edge != null) {
+            v = edge.adjVex
+            if (dfn[v] == -1) {
+                tarjan(v)
+                low[pos] = min(low[pos], low[v])
+            } else if (inStack[v]) {
+                low[pos] = min(low[pos], dfn[v])
+            }
+            edge = edge.nextArc
+        }
+
+        if (dfn[pos] == low[pos]) {
+            cnt++
+            do {
+                v = stack.pop()
+                inStack[v] = false
+                visited[v] = cnt
+            } while (pos != v)
+        }
+    }
+    for (i in 0..<nodeNum) {
+        if (dfn[i] == -1)
+            tarjan(i)
+    }
+
+    val res = java.util.ArrayList<java.util.ArrayList<Int>>(cnt)
+    for (i in 1..cnt) {
+        val scc = java.util.ArrayList<Int>()
+        for (j in 0..<nodeNum) {
+            if (visited[j] == i) {
+                scc.add(j)
+            }
+        }
+        res.add(scc)
+    }
+    return res
 }

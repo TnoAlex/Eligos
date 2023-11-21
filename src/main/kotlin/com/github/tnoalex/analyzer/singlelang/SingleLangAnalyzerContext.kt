@@ -1,55 +1,40 @@
 package com.github.tnoalex.analyzer.singlelang
 
+import com.github.tnoalex.analyzer.AbstractAnalyzerContext
 import com.github.tnoalex.analyzer.AnalysisHierarchyEnum
 import com.github.tnoalex.analyzer.AnalysisHierarchyEnum.*
-import com.github.tnoalex.analyzer.AnalyzerContext
 import com.github.tnoalex.antipatterns.*
 import com.github.tnoalex.formatter.IFormatter
 import com.github.tnoalex.foundation.algorithm.AdjacencyList
-import com.github.tnoalex.foundation.filetools.FileContainer.sourceFilePath
-import depends.LangRegister
 import depends.deptypes.DependencyType
 import depends.entity.repo.EntityRepo
-import depends.extractor.LangProcessorRegistration
 import depends.generator.DependencyGenerator
 import depends.generator.FileDependencyGenerator
 import depends.generator.FunctionDependencyGenerator
 import depends.generator.StructureDependencyGenerator
 import depends.matrix.core.DependencyMatrix
-import depends.relations.BindingResolver
-import depends.relations.IBindingResolver
-import depends.relations.RelationCounter
 import multilang.depends.util.file.path.EmptyFilenameWritter
 import org.slf4j.LoggerFactory
 import java.util.*
 
 open class SingleLangAnalyzerContext(
-    private val language: String,
-    private val formatter: IFormatter
-) : AnalyzerContext {
-    var entityRepo: EntityRepo? = null
-        private set
+    val language: String,
+    val formatter: IFormatter,
+    val entityRepo: EntityRepo
+) : AbstractAnalyzerContext() {
+
     private val dependencyMatrices: EnumMap<AnalysisHierarchyEnum, DependencyMatrix> =
         EnumMap(AnalysisHierarchyEnum::class.java)
     private val antiPatterns: EnumMap<AntiPatternEnum, LinkedHashSet<AntiPatternEntity>> =
         EnumMap(AntiPatternEnum::class.java)
 
     init {
-        LangRegister.register()
         generateDependencyMatrices()
     }
 
     fun getDependencyMatrix(type: AnalysisHierarchyEnum) = dependencyMatrices[type]
 
     private fun generateDependencyMatrices() {
-
-        val langProcessor = LangProcessorRegistration.getRegistry().getProcessorOf(language)
-        val bindingResolver: IBindingResolver =
-            BindingResolver(langProcessor, false, true)
-
-        logger.info("Starting Generate dependency matrices")
-        entityRepo = langProcessor.buildDependencies(sourceFilePath!!.path, arrayOf(), bindingResolver)
-        RelationCounter(entityRepo, langProcessor, bindingResolver).computeRelations()
         val dependencyType = DependencyType.allDependencies()
         AnalysisHierarchyEnum.entries.forEach {
             var dependencyGenerator: DependencyGenerator? = null

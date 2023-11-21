@@ -2,11 +2,13 @@ package com.github.tnoalex
 
 import com.github.tnoalex.cli.CommandParser
 import com.github.tnoalex.utils.StdOutErrWrapper
+import depends.LangRegister
 import java.util.*
 
 
 fun main(args: Array<String>) {
     showBanner()
+    LangRegister.register()
     StdOutErrWrapper.init()
     CommandParser().main(args)
 }

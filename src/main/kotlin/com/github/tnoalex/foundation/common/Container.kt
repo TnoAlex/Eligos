@@ -2,7 +2,7 @@ package com.github.tnoalex.foundation.common
 
 import kotlin.reflect.KClass
 
-interface Container<T : Any> : BaseContainer<T> {
-    override fun getByKey(key: String): T?
-    override fun getByType(clazz: KClass<out T>): T?
+interface Container<K : Any, V : Any> : BaseContainer<K, V> {
+    override fun getByKey(key: K): V?
+    override fun getByType(clazz: KClass<out V>): V?
 }

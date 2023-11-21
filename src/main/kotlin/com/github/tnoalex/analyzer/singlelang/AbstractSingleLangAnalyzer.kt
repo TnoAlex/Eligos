@@ -4,32 +4,45 @@ import com.github.tnoalex.analyzer.AnalysisHierarchyEnum
 import com.github.tnoalex.analyzer.SmellAnalyzer
 import com.github.tnoalex.formatter.FormatterFactory
 import com.github.tnoalex.formatter.FormatterTypeEnum
-import com.github.tnoalex.foundation.common.LanguageSupportInfo
+import com.github.tnoalex.foundation.asttools.AstProcessorContainer
+import com.github.tnoalex.foundation.asttools.listener.AstListenerContainer
+import com.github.tnoalex.foundation.filetools.FileContainer
 import com.github.tnoalex.rules.FunctionRule
 import com.github.tnoalex.rules.RuleContainer
 import com.github.tnoalex.utils.getEntitiesByType
 import com.github.tnoalex.utils.toAdjacencyList
 import depends.deptypes.DependencyType
 import depends.entity.FunctionEntity
+import depends.extractor.LangProcessorRegistration
+import depends.relations.BindingResolver
+import depends.relations.IBindingResolver
+import depends.relations.RelationCounter
 
 
-abstract class SingleLangAbstractSmellAnalyzer : SmellAnalyzer, LanguageSupportInfo {
+abstract class AbstractSingleLangAnalyzer : SmellAnalyzer {
     protected var context: SingleLangAnalyzerContext? = null
-    open fun analyze() {
+    override fun analyze() {
         findUselessImport()
         findCircularReferences()
         findTooManyParameters()
     }
 
-    fun createAnalyticsContext(
-        language: String,
-        formatter: FormatterTypeEnum
-    ) {
+    override fun createAnalyticsContext(formatter: FormatterTypeEnum) {
+        AstProcessorContainer.hookAstByLang(supportLanguage[0])
+        val langProcessor = LangProcessorRegistration.getRegistry().getProcessorOf(supportLanguage[0])
+        langProcessor.addExtraListener(AstListenerContainer.getByKey(supportLanguage[0]))
+        val bindingResolver: IBindingResolver =
+            BindingResolver(langProcessor, false, true)
+        val entityRepo =
+            langProcessor.buildDependencies(FileContainer.sourceFilePath!!.path, arrayOf(), bindingResolver)
+        RelationCounter(entityRepo, langProcessor, bindingResolver).computeRelations()
         context = SingleLangAnalyzerContext(
-            language,
-            FormatterFactory.getFormatter(formatter) ?: throw RuntimeException("Unknown result formatter")
+            supportLanguage[0],
+            FormatterFactory.getFormatter(formatter) ?: throw RuntimeException("Unknown result formatter"),
+            entityRepo
         )
     }
+
 
     fun findUselessImport() {
         val fileDependency = context?.getDependencyMatrix(AnalysisHierarchyEnum.FILE)

@@ -1,6 +1,5 @@
-package com.github.tnoalex.foundation.asttools.kotlin
+package com.github.tnoalex.foundation.asttools.hook
 
-import com.github.tnoalex.foundation.asttools.AbstractAstHook
 import com.github.tnoalex.foundation.asttools.AstProcessor
 import depends.extractor.kotlin.KotlinParser.*
 import org.antlr.v4.runtime.ParserRuleContext

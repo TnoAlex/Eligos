@@ -2,9 +2,9 @@ package com.github.tnoalex.foundation.common
 
 import kotlin.reflect.KClass
 
-interface BaseContainer<T : Any> {
-    fun register(entity: T)
-    fun getByKey(key: String): Any?
-    fun getKeys(): List<String>
-    fun getByType(clazz: KClass<out T>): Any?
+interface BaseContainer<K : Any, V : Any> {
+    fun register(entity: V)
+    fun getByKey(key: K): Any?
+    fun getKeys(): List<K>
+    fun getByType(clazz: KClass<out V>): Any?
 }

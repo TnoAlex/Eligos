@@ -1,14 +1,14 @@
 package com.github.tnoalex.analyzer.singlelang.kotlin
 
-import com.github.tnoalex.analyzer.singlelang.SingleLangAbstractSmellAnalyzer
+import com.github.tnoalex.analyzer.singlelang.AbstractSingleLangAnalyzer
 
 
-class KotlinSmellAnalyzer : SingleLangAbstractSmellAnalyzer() {
-    override val supportLanguage: String
-        get() = "kotlin"
+class KotlinSmellAnalyzer : AbstractSingleLangAnalyzer() {
+    override val supportLanguage: List<String>
+        get() = listOf("kotlin")
 
     override fun analyze() {
-        TODO("Not yet implemented")
+        super.analyze()
     }
 
     fun findLongMethod() {

@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.common.Container
 import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
-object RuleContainer : Container<Rule> {
+object RuleContainer : Container<String, Rule> {
 
     private val rules = HashMap<String, Rule>()
 

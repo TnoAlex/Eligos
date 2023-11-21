@@ -6,32 +6,31 @@ import org.slf4j.LoggerFactory
 import kotlin.reflect.KClass
 
 
-object SingleSmellAnalyzerContainer : Container<SingleLangAbstractSmellAnalyzer> {
-    private val analyzers = HashMap<String, SingleLangAbstractSmellAnalyzer>()
+object SingleSmellAnalyzerContainer : Container<String, AbstractSingleLangAnalyzer> {
     private val logger = LoggerFactory.getLogger(SingleSmellAnalyzerContainer::class.java)
+    private val analyzers = HashMap<String, AbstractSingleLangAnalyzer>()
 
     init {
-        val loader = loadServices(SingleLangAbstractSmellAnalyzer::class.java)
+        val loader = loadServices(AbstractSingleLangAnalyzer::class.java)
         loader.forEach {
             register(it)
             logger.info("Registered analyzer: ${it::class.simpleName}")
         }
     }
 
-    override fun register(entity: SingleLangAbstractSmellAnalyzer) {
-        val lang = entity.supportLanguage.lowercase()
-        if (analyzers.containsKey(lang)) return
-        analyzers[lang] = entity
+    override fun register(entity: AbstractSingleLangAnalyzer) {
+        val lang = entity.supportLanguage
+        lang.forEach {
+            if (analyzers.containsKey(it)) return@forEach
+            analyzers[it] = entity
+        }
     }
 
-    override fun getByKey(key: String): SingleLangAbstractSmellAnalyzer? = analyzers[key.lowercase()]
-
-    fun getAllSupportedLanguages() = analyzers.keys.toList()
-
+    override fun getByKey(key: String) = analyzers[key.lowercase()]
 
     override fun getKeys(): List<String> = analyzers.keys.toList()
 
-    override fun getByType(clazz: KClass<out SingleLangAbstractSmellAnalyzer>): SingleLangAbstractSmellAnalyzer {
+    override fun getByType(clazz: KClass<out AbstractSingleLangAnalyzer>): AbstractSingleLangAnalyzer {
         return analyzers.entries.first { it.value.javaClass == clazz.java }.value
     }
 }

@@ -1,9 +1,13 @@
-package com.github.tnoalex.foundation.asttools.kotlin
+package com.github.tnoalex.foundation.asttools.listener
 
+import com.github.tnoalex.foundation.asttools.hook.KotlinAstHook
 import depends.extractor.kotlin.KotlinParser
 import depends.extractor.kotlin.KotlinParserBaseListener
 
-class KotlinAstListener : KotlinParserBaseListener() {
+class KotlinAstListener : AstListener, KotlinParserBaseListener() {
+    override val supportLanguage: List<String>
+        get() = listOf("kotlin")
+
     override fun enterFunctionDeclaration(ctx: KotlinParser.FunctionDeclarationContext) {
         KotlinAstHook.getHook(this::enterFunctionDeclaration.name).forEach {
             it(ctx)

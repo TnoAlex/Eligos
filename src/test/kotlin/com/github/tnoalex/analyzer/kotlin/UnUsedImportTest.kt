@@ -8,8 +8,8 @@ class UnUsedImportTest : AbstractAnalyzerTest("kotlin") {
 
     @Test
     fun testUnUsedImport() {
+        init()
         super.createTestContext(
-            "kotlin",
             "E:\\code\\Depends-smell\\src\\test\\resources\\kotlin-code-samples\\unusedimport",
             "out",
             "./",

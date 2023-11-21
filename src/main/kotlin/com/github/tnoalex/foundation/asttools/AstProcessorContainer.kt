@@ -2,11 +2,13 @@ package com.github.tnoalex.foundation.asttools
 
 import com.github.tnoalex.foundation.common.CollectionContainer
 import com.github.tnoalex.utils.loadServices
+import org.slf4j.LoggerFactory
 import java.util.*
 import kotlin.reflect.KClass
 
-object AstProcessorContainer : CollectionContainer<AstProcessor> {
+object AstProcessorContainer : CollectionContainer<String, AstProcessor> {
     private val processors = HashMap<String, LinkedList<AstProcessor>>()
+    private val logger = LoggerFactory.getLogger(AstProcessorContainer::class.java)
 
     init {
         loadServices(AstProcessor::class.java).forEach {
@@ -16,11 +18,14 @@ object AstProcessorContainer : CollectionContainer<AstProcessor> {
     }
 
     override fun register(entity: AstProcessor) {
-        if (processors[entity.supportLanguage] == null) {
-            processors[entity.supportLanguage] = LinkedList(listOf(entity))
-        } else {
-            processors[entity.supportLanguage]!!.add(entity)
+        entity.supportLanguage.forEach {
+            if (processors[it] == null) {
+                processors[it] = LinkedList(listOf(entity))
+            } else {
+                processors[it]!!.add(entity)
+            }
         }
+
     }
 
     override fun getByKey(key: String): LinkedList<AstProcessor>? = processors[key]
@@ -39,13 +44,11 @@ object AstProcessorContainer : CollectionContainer<AstProcessor> {
         return null
     }
 
-    fun getProcessByLang(lang: String): LinkedList<AstProcessor>? {
-        return processors[lang]
-    }
 
     fun hookAstByLang(lang: String) {
         processors[lang]?.forEach {
             it.hookAst()
+            logger.info("Hooked ${it::class.simpleName}")
         }
     }
 

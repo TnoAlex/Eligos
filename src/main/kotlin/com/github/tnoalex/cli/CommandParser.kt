@@ -8,6 +8,8 @@ import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
+import com.github.tnoalex.analyzer.SmellAnalyzer
+import com.github.tnoalex.analyzer.crosslang.CrossLangSmellAnalyzerContainer
 import com.github.tnoalex.analyzer.singlelang.SingleSmellAnalyzerContainer
 import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.filetools.FileContainer
@@ -20,7 +22,7 @@ class CommandParser : CliktCommand() {
     private val lang: String by argument(
         name = "lang",
         help = "The language of project files"
-    ).choice(*SingleSmellAnalyzerContainer.getAllSupportedLanguages().toTypedArray(), ignoreCase = true)
+    ).choice(*SingleSmellAnalyzerContainer.getKeys().toTypedArray(), ignoreCase = true)
 
     private val srcPath by argument(name = "srcPath", help = "The source path").path(
         mustExist = true,
@@ -28,6 +30,8 @@ class CommandParser : CliktCommand() {
         canBeFile = true,
         mustBeReadable = true
     )
+
+    private val crossLang by option("--with", help = "The Languages of cross-analysis")
 
     private val outputPrefix by option("-p", "--prefix", help = "The result file name prefix")
 
@@ -50,15 +54,26 @@ class CommandParser : CliktCommand() {
     )
 
     override fun run() {
-        val analyzer = SingleSmellAnalyzerContainer.getByKey(lang)
+        val analyzer: SmellAnalyzer? = if (crossLang == null) {
+            SingleSmellAnalyzerContainer.getByKey(lang)
+        } else {
+            CrossLangSmellAnalyzerContainer.getByKey(setOf(lang, crossLang!!))
+        }
+
         if (analyzer == null) {
-            logger.error("Not support language:${lang}")
-            logger.error("Supported languages are:${SingleSmellAnalyzerContainer.getAllSupportedLanguages()}")
+            if (crossLang == null) {
+                logger.error("Not support language:${lang}")
+                logger.error("Supported languages are:${SingleSmellAnalyzerContainer.getKeys()}")
+            } else {
+                logger.error("Not support cross language:${lang}-${crossLang}")
+                logger.error("Supported languages are:${CrossLangSmellAnalyzerContainer.getKeys()}")
+            }
             exitProcess(-1)
         }
         FileContainer.initFileContainer(srcPath.toFile(), outPath?.toFile(), outputPrefix)
         RulerParser.parserRules(extendRules)
-        analyzer.createAnalyticsContext(lang, outFormat)
+        analyzer.createAnalyticsContext(outFormat)
+        analyzer.analyze()
     }
 
     companion object {

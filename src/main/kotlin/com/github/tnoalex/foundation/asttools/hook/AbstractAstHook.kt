@@ -1,5 +1,6 @@
-package com.github.tnoalex.foundation.asttools
+package com.github.tnoalex.foundation.asttools.hook
 
+import com.github.tnoalex.foundation.asttools.AstProcessor
 import org.antlr.v4.runtime.ParserRuleContext
 import java.util.*
 
