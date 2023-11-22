@@ -4,8 +4,8 @@ import com.github.tnoalex.analyzer.AnalysisHierarchyEnum
 import com.github.tnoalex.analyzer.SmellAnalyzer
 import com.github.tnoalex.formatter.FormatterFactory
 import com.github.tnoalex.formatter.FormatterTypeEnum
-import com.github.tnoalex.foundation.asttools.AstProcessorContainer
 import com.github.tnoalex.foundation.asttools.listener.AstListenerContainer
+import com.github.tnoalex.foundation.asttools.processor.AstProcessorContainer
 import com.github.tnoalex.foundation.filetools.FileContainer
 import com.github.tnoalex.rules.FunctionRule
 import com.github.tnoalex.rules.RuleContainer
@@ -41,6 +41,8 @@ abstract class AbstractSingleLangAnalyzer : SmellAnalyzer {
             FormatterFactory.getFormatter(formatter) ?: throw RuntimeException("Unknown result formatter"),
             entityRepo
         )
+        AstProcessorContainer.removeHooksByLang(supportLanguage[0])
+        langProcessor.removeExtraListener(AstListenerContainer.getByKey(supportLanguage[0]))
     }
 
 

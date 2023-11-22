@@ -1,7 +1,7 @@
 package com.github.tnoalex.analyzer
 
 import com.github.tnoalex.analyzer.singlelang.AbstractSingleLangAnalyzer
-import com.github.tnoalex.analyzer.singlelang.SingleSmellAnalyzerContainer
+import com.github.tnoalex.analyzer.singlelang.kotlin.KotlinSmellAnalyzer
 import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.filetools.FileContainer
 import com.github.tnoalex.rules.RulerParser
@@ -17,7 +17,7 @@ abstract class AbstractAnalyzerTest(private val lang: String) {
         StdOutErrWrapper.init()
         RulerParser.parserRules(null)
         LangRegister.register()
-        analyzer = SingleSmellAnalyzerContainer.getByKey(lang)
+        analyzer = KotlinSmellAnalyzer()
     }
 
     fun createTestContext(

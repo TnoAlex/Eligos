@@ -1,6 +1,6 @@
-package com.github.tnoalex.foundation.metrics
+package com.github.tnoalex.foundation.asttools.processor.metrics
 
-import com.github.tnoalex.foundation.asttools.AstProcessor
+import com.github.tnoalex.foundation.asttools.processor.AstProcessor
 
 abstract class MccabeComplexityProcessor : AstProcessor {
     private val functionMap = HashMap<String, ArrayList<Int>>()

@@ -1,4 +1,4 @@
-package com.github.tnoalex.foundation.asttools
+package com.github.tnoalex.foundation.asttools.processor
 
 import com.github.tnoalex.foundation.common.CollectionContainer
 import com.github.tnoalex.utils.loadServices
@@ -28,7 +28,7 @@ object AstProcessorContainer : CollectionContainer<String, AstProcessor> {
 
     }
 
-    override fun getByKey(key: String): LinkedList<AstProcessor>? = processors[key]
+    override fun getByKey(key: String): List<AstProcessor>? = processors[key]?.sortedByDescending { it.order }
 
     override fun getKeys(): List<String> = processors.keys.toList()
 
@@ -46,17 +46,21 @@ object AstProcessorContainer : CollectionContainer<String, AstProcessor> {
 
 
     fun hookAstByLang(lang: String) {
-        processors[lang]?.forEach {
-            it.hookAst()
-            logger.info("Hooked ${it::class.simpleName}")
+        processors[lang]?.run {
+            sortedByDescending { it.order }
+            forEach {
+                it.hookAst()
+                logger.info("Hooked ${it::class.simpleName}")
+            }
         }
     }
 
     fun hookAllProcessor() {
         processors.values.forEach {
-            it.forEach { p ->
-                p.hookAst()
-            }
+            it.sortedByDescending { p -> p.order }
+                .forEach { p ->
+                    p.hookAst()
+                }
         }
     }
 
