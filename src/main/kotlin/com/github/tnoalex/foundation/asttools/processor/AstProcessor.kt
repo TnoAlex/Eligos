@@ -6,6 +6,6 @@ interface AstProcessor : LanguageSupportInfo {
     val order: Int
         get() = 0
 
-    fun hookAst()
-    fun removeHooks()
+    fun registerListener()
+    fun unregisterListener()
 }

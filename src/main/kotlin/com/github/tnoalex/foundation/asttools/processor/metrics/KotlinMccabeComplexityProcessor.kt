@@ -1,6 +1,7 @@
 package com.github.tnoalex.foundation.asttools.processor.metrics
 
-import com.github.tnoalex.foundation.asttools.hook.KotlinAstHook
+import com.github.tnoalex.foundation.eventbus.EventBus
+import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.utils.*
 import depends.extractor.kotlin.KotlinParser.*
 
@@ -8,37 +9,25 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 
-    override fun hookAst() {
-        KotlinAstHook.hookEnterFunctionDeclaration({ processFunctionDeclaration(it) }, this)
-        KotlinAstHook.hookEnterElvisExpression({ processElvisExpression(it) }, this)
-        KotlinAstHook.hookEnterWhenExpression({ processWhenExpression(it) }, this)
-        KotlinAstHook.hookEnterIfExpression({ processIfExpression(it) }, this)
-        KotlinAstHook.hookEnterForStatement({ processForStatement(it) }, this)
-        KotlinAstHook.hookEnterDoWhileStatement({ processDoWhileStatement(it) }, this)
-        KotlinAstHook.hookEnterWhileStatement({ processWhileStatement(it) }, this)
-        KotlinAstHook.hookEnterJumpExpression({ processJumpExpression(it) }, this)
-        KotlinAstHook.hookEnterTryExpression({ processTryExpression(it) }, this)
-        KotlinAstHook.hookEnterAssignment({ processAssignment(it) }, this)
-        KotlinAstHook.hookEnterPropertyDeclaration({ processPropertyDeclaration(it) }, this)
-        KotlinAstHook.hookEnterExpression({ processExpression(it) }, this)
-        KotlinAstHook.hookExitFunctionBody({ processExitFunction(it) }, this)
+    override fun registerListener() {
+        EventBus.register(this)
     }
 
-    override fun removeHooks() {
-        KotlinAstHook.removeHook(this)
+    override fun unregisterListener() {
+        EventBus.unregister(this)
     }
 
+    @EventListener
     private fun processFunctionDeclaration(ctx: FunctionDeclarationContext) {
         val parentFunc = getParentFunction(ctx) // determine whether it is a closure function
         val id = ctx.id()
         addFunction(id)
-        addArc(id)
-        addNode(id)
         if (parentFunc != null) {
             recordClosurePair(parentFunc.id(), id)
         }
     }
 
+    @EventListener
     private fun processExitFunction(ctx: FunctionBodyContext) {
         val parentFunc = getParentFunction(ctx)
             ?: throw RuntimeException("Unintended structures, which should not be function exports here")
@@ -46,6 +35,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addTerminatedNode(id)
     }
 
+    @EventListener
     private fun processElvisExpression(ctx: ElvisExpressionContext) {
         if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx) ?: return // top level property definition or assignment
@@ -54,6 +44,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addArc(id, 2)
     }
 
+    @EventListener
     private fun processAssignment(ctx: AssignmentContext) {
         if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx) ?: return //top level
@@ -62,6 +53,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addNode(id)
     }
 
+    @EventListener
     private fun processPropertyDeclaration(ctx: PropertyDeclarationContext) {
         if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx) ?: return
@@ -70,6 +62,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addNode(id)
     }
 
+    @EventListener
     private fun processExpression(ctx: ExpressionContext) {
         val parentFunc = getParentFunction(ctx) ?: return
         if (ctx.children.size == 1) return
@@ -82,6 +75,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addNode(id)
     }
 
+    @EventListener
     private fun processWhenExpression(ctx: WhenExpressionContext) {
         if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx)
@@ -93,6 +87,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addNode(id, entrySize)
     }
 
+    @EventListener
     private fun processIfExpression(ctx: IfExpressionContext) {
         if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx) ?: return
@@ -101,6 +96,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addArc(id, 2)
     }
 
+    @EventListener
     private fun processForStatement(ctx: ForStatementContext) {
         val parentFunc = getParentFunction(ctx)
             ?: throw RuntimeException("Syntax error, for statements are not allowed to appear at the top level")
@@ -109,6 +105,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addArc(id, 2)
     }
 
+    @EventListener
     private fun processDoWhileStatement(ctx: DoWhileStatementContext) {
         val parentFunc = getParentFunction(ctx)
             ?: throw RuntimeException("Syntax error, do-while statements are not allowed to appear at the top level")
@@ -117,6 +114,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addArc(id, 2)
     }
 
+    @EventListener
     private fun processWhileStatement(ctx: WhileStatementContext) {
         val parentFunc = getParentFunction(ctx)
             ?: throw RuntimeException("Syntax error, while statements are not allowed to appear at the top level")
@@ -125,6 +123,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addArc(id, 2)
     }
 
+    @EventListener
     private fun processJumpExpression(ctx: JumpExpressionContext) {
         if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx)
@@ -142,6 +141,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         }
     }
 
+    @EventListener
     private fun processTryExpression(ctx: TryExpressionContext) {
         if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx)

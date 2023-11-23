@@ -7,28 +7,22 @@ abstract class MccabeComplexityProcessor : AstProcessor {
     private val closureFunctionMap = HashMap<String, ArrayList<String>>()
 
     private val terminatedMap = HashSet<String>()
-    abstract override fun hookAst()
+
     fun getMccabeComplex(): Map<String, Int> {
-        return margeFunction().map {
-            it.key to it.value[ARC_INDEX] - it.value[NODE_INDEX] + 2
-        }.toMap()
+        return margeFunction(functionMap.map { it.key to it.value[ARC_INDEX] - it.value[NODE_INDEX] + 2 }.toMap())
     }
 
-    private fun margeFunction(): Map<String, ArrayList<Int>> {
-        val res = HashMap<String, ArrayList<Int>>()
+    private fun margeFunction(functionMap: Map<String, Int>): HashMap<String, Int> {
+        val res = HashMap<String, Int>()
         functionMap.forEach { (k, v) ->
             if (hasParentFunction(k)) {
                 return@forEach // Closure functions don't need to be split
             }
-            var nodes = v[NODE_INDEX]
-            var arcs = v[ARC_INDEX]
+            var complexity = v
             getClosureFunctions(k).forEach {
-                nodes += functionMap[it]!![NODE_INDEX]
-                arcs += functionMap[it]!![ARC_INDEX]
+                complexity += functionMap[it]!!
             }
-            if (nodes != 0 && arcs != 0) {
-                res[k] = arrayListOf(nodes, arcs)
-            }
+            res[k] = complexity
         }
         return res
     }
@@ -70,7 +64,7 @@ abstract class MccabeComplexityProcessor : AstProcessor {
 
     protected fun addFunction(functionId: String) {
         if (functionMap[functionId] == null) {
-            functionMap[functionId] = arrayListOf(0, 0)
+            functionMap[functionId] = arrayListOf(1, 1)
         }
     }
 

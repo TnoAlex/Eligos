@@ -25,7 +25,7 @@ class KotlinMccabeComplexityProcessorTest : AbstractAnalyzerTest("kotlin") {
         assertEquals(cc["ccSample0@0"], 3)
         assertEquals(cc["ccSample1@2"], 9)
         assertEquals(cc["ccSample2@1"], 4)
-        assertEquals(cc["ccSample3@4"], 5)
-        assertEquals(cc["solveSCC@0"], 10)
+        assertEquals(cc["ccSample3@4"], 8)
+        assertEquals(cc["solveSCC@0"], 18)
     }
 }

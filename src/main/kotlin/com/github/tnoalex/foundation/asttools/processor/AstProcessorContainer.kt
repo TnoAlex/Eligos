@@ -12,7 +12,6 @@ object AstProcessorContainer : CollectionContainer<String, AstProcessor> {
 
     init {
         loadServices(AstProcessor::class.java).forEach {
-            it.hookAst()
             register(it)
         }
     }
@@ -45,35 +44,35 @@ object AstProcessorContainer : CollectionContainer<String, AstProcessor> {
     }
 
 
-    fun hookAstByLang(lang: String) {
+    fun registerAstByLang(lang: String) {
         processors[lang]?.run {
             sortedByDescending { it.order }
             forEach {
-                it.hookAst()
+                it.registerListener()
                 logger.info("Hooked ${it::class.simpleName}")
             }
         }
     }
 
-    fun hookAllProcessor() {
+    fun registerAllProcessor() {
         processors.values.forEach {
             it.sortedByDescending { p -> p.order }
                 .forEach { p ->
-                    p.hookAst()
+                    p.registerListener()
                 }
         }
     }
 
-    fun removeHooksByLang(lang: String) {
+    fun unregistersByLang(lang: String) {
         processors[lang]?.forEach {
-            it.removeHooks()
+            it.unregisterListener()
         }
     }
 
-    fun removeAllHooks() {
+    fun unregisterAllProcessor() {
         processors.values.forEach {
             it.forEach { p ->
-                p.removeHooks()
+                p.unregisterListener()
             }
         }
     }

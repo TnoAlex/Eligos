@@ -23,7 +23,7 @@ object EventBus {
     fun post(event: Any) {
         val methods = listenerMap[event::class] ?: return
         methods.forEach {
-            invokeMethod(it.listener::class, it.method, arrayOf(event))
+            invokeMethod(it.listener, it.method, arrayOf(event))
         }
     }
 
@@ -46,8 +46,8 @@ object EventBus {
 
     private fun getListenerMethod(listener: Any): List<ListenerMethod> {
         return getMethodsAnnotatedWith(EventListener::class, listener::class)
-            .filter { it.parameters.size == 1 }
-            .map { ListenerMethod(listener, it, it.parameters[0].type.classifier as KClass<*>) }
+            .filter { it.parameters.size == 2 }
+            .map { ListenerMethod(listener, it, it.parameters[1].type.classifier as KClass<*>) }
     }
 
     private fun subscribe(listener: Any, listenerMethod: ListenerMethod) {

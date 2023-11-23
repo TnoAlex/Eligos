@@ -4,11 +4,11 @@ class BaseInfoProcessor : AstProcessor {
     override val order: Int
         get() = Int.MAX_VALUE
 
-    override fun hookAst() {
+    override fun registerListener() {
         TODO("Not yet implemented")
     }
 
-    override fun removeHooks() {
+    override fun unregisterListener() {
         TODO("Not yet implemented")
     }
 

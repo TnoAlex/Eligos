@@ -25,7 +25,7 @@ fun getMethodsAnnotatedWith(annotationKClass: KClass<out Annotation>, targetClas
     return targetClass.functions.filter { it.annotations.find { a -> a.annotationClass == annotationKClass } != null }
 }
 
-fun invokeMethod(clazz: KClass<*>, method: KFunction<*>, params: Array<Any>) {
+fun invokeMethod(clazz: Any, method: KFunction<*>, params: Array<Any>) {
     method.isAccessible = true
     method.call(clazz, *params)
 }

@@ -28,7 +28,7 @@ abstract class AbstractSingleLangAnalyzer : SmellAnalyzer {
     }
 
     override fun createAnalyticsContext(formatter: FormatterTypeEnum) {
-        AstProcessorContainer.hookAstByLang(supportLanguage[0])
+        AstProcessorContainer.registerAstByLang(supportLanguage[0])
         val langProcessor = LangProcessorRegistration.getRegistry().getProcessorOf(supportLanguage[0])
         langProcessor.addExtraListener(AstListenerContainer.getByKey(supportLanguage[0]))
         val bindingResolver: IBindingResolver =
@@ -41,7 +41,7 @@ abstract class AbstractSingleLangAnalyzer : SmellAnalyzer {
             FormatterFactory.getFormatter(formatter) ?: throw RuntimeException("Unknown result formatter"),
             entityRepo
         )
-        AstProcessorContainer.removeHooksByLang(supportLanguage[0])
+        AstProcessorContainer.unregistersByLang(supportLanguage[0])
         langProcessor.removeExtraListener(AstListenerContainer.getByKey(supportLanguage[0]))
     }
 
