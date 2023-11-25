@@ -25,7 +25,21 @@ fun getMethodsAnnotatedWith(annotationKClass: KClass<out Annotation>, targetClas
     return targetClass.functions.filter { it.annotations.find { a -> a.annotationClass == annotationKClass } != null }
 }
 
+fun getMutablePropertiesAnnotateWith(
+    annotationClass: KClass<out Annotation>,
+    targetClass: KClass<*>
+): List<KMutableProperty<*>> {
+    return targetClass.memberProperties.filter { it is KMutableProperty<*> }
+        .map { it as KMutableProperty<*> }
+        .filter { it.setter.annotations.find { a -> a.annotationClass == annotationClass } != null }
+}
+
 fun invokeMethod(clazz: Any, method: KFunction<*>, params: Array<Any>) {
     method.isAccessible = true
     method.call(clazz, *params)
+}
+
+fun invokePropertySetter(clazz: Any, property: KMutableProperty<*>, params: Array<Any>) {
+    property.isAccessible = true
+    property.setter.call(clazz, *params)
 }

@@ -3,7 +3,7 @@ package com.github.tnoalex.foundation.metrics
 import com.github.tnoalex.analyzer.AbstractAnalyzerTest
 import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.asttools.processor.AstProcessorContainer
-import com.github.tnoalex.foundation.asttools.processor.metrics.KotlinMccabeComplexityProcessor
+import com.github.tnoalex.foundation.asttools.processor.kotlin.KotlinMccabeComplexityProcessor
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

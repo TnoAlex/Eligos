@@ -1,7 +1,9 @@
 package com.github.tnoalex.foundation.eventbus
 
 import com.github.tnoalex.utils.getMethodsAnnotatedWith
+import com.github.tnoalex.utils.getMutablePropertiesAnnotateWith
 import com.github.tnoalex.utils.invokeMethod
+import com.github.tnoalex.utils.invokePropertySetter
 import java.util.*
 import kotlin.reflect.KClass
 
@@ -14,16 +16,32 @@ object EventBus {
     private val listenerMap = HashMap<KClass<*>, LinkedList<ListenerMethod>>()
     private val eventMap = HashMap<Any, LinkedList<KClass<*>>>()
 
+
     fun register(listener: Any) {
         getListenerMethod(listener).forEach {
             subscribe(listener, it)
         }
     }
 
-    fun post(event: Any) {
+    /**
+     * Publishes an event to the listeners.
+     *
+     * @param event
+     * @param targets The event object, which can be of any type.
+     * @param targets The list of target listener types.
+     * It is used to specify specific recipients when the event object is a Kotlin built-in type, such as String.
+     */
+    fun post(event: Any, targets: List<KClass<*>>? = null) {
         val methods = listenerMap[event::class] ?: return
-        methods.forEach {
-            invokeMethod(it.listener, it.method, arrayOf(event))
+        val filteredMethods = methods.filter { targets == null || targets.contains(it.listener::class) }
+        filteredMethods.forEach { postEvent(it, event) }
+    }
+
+    private fun postEvent(wrapper: ListenerMethod, event: Any) {
+        if (wrapper.method != null) {
+            invokeMethod(wrapper.listener, wrapper.method, arrayOf(event))
+        } else {
+            wrapper.property?.let { invokePropertySetter(wrapper.listener, it, arrayOf(event)) }
         }
     }
 
@@ -45,9 +63,25 @@ object EventBus {
     }
 
     private fun getListenerMethod(listener: Any): List<ListenerMethod> {
-        return getMethodsAnnotatedWith(EventListener::class, listener::class)
+        val methodList = getMethodsAnnotatedWith(EventListener::class, listener::class)
             .filter { it.parameters.size == 2 }
-            .map { ListenerMethod(listener, it, it.parameters[1].type.classifier as KClass<*>) }
+            .map {
+                ListenerMethod(
+                    listener,
+                    it,
+                    null,
+                    it.parameters[1].type.classifier as KClass<*>
+                )
+            }
+        val propertyList = getMutablePropertiesAnnotateWith(EventListener::class, listener::class).map {
+            ListenerMethod(
+                listener,
+                null,
+                it,
+                it.setter.parameters[1].type.classifier as KClass<*>
+            )
+        }
+        return methodList + propertyList
     }
 
     private fun subscribe(listener: Any, listenerMethod: ListenerMethod) {

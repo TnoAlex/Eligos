@@ -7,6 +7,7 @@ import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.asttools.listener.AstListenerContainer
 import com.github.tnoalex.foundation.asttools.processor.AstProcessorContainer
 import com.github.tnoalex.foundation.filetools.FileContainer
+import com.github.tnoalex.foundation.filetools.FileListener
 import com.github.tnoalex.rules.FunctionRule
 import com.github.tnoalex.rules.RuleContainer
 import com.github.tnoalex.utils.getEntitiesByType
@@ -30,6 +31,7 @@ abstract class AbstractSingleLangAnalyzer : SmellAnalyzer {
     override fun createAnalyticsContext(formatter: FormatterTypeEnum) {
         AstProcessorContainer.registerAstByLang(supportLanguage[0])
         val langProcessor = LangProcessorRegistration.getRegistry().getProcessorOf(supportLanguage[0])
+        langProcessor.addExtraListener(FileListener)
         langProcessor.addExtraListener(AstListenerContainer.getByKey(supportLanguage[0]))
         val bindingResolver: IBindingResolver =
             BindingResolver(langProcessor, false, true)
@@ -42,6 +44,7 @@ abstract class AbstractSingleLangAnalyzer : SmellAnalyzer {
             entityRepo
         )
         AstProcessorContainer.unregistersByLang(supportLanguage[0])
+        langProcessor.removeExtraListener(FileListener)
         langProcessor.removeExtraListener(AstListenerContainer.getByKey(supportLanguage[0]))
     }
 

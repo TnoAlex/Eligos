@@ -8,6 +8,16 @@ class KotlinAstListener : AstListener, KotlinParserBaseListener() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 
+    override fun enterKotlinFile(ctx: KotlinParser.KotlinFileContext) {
+        EventBus.post(ctx)
+        super.enterKotlinFile(ctx)
+    }
+
+    override fun exitKotlinFile(ctx: KotlinParser.KotlinFileContext) {
+        EventBus.post(ctx)
+        super.exitKotlinFile(ctx)
+    }
+
     override fun enterFunctionDeclaration(ctx: KotlinParser.FunctionDeclarationContext) {
         EventBus.post(ctx)
         super.enterFunctionDeclaration(ctx)

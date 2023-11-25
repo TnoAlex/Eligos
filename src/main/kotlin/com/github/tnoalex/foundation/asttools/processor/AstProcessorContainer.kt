@@ -45,7 +45,8 @@ object AstProcessorContainer : CollectionContainer<String, AstProcessor> {
 
 
     fun registerAstByLang(lang: String) {
-        processors[lang]?.run {
+        val processors = listOf(processors[lang] ?: LinkedList(), processors["any"] ?: LinkedList()).flatten()
+        processors.run {
             sortedByDescending { it.order }
             forEach {
                 it.registerListener()
