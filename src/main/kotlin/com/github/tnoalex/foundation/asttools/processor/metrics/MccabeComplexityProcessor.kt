@@ -10,6 +10,7 @@ abstract class MccabeComplexityProcessor : AstProcessor {
 
     fun getMccabeComplex(): Map<String, Int> {
         return margeFunction(functionMap.map { it.key to it.value[ARC_INDEX] - it.value[NODE_INDEX] + 2 }.toMap())
+            .map { it.key.split(":")[0] to it.value }.toMap()
     }
 
     private fun margeFunction(functionMap: Map<String, Int>): HashMap<String, Int> {

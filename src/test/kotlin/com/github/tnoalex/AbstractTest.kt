@@ -1,4 +1,4 @@
-package com.github.tnoalex.analyzer
+package com.github.tnoalex
 
 import com.github.tnoalex.analyzer.singlelang.AbstractSingleLangAnalyzer
 import com.github.tnoalex.analyzer.singlelang.kotlin.KotlinSmellAnalyzer
@@ -9,9 +9,8 @@ import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
 import java.io.File
 
-abstract class AbstractAnalyzerTest(private val lang: String) {
+abstract class AbstractTest(private val lang: String) {
     var analyzer: AbstractSingleLangAnalyzer? = null
-
 
     fun init() {
         StdOutErrWrapper.init()

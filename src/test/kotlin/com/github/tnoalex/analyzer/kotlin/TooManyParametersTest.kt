@@ -1,10 +1,10 @@
 package com.github.tnoalex.analyzer.kotlin
 
-import com.github.tnoalex.analyzer.AbstractAnalyzerTest
+import com.github.tnoalex.AbstractTest
 import com.github.tnoalex.formatter.FormatterTypeEnum
 import org.junit.jupiter.api.Test
 
-class TooManyParametersTest : AbstractAnalyzerTest("kotlin") {
+class TooManyParametersTest : AbstractTest("kotlin") {
 
     @Test
     fun tesFindTooManyParameters() {

@@ -34,7 +34,7 @@ object EventBus {
     fun post(event: Any, targets: List<KClass<*>>? = null) {
         val methods = listenerMap[event::class] ?: return
         val filteredMethods = methods.filter { targets == null || targets.contains(it.listener::class) }
-        filteredMethods.forEach { postEvent(it, event) }
+        filteredMethods.sortedByDescending { it.order }.forEach { postEvent(it, event) }
     }
 
     private fun postEvent(wrapper: ListenerMethod, event: Any) {
@@ -70,7 +70,8 @@ object EventBus {
                     listener,
                     it,
                     null,
-                    it.parameters[1].type.classifier as KClass<*>
+                    it.parameters[1].type.classifier as KClass<*>,
+                    (it.annotations.first { a -> a.annotationClass == EventListener::class } as EventListener).order
                 )
             }
         val propertyList = getMutablePropertiesAnnotateWith(EventListener::class, listener::class).map {
@@ -78,7 +79,8 @@ object EventBus {
                 listener,
                 null,
                 it,
-                it.setter.parameters[1].type.classifier as KClass<*>
+                it.setter.parameters[1].type.classifier as KClass<*>,
+                (it.annotations.first { a -> a.annotationClass == EventListener::class } as EventListener).order
             )
         }
         return methodList + propertyList

@@ -153,3 +153,32 @@ fun solveSCC(): List<List<Int>> {
     }
     return res
 }
+
+fun tarjan(pos: Int) {
+    var v: Int
+    dfn[pos] = ++index
+    low[pos] = dfn[pos]
+    stack.push(pos)
+    inStack[pos] = true
+
+    var edge = nodesArray[pos].firstArc
+    while (edge != null) {
+        v = edge.adjVex
+        if (dfn[v] == -1) {
+            tarjan(v)
+            low[pos] = min(low[pos], low[v])
+        } else if (inStack[v]) {
+            low[pos] = min(low[pos], dfn[v])
+        }
+        edge = edge.nextArc
+    }
+
+    if (dfn[pos] == low[pos]) {
+        cnt++
+        do {
+            v = stack.pop()
+            inStack[v] = false
+            visited[v] = cnt
+        } while (pos != v)
+    }
+}

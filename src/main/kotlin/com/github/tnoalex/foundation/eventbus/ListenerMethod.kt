@@ -8,5 +8,6 @@ data class ListenerMethod(
     val listener: Any,
     val method: KFunction<*>?,
     val property: KMutableProperty<*>?,
-    val eventType: KClass<*>
+    val eventType: KClass<*>,
+    val order: Int
 )

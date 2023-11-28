@@ -4,7 +4,7 @@ import depends.extractor.kotlin.KotlinParser.*
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.RuleContext
 
-fun getParentFunction(ctx: RuleContext): FunctionDeclarationContext? {
+fun getParentFunction(ctx: ParserRuleContext): FunctionDeclarationContext? {
     var parent = ctx.parent
     while (parent != null) {
         if (parent is FunctionDeclarationContext) {
@@ -15,6 +15,19 @@ fun getParentFunction(ctx: RuleContext): FunctionDeclarationContext? {
     return null
 }
 
+fun getDirectParentContainer(ctx: ParserRuleContext): RuleContext? {
+    var parent = ctx.parent
+    while (parent != null) {
+        if (parent is FunctionDeclarationContext ||
+            parent is ClassDeclarationContext ||
+            parent is ObjectDeclarationContext
+        ) {
+            return parent
+        }
+        parent = parent.parent
+    }
+    return null
+}
 
 fun getCurrentClass(ctx: ParserRuleContext): ClassDeclarationContext? {
     var parent = ctx.parent
@@ -55,7 +68,22 @@ fun FunctionDeclarationContext.paramsNum(): Int {
 }
 
 fun FunctionDeclarationContext.id(): String {
-    return simpleIdentifier().text + "@" + paramsNum()
+    return "${simpleIdentifier().text}@${paramsNum()}:${start.line}-${stop.line}"
+}
+
+fun FunctionDeclarationContext.isTopLevel(): Boolean {
+    return parent.parent is TopLevelObjectContext
+}
+
+fun FunctionDeclarationContext.isClosures(): Boolean {
+    var parent = parent
+    while (parent != null && parent !is KotlinFileContext) {
+        if (parent is FunctionDeclarationContext) {
+            return true
+        }
+        parent = parent.parent
+    }
+    return false
 }
 
 fun ExpressionContext.ifExpression(): IfExpressionContext? {
@@ -98,3 +126,6 @@ fun ExpressionContext.elvisExpression(): ElvisExpressionContext? {
     }
     return null
 }
+
+
+

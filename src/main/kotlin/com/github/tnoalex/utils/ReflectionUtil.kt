@@ -31,15 +31,25 @@ fun getMutablePropertiesAnnotateWith(
 ): List<KMutableProperty<*>> {
     return targetClass.memberProperties.filter { it is KMutableProperty<*> }
         .map { it as KMutableProperty<*> }
-        .filter { it.setter.annotations.find { a -> a.annotationClass == annotationClass } != null }
+        .filter { it.annotations.find { a -> a.annotationClass == annotationClass } != null }
 }
 
 fun invokeMethod(clazz: Any, method: KFunction<*>, params: Array<Any>) {
     method.isAccessible = true
-    method.call(clazz, *params)
+    try {
+        method.call(clazz, *params)
+    } catch (e: Exception) {
+        throw RuntimeException("Can not invoke ${method.name}")
+    }
+
 }
 
 fun invokePropertySetter(clazz: Any, property: KMutableProperty<*>, params: Array<Any>) {
     property.isAccessible = true
-    property.setter.call(clazz, *params)
+    try {
+        property.setter.call(clazz, *params)
+    } catch (e: Exception) {
+        throw RuntimeException("Can not set property ${property.name}")
+    }
+
 }
