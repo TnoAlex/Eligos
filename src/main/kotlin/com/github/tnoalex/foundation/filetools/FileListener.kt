@@ -1,7 +1,7 @@
 package com.github.tnoalex.foundation.filetools
 
-import com.github.tnoalex.foundation.asttools.processor.kotlin.BaseInfoProcessor
 import com.github.tnoalex.foundation.eventbus.EventBus
+import com.github.tnoalex.processor.kotlin.BaseInfoProcessor
 import depends.extractor.IFileListener
 
 object FileListener : IFileListener {

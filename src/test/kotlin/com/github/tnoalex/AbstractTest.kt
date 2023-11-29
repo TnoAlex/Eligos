@@ -1,31 +1,27 @@
 package com.github.tnoalex
 
-import com.github.tnoalex.analyzer.singlelang.AbstractSingleLangAnalyzer
-import com.github.tnoalex.analyzer.singlelang.kotlin.KotlinSmellAnalyzer
-import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.formatter.json.JsonFormatter
 import com.github.tnoalex.foundation.filetools.FileContainer
 import com.github.tnoalex.rules.RulerParser
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
 import java.io.File
 
-abstract class AbstractTest(private val lang: String) {
-    var analyzer: AbstractSingleLangAnalyzer? = null
+abstract class AbstractTest {
+    var analyzer: Analyzer? = null
 
-    fun init() {
+    fun init(lang: List<String?>) {
         StdOutErrWrapper.init()
         RulerParser.parserRules(null)
         LangRegister.register()
-        analyzer = KotlinSmellAnalyzer()
+        analyzer = Analyzer(JsonFormatter(), lang)
     }
 
     fun createTestContext(
         srcPath: String,
         outputName: String,
-        outPath: String,
-        outFormat: FormatterTypeEnum
+        outPath: String
     ) {
         FileContainer.initFileContainer(File(srcPath), File(outPath), outputName)
-        analyzer!!.createAnalyticsContext(outFormat)
     }
 }
