@@ -1,8 +1,8 @@
 package com.github.tnoalex
 
+import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.json.JsonFormatter
 import com.github.tnoalex.foundation.filetools.FileContainer
-import com.github.tnoalex.rules.RulerParser
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
 import java.io.File
@@ -12,7 +12,7 @@ abstract class AbstractTest {
 
     fun init(lang: List<String?>) {
         StdOutErrWrapper.init()
-        RulerParser.parserRules(null)
+        ConfigParser.parserRules(null)
         LangRegister.register()
         analyzer = Analyzer(JsonFormatter(), lang)
     }

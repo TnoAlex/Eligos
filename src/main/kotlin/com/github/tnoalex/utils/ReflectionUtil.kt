@@ -1,6 +1,6 @@
 package com.github.tnoalex.utils
 
-import com.github.tnoalex.rules.Rule
+import com.github.tnoalex.config.AbstractConfig
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -13,7 +13,7 @@ fun <T : Any> loadServices(service: Class<T>): ServiceLoader<T> {
     return ServiceLoader.load(service)
 }
 
-fun setClassProperty(propertyName: String, value: Any?, clazz: Rule) {
+fun setClassProperty(propertyName: String, value: Any?, clazz: AbstractConfig) {
     val property = clazz::class.memberProperties.find { it.name == propertyName }
     if (property != null && property is KMutableProperty<*>) {
         property.setter.isAccessible = true

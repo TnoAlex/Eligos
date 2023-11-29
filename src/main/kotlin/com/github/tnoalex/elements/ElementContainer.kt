@@ -9,7 +9,9 @@ object ElementContainer {
         return fileElements.filter { it.elementName == fileName }
     }
 
-    fun getFileElements() = fileElements
+    fun getLastElement(): FileElement {
+        return fileElements.last
+    }
 
     fun addFileElement(element: FileElement) {
         fileElements.add(element)

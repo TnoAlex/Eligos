@@ -12,11 +12,16 @@ import java.util.*
 class UnUsedImportProcessor : AstProcessor {
     private val issues = LinkedList<UnusedImportIssue>()
 
+    override val order: Int
+        get() = -1
+
     @EventListener
     fun process(event: EntityRepoFinishedEvent) {
-        findUselessImport(event.source as Context)
-        (event.source as Context).reportIssues(issues)
-        issues.clear()
+        if (event.checkType(Context::class)) {
+            findUselessImport(event.source as Context)
+            (event.source as Context).reportIssues(issues)
+            issues.clear()
+        }
     }
 
     private fun findUselessImport(context: Context) {

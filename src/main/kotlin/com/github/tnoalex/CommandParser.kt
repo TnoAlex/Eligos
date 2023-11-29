@@ -7,10 +7,10 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
+import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.FormatterFactory
 import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.filetools.FileContainer
-import com.github.tnoalex.rules.RulerParser
 import org.slf4j.LoggerFactory
 
 class CommandParser : CliktCommand() {
@@ -51,7 +51,7 @@ class CommandParser : CliktCommand() {
 
     override fun run() {
         FileContainer.initFileContainer(srcPath.toFile(), outPath?.toFile(), outputPrefix)
-        RulerParser.parserRules(extendRules)
+        ConfigParser.parserRules(extendRules)
         Analyzer(
             FormatterFactory.getFormatter(outFormat) ?: throw RuntimeException("Unsupported  formatter"),
             listOf(lang, crossLang)

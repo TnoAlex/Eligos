@@ -6,6 +6,7 @@ import com.github.tnoalex.utils.invokeMethod
 import com.github.tnoalex.utils.invokePropertySetter
 import java.util.*
 import kotlin.reflect.KClass
+import kotlin.reflect.full.isSuperclassOf
 
 /**
  * A simple message bus implemented in observer mode
@@ -33,8 +34,10 @@ object EventBus {
      */
     fun post(event: Any, targets: List<KClass<*>>? = null) {
         val methods = listenerMap[event::class] ?: return
-        val filteredMethods = methods.filter { targets == null || targets.contains(it.listener::class) }
-        filteredMethods.sortedByDescending { it.order }.forEach { postEvent(it, event) }
+        val filteredMethods = methods.filter {
+            targets == null || targets.find { t -> t.isSuperclassOf(it.listener::class) } != null
+        }
+        filteredMethods.forEach { postEvent(it, event) }
     }
 
     private fun postEvent(wrapper: ListenerMethod, event: Any) {
@@ -70,8 +73,7 @@ object EventBus {
                     listener,
                     it,
                     null,
-                    it.parameters[1].type.classifier as KClass<*>,
-                    (it.annotations.first { a -> a.annotationClass == EventListener::class } as EventListener).order
+                    it.parameters[1].type.classifier as KClass<*>
                 )
             }
         val propertyList = getMutablePropertiesAnnotateWith(EventListener::class, listener::class).map {
@@ -79,8 +81,7 @@ object EventBus {
                 listener,
                 null,
                 it,
-                it.setter.parameters[1].type.classifier as KClass<*>,
-                (it.annotations.first { a -> a.annotationClass == EventListener::class } as EventListener).order
+                it.setter.parameters[1].type.classifier as KClass<*>
             )
         }
         return methodList + propertyList

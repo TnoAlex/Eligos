@@ -1,5 +1,6 @@
 package com.github.tnoalex.processor
 
+import com.github.tnoalex.Context
 import com.github.tnoalex.foundation.common.CollectionContainer
 import com.github.tnoalex.utils.loadServices
 import org.slf4j.LoggerFactory
@@ -44,22 +45,22 @@ object AstProcessorContainer : CollectionContainer<String, AstProcessor> {
     }
 
 
-    fun registerAstByLang(lang: String) {
+    fun registerByLang(lang: String,context: Context) {
         val langProcessors = listOf(processors[lang] ?: LinkedList(), processors["any"] ?: LinkedList()).flatten()
         langProcessors.run {
             sortedByDescending { it.order }
             forEach {
-                it.registerListener()
+                it.registerListener(context)
                 logger.info("Hooked ${it::class.simpleName}")
             }
         }
     }
 
-    fun registerAllProcessor() {
+    fun registerAllProcessor(context: Context) {
         processors.values.forEach {
             it.sortedByDescending { p -> p.order }
                 .forEach { p ->
-                    p.registerListener()
+                    p.registerListener(context)
                 }
         }
     }

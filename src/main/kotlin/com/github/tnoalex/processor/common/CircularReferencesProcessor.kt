@@ -13,11 +13,16 @@ import java.util.*
 class CircularReferencesProcessor : AstProcessor {
     private val issues = LinkedList<CircularReferencesIssue>()
 
+    override val order: Int
+        get() = -1
+
     @EventListener
     fun process(event: EntityRepoFinishedEvent) {
-        findCircularReferences(event.source as Context)
-        (event.source as Context).reportIssues(issues)
-        issues.clear()
+        if (event.checkType(Context::class)) {
+            findCircularReferences(event.source as Context)
+            (event.source as Context).reportIssues(issues)
+            issues.clear()
+        }
     }
 
     private fun findCircularReferences(context: Context) {

@@ -1,13 +1,13 @@
-package com.github.tnoalex.rules
+package com.github.tnoalex.config
 
 import com.github.tnoalex.utils.loadServices
 import com.github.tnoalex.utils.setClassProperty
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 
-object RulerParser {
+object ConfigParser {
     fun parserRules(ruleFile: File?) {
-        val defaultRuleInputStream = Thread.currentThread().contextClassLoader.getResourceAsStream("rules.yaml")
+        val defaultRuleInputStream = Thread.currentThread().contextClassLoader.getResourceAsStream("config.yaml")
         val yaml = Yaml()
         val defaultRules: HashMap<String, Any?> = yaml.load(defaultRuleInputStream)
         if (ruleFile != null) {
@@ -31,13 +31,13 @@ object RulerParser {
 
     @Suppress("UNCHECKED_CAST")
     private fun registerToContainer(rules: HashMap<String, Any?>) {
-        val loader = loadServices(Rule::class.java)
+        val loader = loadServices(AbstractConfig::class.java)
         loader.forEach {
             val rule = rules[it.ruleName.lowercase()] as Map<String, Any?>
             rule.forEach { r ->
                 setClassProperty(r.key, r.value, it)
             }
-            RuleContainer.register(it)
+            ConfigContainer.register(it)
         }
     }
 }

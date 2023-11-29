@@ -1,0 +1,3 @@
+function:
+  arity: 6
+  maxCyclomaticComplexity: 10

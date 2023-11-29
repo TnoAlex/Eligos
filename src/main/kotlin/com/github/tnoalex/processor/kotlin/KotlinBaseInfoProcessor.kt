@@ -5,31 +5,29 @@ import com.github.tnoalex.elements.ElementContainer
 import com.github.tnoalex.elements.FileElement
 import com.github.tnoalex.elements.kotlin.KotlinClassElement
 import com.github.tnoalex.elements.kotlin.KotlinFunctionElement
+import com.github.tnoalex.events.FileEnterEvent
+import com.github.tnoalex.events.FileExitEvent
+import com.github.tnoalex.foundation.eventbus.EventBus
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.processor.AstProcessor
+import com.github.tnoalex.processor.AbstractBaseInfoProcessor
 import com.github.tnoalex.utils.*
 import depends.extractor.kotlin.KotlinParser.*
 import depends.extractor.kotlin.KotlinParserBaseVisitor
 import org.antlr.v4.runtime.ParserRuleContext
 import java.util.*
 
-class BaseInfoProcessor : AstProcessor {
-    override val order: Int
-        get() = Int.MAX_VALUE
+class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
 
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 
-    @EventListener
-    private var currentFileName: String = ""
-
     private lateinit var currentFileContext: KotlinFileContext
-
 
     @EventListener
     private fun enterFile(ctx: KotlinFileContext) {
+        if (!currentFileName.endsWith("kt")) return
         val fileElement = FileElement(
-            currentFileName.split("@")[1],
+            currentFileName,
             ctx.start.line,
             ctx.stop.line
         )
@@ -56,6 +54,7 @@ class BaseInfoProcessor : AstProcessor {
         }
         fileElement.innerElement.addAll(innerElement)
         ElementContainer.addFileElement(fileElement)
+        EventBus.post(FileEnterEvent(fileElement))
     }
 
     private fun createClassElement(ctx: ClassDeclarationContext, parent: AbstractElement) =
@@ -141,7 +140,9 @@ class BaseInfoProcessor : AstProcessor {
         return innerElements
     }
 
-    private fun exitFile(ctx: KotlinFileContext) {
-
+    @EventListener
+    private fun exitFile(fileName: String) {
+        if (!fileName.startsWith("exit")) return
+        EventBus.post(FileExitEvent(ElementContainer.getLastElement()))
     }
 }

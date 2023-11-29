@@ -2,8 +2,8 @@ package com.github.tnoalex
 
 import com.github.tnoalex.formatter.IFormatter
 import com.github.tnoalex.foundation.filetools.FileContainer
-import com.github.tnoalex.foundation.filetools.FileListener
 import com.github.tnoalex.listener.AstListenerContainer
+import com.github.tnoalex.listener.FileListener
 import com.github.tnoalex.processor.AstProcessorContainer
 import depends.extractor.LangProcessorRegistration
 import depends.relations.BindingResolver
@@ -34,7 +34,7 @@ class Analyzer(
         languages.filterNotNull().forEach { lang ->
             logger.info("Create context for $lang")
             val context = Context(lang)
-            AstProcessorContainer.registerAstByLang(lang)
+            AstProcessorContainer.registerByLang(lang, context)
             val langProcessor = LangProcessorRegistration.getRegistry().getProcessorOf(lang)
             langProcessor.addExtraListener(FileListener)
             langProcessor.addExtraListener(AstListenerContainer.getByKey(lang))

@@ -3,7 +3,7 @@ package com.github.tnoalex.issues
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.utils.encodeBySHA1ToString
 
-class LongMethodPatternIssue(
+class ComplexMethodIssue(
     affectedFile: String,
     val methodId: String,
     val circleComplexity: Int

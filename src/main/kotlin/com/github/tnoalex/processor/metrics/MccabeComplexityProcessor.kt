@@ -1,12 +1,38 @@
 package com.github.tnoalex.processor.metrics
 
-import com.github.tnoalex.processor.AstProcessor
+import com.github.tnoalex.config.ConfigContainer
+import com.github.tnoalex.config.FunctionConfig
+import com.github.tnoalex.elements.FileElement
+import com.github.tnoalex.events.FileExitEvent
+import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.issues.ComplexMethodIssue
+import com.github.tnoalex.processor.ContextAstProcessor
+import java.util.*
 
-abstract class MccabeComplexityProcessor : AstProcessor {
+abstract class MccabeComplexityProcessor : ContextAstProcessor() {
     private val functionMap = HashMap<String, ArrayList<Int>>()
     private val closureFunctionMap = HashMap<String, ArrayList<String>>()
 
     private val terminatedMap = HashSet<String>()
+
+    override val order: Int
+        get() = Short.MAX_VALUE.toInt()
+
+    @EventListener
+    fun report(event: FileExitEvent) {
+        val issues = LinkedList<ComplexMethodIssue>()
+        getMccabeComplex().filterValues {
+            it >= (ConfigContainer.getByType(FunctionConfig::class) as FunctionConfig).maxCyclomaticComplexity
+        }.forEach { (k, v) ->
+            issues.add(
+                ComplexMethodIssue(
+                    (event.source as FileElement).elementName, k, v
+                )
+            )
+        }
+        context.reportIssues(issues)
+        finishProcess()
+    }
 
     fun getMccabeComplex(): Map<String, Int> {
         return margeFunction(functionMap.map { it.key to it.value[ARC_INDEX] - it.value[NODE_INDEX] + 2 }.toMap())
