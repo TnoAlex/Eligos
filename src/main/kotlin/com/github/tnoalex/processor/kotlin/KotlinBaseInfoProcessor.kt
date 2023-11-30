@@ -140,9 +140,8 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
         return innerElements
     }
 
-    @EventListener
+    @EventListener("\${fileName}.startsWith(\"exit\")")
     private fun exitFile(fileName: String) {
-        if (!fileName.startsWith("exit")) return
         EventBus.post(FileExitEvent(ElementContainer.getLastElement()))
     }
 }

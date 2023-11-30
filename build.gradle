@@ -41,6 +41,7 @@ dependencies {
     implementation 'com.github.ajalt.clikt:clikt:3.5.4'
     implementation 'ch.qos.logback:logback-classic:1.4.11'
     implementation 'org.antlr:antlr4-runtime:4.13.1'
+    implementation 'org.mvel:mvel2:2.5.0.Final'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 }
 

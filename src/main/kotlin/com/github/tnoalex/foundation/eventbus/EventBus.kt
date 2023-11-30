@@ -1,9 +1,6 @@
 package com.github.tnoalex.foundation.eventbus
 
-import com.github.tnoalex.utils.getMethodsAnnotatedWith
-import com.github.tnoalex.utils.getMutablePropertiesAnnotateWith
-import com.github.tnoalex.utils.invokeMethod
-import com.github.tnoalex.utils.invokePropertySetter
+import com.github.tnoalex.utils.*
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
@@ -41,6 +38,12 @@ object EventBus {
     }
 
     private fun postEvent(wrapper: ListenerMethod, event: Any) {
+        if (wrapper.filterEl.isBlank() || evaluateBooleanElExpression(wrapper.filterEl, listOf(event))) {
+            invokeTarget(wrapper, event)
+        }
+    }
+
+    private fun invokeTarget(wrapper: ListenerMethod, event: Any) {
         if (wrapper.method != null) {
             invokeMethod(wrapper.listener, wrapper.method, arrayOf(event))
         } else {
@@ -73,7 +76,8 @@ object EventBus {
                     listener,
                     it,
                     null,
-                    it.parameters[1].type.classifier as KClass<*>
+                    it.parameters[1].type.classifier as KClass<*>,
+                    (getMethodAnnotation(EventListener::class, it)[0] as EventListener).filter
                 )
             }
         val propertyList = getMutablePropertiesAnnotateWith(EventListener::class, listener::class).map {
@@ -81,7 +85,8 @@ object EventBus {
                 listener,
                 null,
                 it,
-                it.setter.parameters[1].type.classifier as KClass<*>
+                it.setter.parameters[1].type.classifier as KClass<*>,
+                (getPropertyAnnotation(EventListener::class, it)[0] as EventListener).filter
             )
         }
         return methodList + propertyList

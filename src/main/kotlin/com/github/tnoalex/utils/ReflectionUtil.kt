@@ -5,6 +5,7 @@ import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
 import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KProperty
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
@@ -23,6 +24,15 @@ fun setClassProperty(propertyName: String, value: Any?, clazz: AbstractConfig) {
 
 fun getMethodsAnnotatedWith(annotationKClass: KClass<out Annotation>, targetClass: KClass<*>): List<KFunction<*>> {
     return targetClass.functions.filter { it.annotations.find { a -> a.annotationClass == annotationKClass } != null }
+}
+
+
+fun getMethodAnnotation(annotationKClass: KClass<out Annotation>, method: KFunction<*>): List<Annotation> {
+    return method.annotations.filter { it.annotationClass == annotationKClass }
+}
+
+fun getPropertyAnnotation(annotationKClass: KClass<out Annotation>, property: KProperty<*>): List<Annotation> {
+    return property.annotations.filter { it.annotationClass == annotationKClass }
 }
 
 fun getMutablePropertiesAnnotateWith(
