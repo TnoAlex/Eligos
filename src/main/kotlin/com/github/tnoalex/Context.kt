@@ -22,7 +22,8 @@ class Context(
     private val dependsMatrices: EnumMap<AnalysisHierarchyEnum, DependencyMatrix> =
         EnumMap(AnalysisHierarchyEnum::class.java)
 
-    private val issues = LinkedList<Issue>()
+    private val issues = LinkedHashSet<Issue>()
+
 
     fun setDependsRepo(repo: EntityRepo) {
         dependsRepo = repo
@@ -30,6 +31,7 @@ class Context(
         EventBus.post(EntityRepoFinishedEvent(this))
     }
 
+    fun getIssues() = issues
     fun reportIssue(issue: Issue) {
         issues.add(issue)
     }

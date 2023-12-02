@@ -1,4 +1,4 @@
-package `metrics-samples`
+package `kotlin-code-samples`.complexmethods
 
 import com.github.tnoalex.foundation.algorithm.AdjacencyArc
 import com.github.tnoalex.foundation.algorithm.DuplicateEdgeStrategy

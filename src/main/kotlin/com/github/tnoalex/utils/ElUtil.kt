@@ -8,7 +8,7 @@ fun evaluateBooleanElExpression(rawExpression: String, params: List<Any?>): Bool
     val points = extractParams(rawExpression)
     if (points.size != params.size)
         throw RuntimeException("The parameters of the EL expression do not match the given number of parameters")
-    val expression = rawExpression.replace("\${", "").replace("}", "")
+    val expression = rawExpression.replace("#{", "").replace("}", "")
 
     val context = points.zip(params).toMap()
     val factory = MapVariableResolverFactory(context)
@@ -19,7 +19,7 @@ fun evaluateBooleanElExpression(rawExpression: String, params: List<Any?>): Bool
 }
 
 private fun extractParams(rawExpression: String): List<String> {
-    val regex = "\\$\\{([^}]+)\\}"
+    val regex = "#\\{([^}]+)\\}"
     val pattern = Pattern.compile(regex)
     val matcher = pattern.matcher(rawExpression)
 

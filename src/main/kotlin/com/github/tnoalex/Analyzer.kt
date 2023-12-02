@@ -6,8 +6,6 @@ import com.github.tnoalex.listener.AstListenerContainer
 import com.github.tnoalex.listener.FileListener
 import com.github.tnoalex.processor.AstProcessorContainer
 import depends.extractor.LangProcessorRegistration
-import depends.relations.BindingResolver
-import depends.relations.IBindingResolver
 import depends.relations.RelationCounter
 import org.slf4j.LoggerFactory
 
@@ -39,18 +37,17 @@ class Analyzer(
             langProcessor.addExtraListener(FileListener)
             langProcessor.addExtraListener(AstListenerContainer.getByKey(lang))
             logger.info("------ Build dependencies ------")
-            val bindingResolver: IBindingResolver = BindingResolver(langProcessor, false, true)
+            val bindingResolver = langProcessor.createBindingResolver(false,true)
             val entityRepo =
                 langProcessor.buildDependencies(FileContainer.sourceFilePath!!.path, arrayOf(), bindingResolver)
             RelationCounter(entityRepo, langProcessor, bindingResolver).computeRelations()
-            context.setDependsRepo(entityRepo)
             contexts[lang] = context
             logger.info("Finished")
+            context.setDependsRepo(entityRepo)
             logger.info("------ Clean up framework ------")
             AstProcessorContainer.unregistersByLang(lang)
             AstProcessorContainer.cleanUpProcessor(lang)
-            langProcessor.removeExtraListener(FileListener)
-            langProcessor.removeExtraListener(AstListenerContainer.getByKey(lang))
+            langProcessor.clearExtraListeners()
             logger.info("Finished")
         }
     }
