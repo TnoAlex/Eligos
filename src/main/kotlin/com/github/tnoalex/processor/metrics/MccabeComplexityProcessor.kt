@@ -6,10 +6,10 @@ import com.github.tnoalex.elements.FileElement
 import com.github.tnoalex.events.FileExitEvent
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ComplexMethodIssue
-import com.github.tnoalex.processor.ContextAstProcessor
+import com.github.tnoalex.processor.AstProcessorWithContext
 import java.util.*
 
-abstract class MccabeComplexityProcessor : ContextAstProcessor() {
+abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
     private val functionMap = HashMap<String, ArrayList<Int>>()
     private val closureFunctionMap = HashMap<String, ArrayList<String>>()
 

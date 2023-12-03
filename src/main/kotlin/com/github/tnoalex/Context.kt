@@ -1,5 +1,6 @@
 package com.github.tnoalex
 
+import com.github.tnoalex.elements.FileElement
 import com.github.tnoalex.events.EntityRepoFinishedEvent
 import com.github.tnoalex.foundation.eventbus.EventBus
 import com.github.tnoalex.issues.Issue
@@ -23,6 +24,20 @@ class Context(
         EnumMap(AnalysisHierarchyEnum::class.java)
 
     private val issues = LinkedHashSet<Issue>()
+
+    private val fileElements = LinkedList<FileElement>()
+
+    fun getFileElement(fileName: String): List<FileElement> {
+        return fileElements.filter { it.elementName == fileName }
+    }
+
+    fun getLastElement(): FileElement {
+        return fileElements.last
+    }
+
+    fun addFileElement(element: FileElement) {
+        fileElements.add(element)
+    }
 
 
     fun setDependsRepo(repo: EntityRepo) {

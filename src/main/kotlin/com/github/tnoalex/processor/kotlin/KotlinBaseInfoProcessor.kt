@@ -1,7 +1,6 @@
 package com.github.tnoalex.processor.kotlin
 
 import com.github.tnoalex.elements.AbstractElement
-import com.github.tnoalex.elements.ElementContainer
 import com.github.tnoalex.elements.FileElement
 import com.github.tnoalex.elements.kotlin.KotlinClassElement
 import com.github.tnoalex.elements.kotlin.KotlinFunctionElement
@@ -52,7 +51,7 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
             } else return@forEach
         }
         fileElement.innerElement.addAll(innerElement)
-        ElementContainer.addFileElement(fileElement)
+        context.addFileElement(fileElement)
         EventBus.post(FileEnterEvent(fileElement))
     }
 
@@ -141,6 +140,6 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
 
     @EventListener("#{fileName}.startsWith(\"exit\")")
     private fun exitFile(fileName: String) {
-        EventBus.post(FileExitEvent(ElementContainer.getLastElement()))
+        EventBus.post(FileExitEvent(context.getLastElement()))
     }
 }

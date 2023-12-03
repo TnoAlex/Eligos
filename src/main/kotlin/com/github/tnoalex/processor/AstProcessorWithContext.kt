@@ -2,7 +2,7 @@ package com.github.tnoalex.processor
 
 import com.github.tnoalex.Context
 
-abstract class ContextAstProcessor : AstProcessor {
+abstract class AstProcessorWithContext : AstProcessor {
     protected lateinit var context: Context
 
     override fun initContext(context: Context) {
