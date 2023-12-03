@@ -2,15 +2,16 @@ package com.github.tnoalex.elements
 
 import java.util.*
 
-abstract class AbstractElement {
-    abstract val elementName: String?
-    protected abstract val elementStartLine: Int
-    protected abstract val elementStopLine: Int
+abstract class AbstractElement(
+    val elementName: String?,
+    private val elementStartLine: Int,
+    private val elementStopLine: Int
+) {
 
     val lineNumber: Int
         get() = elementStopLine - elementStartLine + 1
 
     val innerElement = LinkedList<AbstractElement>()
 
-    abstract val parent: AbstractElement?
+    protected abstract val parent: AbstractElement?
 }

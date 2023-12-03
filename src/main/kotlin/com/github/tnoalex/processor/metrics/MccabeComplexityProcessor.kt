@@ -26,7 +26,7 @@ abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
         }.forEach { (k, v) ->
             issues.add(
                 ComplexMethodIssue(
-                    (event.source as FileElement).elementName, k, v
+                    (event.source as FileElement).elementName!!, k, v
                 )
             )
         }

@@ -1,10 +1,11 @@
 package com.github.tnoalex.elements
 
 data class FileElement(
-    override val elementName: String,
-    override val elementStartLine: Int,
-    override val elementStopLine: Int
-) : AbstractElement() {
+    val fileName: String,
+    val fileStartLine: Int,
+    val fileStopLine: Int
+) : AbstractElement(fileName, fileStartLine, fileStopLine) {
+
     override val parent: AbstractElement?
         get() = null
 }

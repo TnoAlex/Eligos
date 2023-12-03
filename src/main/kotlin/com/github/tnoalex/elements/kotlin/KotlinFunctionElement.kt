@@ -3,17 +3,17 @@ package com.github.tnoalex.elements.kotlin
 import com.github.tnoalex.elements.AbstractElement
 
 data class KotlinFunctionElement(
-    override val elementName: String,
-    override val elementStartLine: Int,
-    override val elementStopLine: Int,
-    override val parent: AbstractElement?,
-    val parameterNumber: Int,
-    val visibility: String?,
-    val functionModifier: String?,
-    val inheritanceModifier: String?
-) : AbstractElement() {
+    val functionName: String,
+    val functionStartLine: Int,
+    val functionStopLine: Int,
+    override val parent: AbstractElement,
+    private val parameterNumber: Int,
+    private val visibility: String?,
+    private val functionModifier: String?,
+    private val inheritanceModifier: String?
+) : AbstractElement(functionName, functionStartLine, functionStopLine) {
     val functionId: String
-        get() = "$elementName@$parameterNumber"
+        get() = "$functionName@$parameterNumber"
 
     val isTopLevel: Boolean
         get() = parent is KotlinFunctionElement
