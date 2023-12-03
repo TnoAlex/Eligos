@@ -1,6 +1,7 @@
 package com.github.tnoalex.utils
 
 import com.github.tnoalex.config.AbstractConfig
+import java.lang.reflect.InvocationTargetException
 import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KFunction
@@ -35,6 +36,10 @@ fun getPropertyAnnotation(annotationKClass: KClass<out Annotation>, property: KP
     return property.annotations.filter { it.annotationClass == annotationKClass }
 }
 
+fun getClassPropertyByName(clazz: KClass<*>, name: String): List<KProperty<*>> {
+    return clazz.memberProperties.filter { it.name == name }
+}
+
 fun getMutablePropertiesAnnotateWith(
     annotationClass: KClass<out Annotation>,
     targetClass: KClass<*>
@@ -44,22 +49,30 @@ fun getMutablePropertiesAnnotateWith(
         .filter { it.annotations.find { a -> a.annotationClass == annotationClass } != null }
 }
 
-fun invokeMethod(clazz: Any, method: KFunction<*>, params: Array<Any>) {
+fun invokeMethod(instant: Any, method: KFunction<*>, params: Array<Any>) {
     method.isAccessible = true
     try {
-        method.call(clazz, *params)
-    } catch (e: Exception) {
-        throw RuntimeException("Can not invoke ${method.name}")
+        method.call(instant, *params)
+    } catch (e: InvocationTargetException) {
+        throw RuntimeException("Invoke target error", e.targetException)
     }
 
 }
 
-fun invokePropertySetter(clazz: Any, property: KMutableProperty<*>, params: Array<Any>) {
+fun invokePropertySetter(instant: Any, property: KMutableProperty<*>, params: Array<Any>) {
     property.isAccessible = true
     try {
-        property.setter.call(clazz, *params)
-    } catch (e: Exception) {
-        throw RuntimeException("Can not set property ${property.name}")
+        property.setter.call(instant, *params)
+    } catch (e: InvocationTargetException) {
+        throw RuntimeException("Invoke target error", e.targetException)
     }
+}
 
+fun invokePropertyGetter(instant: Any, property: KProperty<*>): Any? {
+    property.isAccessible = true
+    try {
+        return property.getter.call(instant)
+    } catch (e: InvocationTargetException) {
+        throw RuntimeException("Invoke target error", e.targetException)
+    }
 }

@@ -7,8 +7,16 @@ class ElUtilKtTest {
 
     @Test
     fun testInvokeElExpression() {
-        val fileName = "F:/test.kt"
-        val res = evaluateBooleanElExpression("\${fileName}.endsWith(\".kt\") && \${fileName}.startsWith(\"F\") ", listOf(fileName))
-        assertTrue(res)
+        class Test {
+            val name = "Bob"
+
+            fun testEval(): Boolean {
+                val test = Test()
+                val age = 30
+                return evaluateBooleanElExpression("\${name} == \"Bob\" && #{age} == 30", test, age)
+            }
+        }
+        val test = Test()
+        assertTrue(test.testEval())
     }
 }

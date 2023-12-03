@@ -18,11 +18,9 @@ class CircularReferencesProcessor : AstProcessor {
 
     @EventListener
     fun process(event: EntityRepoFinishedEvent) {
-        if (event.checkType(Context::class)) {
-            findCircularReferences(event.source as Context)
-            (event.source as Context).reportIssues(issues)
-            issues.clear()
-        }
+        findCircularReferences(event.source as Context)
+        (event.source as Context).reportIssues(issues)
+        issues.clear()
     }
 
     private fun findCircularReferences(context: Context) {

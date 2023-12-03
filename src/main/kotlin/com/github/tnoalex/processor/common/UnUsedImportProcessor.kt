@@ -17,11 +17,9 @@ class UnUsedImportProcessor : AstProcessor {
 
     @EventListener
     fun process(event: EntityRepoFinishedEvent) {
-        if (event.checkType(Context::class)) {
-            findUselessImport(event.source as Context)
-            (event.source as Context).reportIssues(issues)
-            issues.clear()
-        }
+        findUselessImport(event.source as Context)
+        (event.source as Context).reportIssues(issues)
+        issues.clear()
     }
 
     private fun findUselessImport(context: Context) {

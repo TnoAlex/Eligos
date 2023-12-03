@@ -14,7 +14,7 @@ object ConfigContainer : Container<String, AbstractConfig> {
 
     override fun register(entity: AbstractConfig) {
         rules[entity.ruleName] = entity
-        logger.info("Registered rule: ${entity.ruleName}")
+        logger.info("Registered config: ${entity.ruleName}")
     }
 
     private val logger = LoggerFactory.getLogger(ConfigContainer::class.java)

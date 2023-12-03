@@ -23,9 +23,8 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
 
     private lateinit var currentFileContext: KotlinFileContext
 
-    @EventListener
+    @EventListener("\${currentFileName}.endsWith(\"kt\")")
     private fun enterFile(ctx: KotlinFileContext) {
-        if (!currentFileName.endsWith("kt")) return
         val fileElement = FileElement(
             currentFileName,
             ctx.start.line,

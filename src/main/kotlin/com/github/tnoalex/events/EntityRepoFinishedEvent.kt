@@ -1,3 +1,5 @@
 package com.github.tnoalex.events
 
-class EntityRepoFinishedEvent(source: Any?) : Event(source)
+import com.github.tnoalex.Context
+
+class EntityRepoFinishedEvent(source: Context) : Event(source)

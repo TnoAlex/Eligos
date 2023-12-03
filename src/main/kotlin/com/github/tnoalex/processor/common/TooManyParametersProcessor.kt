@@ -20,11 +20,9 @@ class TooManyParametersProcessor : AstProcessor {
 
     @EventListener
     fun process(event: EntityRepoFinishedEvent) {
-        if (event.checkType(Context::class)) {
-            findTooManyParameters(event.source as Context)
-            (event.source as Context).reportIssues(issues)
-            issues.clear()
-        }
+        findTooManyParameters(event.source as Context)
+        (event.source as Context).reportIssues(issues)
+        issues.clear()
     }
 
     private fun findTooManyParameters(context: Context) {
