@@ -16,6 +16,7 @@ class ElUtilKtTest {
                 return evaluateBooleanElExpression("\${name} == \"Bob\" && #{age} == 30", test, age)
             }
         }
+
         val test = Test()
         assertTrue(test.testEval())
     }

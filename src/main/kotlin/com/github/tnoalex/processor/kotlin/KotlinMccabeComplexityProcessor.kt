@@ -13,7 +13,7 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
     private fun processFunctionDeclaration(ctx: FunctionDeclarationContext) {
         val parentFunc = getParentFunction(ctx) // determine whether it is a closure function
         val id = ctx.id()
-        addFunction(id)
+        addFunction(id, ctx.signature())
         if (parentFunc != null) {
             recordClosurePair(parentFunc.id(), id)
         }
@@ -27,27 +27,24 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addTerminatedNode(id)
     }
 
-    @EventListener
+    @EventListener("#{ctx}.children.size > 1")
     private fun processElvisExpression(ctx: ElvisExpressionContext) {
-        if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx) ?: return // top level property definition or assignment
         val id = parentFunc.id()
         addNode(id)
         addArc(id, 2)
     }
 
-    @EventListener
+    @EventListener("#{ctx}.children.size > 1")
     private fun processAssignment(ctx: AssignmentContext) {
-        if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx) ?: return //top level
         val id = parentFunc.id()
         addArc(id)
         addNode(id)
     }
 
-    @EventListener
+    @EventListener("#{ctx}.children.size > 1")
     private fun processPropertyDeclaration(ctx: PropertyDeclarationContext) {
-        if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx) ?: return
         val id = parentFunc.id()
         addArc(id)
@@ -57,19 +54,18 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
     @EventListener
     private fun processExpression(ctx: ExpressionContext) {
         val parentFunc = getParentFunction(ctx) ?: return
-        if (ctx.children.size == 1) return
         val id = parentFunc.id()
-        if (ctx.ifExpression() != null) return
-        else if (ctx.elvisExpression() != null) return
-        else if (ctx.tryExpression() != null) return
-        else if (ctx.jumpExpression() != null) return // other hook process
-        addArc(id)
+        if (ctx.nearestIfExpression() != null) return
+        else if (ctx.nearestWhenExpression() != null) return
+        else if (ctx.nearestElvisExpression() != null) return
+        else if (ctx.nearestTryExpression() != null) return
+        else if (ctx.nearestJumpExpression() != null) return // other hook process
+        addArc(id) //Except for the above expressions, the rest of the expressions are considered linear
         addNode(id)
     }
 
-    @EventListener
+    @EventListener("#{ctx}.children.size > 1")
     private fun processWhenExpression(ctx: WhenExpressionContext) {
-        if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx)
             ?: throw RuntimeException("Syntax error, when expression are not allowed to appear at the top level")
         val id = parentFunc.id()
@@ -79,9 +75,8 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addNode(id, entrySize)
     }
 
-    @EventListener
+    @EventListener("#{ctx}.children.size > 1")
     private fun processIfExpression(ctx: IfExpressionContext) {
-        if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx) ?: return
         val id = parentFunc.id()
         addNode(id)
@@ -115,9 +110,8 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addArc(id, 2)
     }
 
-    @EventListener
+    @EventListener("#{ctx}.children.size > 1")
     private fun processJumpExpression(ctx: JumpExpressionContext) {
-        if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx)
             ?: throw RuntimeException("Syntax error, jump expression are not allowed to appear at the top level")
         val id = parentFunc.id()
@@ -133,9 +127,8 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         }
     }
 
-    @EventListener
+    @EventListener("#{ctx}.children.size > 1")
     private fun processTryExpression(ctx: TryExpressionContext) {
-        if (ctx.children.size == 1) return
         val parentFunc = getParentFunction(ctx)
             ?: throw RuntimeException("Syntax error, try expression are not allowed to appear at the top level")
         val id = parentFunc.id()

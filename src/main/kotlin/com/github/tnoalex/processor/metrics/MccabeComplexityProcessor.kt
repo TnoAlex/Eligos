@@ -12,21 +12,21 @@ import java.util.*
 abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
     private val functionMap = HashMap<String, ArrayList<Int>>()
     private val closureFunctionMap = HashMap<String, ArrayList<String>>()
-
+    private val idMap = HashMap<String, String>()
     private val terminatedMap = HashSet<String>()
 
     override val order: Int
         get() = Short.MAX_VALUE.toInt()
 
     @EventListener
-    fun report(event: FileExitEvent) {
+    fun process(event: FileExitEvent) {
         val issues = LinkedList<ComplexMethodIssue>()
         getMccabeComplex().filterValues {
             it >= (ConfigContainer.getByType(FunctionConfig::class) as FunctionConfig).maxCyclomaticComplexity
         }.forEach { (k, v) ->
             issues.add(
                 ComplexMethodIssue(
-                    (event.source as FileElement).elementName!!, k, v
+                    (event.source as FileElement).elementName!!, idMap[k]!!, v
                 )
             )
         }
@@ -36,7 +36,6 @@ abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
 
     private fun getMccabeComplex(): Map<String, Int> {
         return margeFunction(functionMap.map { it.key to it.value[ARC_INDEX] - it.value[NODE_INDEX] + 2 }.toMap())
-            .map { it.key.split(":")[0] to it.value }.toMap()
     }
 
     private fun margeFunction(functionMap: Map<String, Int>): HashMap<String, Int> {
@@ -89,9 +88,10 @@ abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
         }
     }
 
-    protected fun addFunction(functionId: String) {
+    protected fun addFunction(functionId: String, functionSignature: String) {
         if (functionMap[functionId] == null) {
             functionMap[functionId] = arrayListOf(1, 1)
+            idMap[functionId] = functionSignature
         }
     }
 

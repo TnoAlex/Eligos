@@ -13,6 +13,7 @@ import depends.generator.StructureDependencyGenerator
 import depends.matrix.core.DependencyMatrix
 import multilang.depends.util.file.path.EmptyFilenameWritter
 import java.util.*
+import kotlin.collections.LinkedHashSet
 import kotlin.reflect.KClass
 
 class Context(
@@ -32,7 +33,7 @@ class Context(
     }
 
     fun getLastElement(): FileElement {
-        return fileElements.last
+        return fileElements.last()
     }
 
     fun addFileElement(element: FileElement) {

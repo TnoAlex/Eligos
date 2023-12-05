@@ -13,11 +13,6 @@ class KotlinAstListener : AstListener, KotlinParserBaseListener() {
         super.enterKotlinFile(ctx)
     }
 
-    override fun exitKotlinFile(ctx: KotlinParser.KotlinFileContext) {
-        EventBus.post(ctx)
-        super.exitKotlinFile(ctx)
-    }
-
     override fun enterFunctionDeclaration(ctx: KotlinParser.FunctionDeclarationContext) {
         EventBus.post(ctx)
         super.enterFunctionDeclaration(ctx)

@@ -5,18 +5,15 @@ import com.github.tnoalex.utils.encodeBySHA1ToString
 
 class ComplexMethodIssue(
     affectedFile: String,
-    val methodId: String,
+    val methodSignature: String,
     val circleComplexity: Int
 ) : Issue(
     AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile)
 ) {
     override val identifier by lazy {
-        encodeBySHA1ToString(affectedFile + methodId + circleComplexity)
+        encodeBySHA1ToString(affectedFile + methodSignature + circleComplexity)
     }
 
     val methodName: String
-        get() = methodId.split("@")[0]
-
-    val methodParamNumber: Int
-        get() = methodId.split("@")[1].toInt()
+        get() = methodSignature.split("(")[0]
 }

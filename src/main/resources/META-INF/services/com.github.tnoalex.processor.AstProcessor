@@ -3,3 +3,4 @@ com.github.tnoalex.processor.kotlin.KotlinBaseInfoProcessor
 com.github.tnoalex.processor.common.CircularReferencesProcessor
 com.github.tnoalex.processor.common.TooManyParametersProcessor
 com.github.tnoalex.processor.common.UnUsedImportProcessor
+com.github.tnoalex.processor.kotlin.TailRecursionProcessor

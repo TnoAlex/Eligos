@@ -4,10 +4,7 @@ import com.github.tnoalex.Analyzer
 import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.json.JsonFormatter
 import com.github.tnoalex.foundation.filetools.FileContainer
-import com.github.tnoalex.issues.CircularReferencesIssue
-import com.github.tnoalex.issues.ComplexMethodIssue
-import com.github.tnoalex.issues.ExcessiveParamsIssue
-import com.github.tnoalex.issues.UnusedImportIssue
+import com.github.tnoalex.issues.*
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
 import org.junit.jupiter.api.Assertions.*
@@ -66,8 +63,15 @@ class ProcessorTest {
     fun testMccabe() {
         val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(ComplexMethodIssue::class)
         assertEquals(1, issues.size)
-        assertEquals("solveSCC@0", (issues[0] as ComplexMethodIssue).methodId)
+        assertEquals("solveSCC()", (issues[0] as ComplexMethodIssue).methodSignature)
         assertEquals(18, (issues[0] as ComplexMethodIssue).circleComplexity)
     }
 
+    @Test
+    fun testOptimizedTailRecursion() {
+        val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(OptimizedTailRecursionIssue::class)
+        assertEquals(2,issues.size)
+        assertNotNull(issues.find { (it as OptimizedTailRecursionIssue).functionSignature =="factorial0(n:Int,acc:Int=1)" })
+        assertNotNull(issues.find { (it as OptimizedTailRecursionIssue).functionSignature =="factorial4(n:Int,acc:Int=1)" })
+    }
 }

@@ -2,6 +2,7 @@ package com.github.tnoalex.processor.kotlin
 
 import com.github.tnoalex.elements.AbstractElement
 import com.github.tnoalex.elements.FileElement
+import com.github.tnoalex.elements.FunctionParameterElement
 import com.github.tnoalex.elements.kotlin.KotlinClassElement
 import com.github.tnoalex.elements.kotlin.KotlinFunctionElement
 import com.github.tnoalex.events.FileEnterEvent
@@ -22,7 +23,7 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
 
     private lateinit var currentFileContext: KotlinFileContext
 
-    @EventListener("\${currentFileName}.endsWith(\"kt\")")
+    @EventListener("\${currentFileName}.endsWith(\".kt\")")
     private fun enterFile(ctx: KotlinFileContext) {
         val fileElement = FileElement(
             currentFileName,
@@ -77,13 +78,29 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
             ctx.modifiers()?.text
         )
 
+    private fun createFunctionParameters(ctx: FunctionValueParametersContext): LinkedList<FunctionParameterElement> {
+        val params = LinkedList<FunctionParameterElement>()
+        ctx.functionValueParameter()?.forEach {
+            params.add(
+                FunctionParameterElement(
+                it.parameter().simpleIdentifier().text,
+                it.start.line,
+                it.stop.line,
+                it.parameter().type().text,
+                null
+            )
+            )
+        }
+        return params
+    }
+
     private fun createFunctionElement(ctx: FunctionDeclarationContext, parent: AbstractElement) =
         KotlinFunctionElement(
             ctx.simpleIdentifier().text,
             ctx.start.line,
             ctx.stop.line,
             parent,
-            ctx.paramsNum(),
+            createFunctionParameters(ctx.functionValueParameters()),
             ctx.visibilityModifier(),
             ctx.functionModifier(),
             ctx.inheritanceModifier()
@@ -138,8 +155,9 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
         return innerElements
     }
 
-    @EventListener("#{fileName}.startsWith(\"exit\")")
+    @EventListener("#{fileName}.startsWith(\"exit\") && #{fileName}.endsWith(\".kt\")")
     private fun exitFile(fileName: String) {
         EventBus.post(FileExitEvent(context.getLastElement()))
     }
+
 }
