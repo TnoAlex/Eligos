@@ -33,6 +33,7 @@ configurations {
 dependencies {
     implementation 'cn.emergentdesign.se:depends-kotlin:1.0.0-SNAPSHOT'
     implementation 'cn.emergentdesign.se:depends-core:0.9.8-SNAPSHOT'
+    implementation 'cn.emergentdesign.se:depends-java:0.9.8-SNAPSHOT'
     implementation 'cn.emergentdesign.se:utils:0.1.1'
     implementation 'org.jetbrains.kotlin:kotlin-reflect:1.9.10'
     implementation 'org.slf4j:slf4j-api:2.0.9'

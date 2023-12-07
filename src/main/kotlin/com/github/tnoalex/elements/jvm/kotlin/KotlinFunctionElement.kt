@@ -1,19 +1,28 @@
-package com.github.tnoalex.elements.kotlin
+package com.github.tnoalex.elements.jvm.kotlin
 
 import com.github.tnoalex.elements.AbstractElement
-import com.github.tnoalex.elements.FunctionParameterElement
 import java.util.*
 
 class KotlinFunctionElement(
     functionName: String,
     functionStartLine: Int,
     functionStopLine: Int,
-    override var parent: AbstractElement?,
-    val parameters: LinkedList<FunctionParameterElement>,
-    private val visibility: String?,
-    private val functionModifier: String?,
-    private val inheritanceModifier: String?
-) : AbstractElement(functionName, functionStartLine, functionStopLine) {
+    parent: AbstractElement,
+    val parameters: LinkedList<KotlinParameterElement>,
+    annotations: LinkedList<String>,
+    visibilityModifier: String?,
+    functionModifier: String?,
+    inheritanceModifier: String?
+) : KotlinElement(
+    functionName,
+    functionStartLine,
+    functionStopLine,
+    parent,
+    annotations,
+    visibilityModifier,
+    functionModifier?.let{ listOf(functionModifier) },
+    inheritanceModifier
+) {
     init {
         parameters.forEach {
             it.parent = this
@@ -36,6 +45,11 @@ class KotlinFunctionElement(
     val isTopLevel: Boolean
         get() = parent is KotlinFunctionElement
 
+
+    override fun toString(): String {
+        return functionSignature
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -43,26 +57,12 @@ class KotlinFunctionElement(
 
         other as KotlinFunctionElement
 
-        if (parent != other.parent) return false
-        if (parameters != other.parameters) return false
-        if (visibility != other.visibility) return false
-        if (functionModifier != other.functionModifier) return false
-        if (inheritanceModifier != other.inheritanceModifier) return false
-
-        return true
+        return parameters == other.parameters
     }
 
     override fun hashCode(): Int {
         var result = super.hashCode()
-        result = 31 * result + (parent?.hashCode() ?: 0)
         result = 31 * result + parameters.hashCode()
-        result = 31 * result + (visibility?.hashCode() ?: 0)
-        result = 31 * result + (functionModifier?.hashCode() ?: 0)
-        result = 31 * result + (inheritanceModifier?.hashCode() ?: 0)
         return result
-    }
-
-    override fun toString(): String {
-        return functionSignature
     }
 }

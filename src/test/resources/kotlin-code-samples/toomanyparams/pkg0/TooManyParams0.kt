@@ -1,9 +1,11 @@
-package `kotlin-code-samples`.toomanyparams.pkg0
+package toomanyparams.pkg0
+
+import org.jetbrains.annotations.NotNull
 
 class TooManyParams0 {
     fun funP0(
-        p0: String,
-        p1: Int,
+        vararg p0: String,
+        @NotNull p1: Int,
         p2: Double,
         p3: List<Int>,
         p4: (String,Int)->Unit,

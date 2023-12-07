@@ -64,7 +64,7 @@ class ProcessorTest {
         val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(ComplexMethodIssue::class)
         assertEquals(1, issues.size)
         assertEquals("solveSCC()", (issues[0] as ComplexMethodIssue).methodSignature)
-        assertEquals(18, (issues[0] as ComplexMethodIssue).circleComplexity)
+        assertEquals(12, (issues[0] as ComplexMethodIssue).circleComplexity)
     }
 
     @Test

@@ -1,4 +1,4 @@
-package `kotlin-code-samples`.toomanyparams.pkg1
+package toomanyparams.pkg1
 
 typealias Person = (String, Int) -> Unit
 fun funP1(

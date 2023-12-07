@@ -4,6 +4,7 @@ import depends.extractor.kotlin.KotlinParser.*
 import depends.extractor.kotlin.KotlinParserBaseVisitor
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.RuleContext
+import java.util.*
 
 fun getParentFunction(ctx: ParserRuleContext): FunctionDeclarationContext? {
     var parent = ctx.parent
@@ -52,18 +53,6 @@ fun getCurrentPackageName(ctx: ParserRuleContext): String? {
     return null
 }
 
-fun FunctionDeclarationContext.visibilityModifier(): String? {
-    return modifiers()?.modifier()?.firstOrNull { it.visibilityModifier() != null }?.text
-}
-
-fun FunctionDeclarationContext.functionModifier(): String? {
-    return modifiers()?.modifier()?.firstOrNull { it.functionModifier() != null }?.text
-}
-
-fun FunctionDeclarationContext.inheritanceModifier(): String? {
-    return modifiers()?.modifier()?.firstOrNull { it.inheritanceModifier() != null }?.text
-}
-
 fun FunctionDeclarationContext.paramsNum(): Int {
     return functionValueParameters().functionValueParameter().size
 }
@@ -86,6 +75,7 @@ fun FunctionDeclarationContext.isClosure(): Boolean {
     }
     return false
 }
+
 
 fun ExpressionContext.nearestIfExpression(): IfExpressionContext? {
     var ifExpressionContext: IfExpressionContext? = null
@@ -218,4 +208,53 @@ fun PostfixUnaryExpressionContext.independent(): Boolean {
         parent = parent.parent
     }
     return true
+}
+
+fun ModifiersContext.annotations(): LinkedList<String> {
+    val res = LinkedList<String>()
+    annotation().forEach {
+        if (it.singleAnnotation() != null) {
+            res.add(it.singleAnnotation().text)
+        }
+        if (it.multiAnnotation() != null) {
+            it.multiAnnotation().unescapedAnnotation().forEach { ua ->
+                res.add(ua.text)
+            }
+        }
+    }
+    return res
+}
+
+fun ModifiersContext.visibilityModifier(): String? {
+    return modifier().firstOrNull { it.visibilityModifier() != null }?.text
+}
+
+fun ModifiersContext.classModifier(): String? {
+    return modifier().firstOrNull { it.classModifier() != null }?.text
+}
+
+fun ModifiersContext.functionModifier(): String? {
+    return modifier().firstOrNull { it.functionModifier() != null }?.text
+}
+fun ModifiersContext.inheritanceModifier(): String? {
+    return modifier().firstOrNull { it.inheritanceModifier() != null }?.text
+}
+
+fun ParameterModifiersContext.modifiers(): List<String> {
+    return parameterModifier().map { it.text }
+}
+
+fun ParameterModifiersContext.parameterAnnotations(): LinkedList<String> {
+    val res = LinkedList<String>()
+    annotation().forEach {
+        if (it.singleAnnotation() != null) {
+            res.add(it.singleAnnotation().text)
+        }
+        if (it.multiAnnotation() != null) {
+            it.multiAnnotation().unescapedAnnotation().forEach { ua ->
+                res.add(ua.text)
+            }
+        }
+    }
+    return res
 }

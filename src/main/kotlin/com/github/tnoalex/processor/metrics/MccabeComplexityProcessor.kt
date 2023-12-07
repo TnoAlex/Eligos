@@ -8,10 +8,11 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ComplexMethodIssue
 import com.github.tnoalex.processor.AstProcessorWithContext
 import java.util.*
+import kotlin.collections.HashSet
 
 abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
     private val functionMap = HashMap<String, ArrayList<Int>>()
-    private val closureFunctionMap = HashMap<String, ArrayList<String>>()
+    private val closureFunctionMap = HashMap<String, HashSet<String>>()
     private val idMap = HashMap<String, String>()
     private val terminatedMap = HashSet<String>()
 
@@ -82,7 +83,7 @@ abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
 
     protected fun recordClosurePair(parent: String, current: String) {
         if (closureFunctionMap[parent] == null) {
-            closureFunctionMap[parent] = arrayListOf(current)
+            closureFunctionMap[parent] = hashSetOf(current)
         } else {
             closureFunctionMap[parent]!!.add(current)
         }

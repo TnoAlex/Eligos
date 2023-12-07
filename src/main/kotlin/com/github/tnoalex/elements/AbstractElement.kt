@@ -14,7 +14,6 @@ abstract class AbstractElement(
     val innerElement = LinkedList<AbstractElement>()
 
     abstract var parent: AbstractElement?
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -22,8 +21,9 @@ abstract class AbstractElement(
         other as AbstractElement
 
         if (elementName != other.elementName) return false
-        if (lineNumber != other.lineNumber) return false
-        if (innerElement != other.innerElement) return false
+        if (elementStartLine != other.elementStartLine) return false
+        if (elementStopLine != other.elementStopLine) return false
+
         return true
     }
 

@@ -9,17 +9,17 @@ class KotlinAstListener : AstListener, KotlinParserBaseListener() {
         get() = listOf("kotlin")
 
     override fun enterKotlinFile(ctx: KotlinParser.KotlinFileContext) {
-        EventBus.post(ctx)
+        EventBus.post(ctx, prefix = "enter")
         super.enterKotlinFile(ctx)
     }
 
     override fun enterFunctionDeclaration(ctx: KotlinParser.FunctionDeclarationContext) {
-        EventBus.post(ctx)
+        EventBus.post(ctx, prefix = "enter")
         super.enterFunctionDeclaration(ctx)
     }
 
     override fun exitFunctionDeclaration(ctx: KotlinParser.FunctionDeclarationContext) {
-        EventBus.post(ctx)
+        EventBus.post(ctx, prefix = "exit")
         super.exitFunctionDeclaration(ctx)
     }
 
@@ -28,10 +28,6 @@ class KotlinAstListener : AstListener, KotlinParserBaseListener() {
         super.enterFunctionBody(ctx)
     }
 
-    override fun exitFunctionBody(ctx: KotlinParser.FunctionBodyContext) {
-        EventBus.post(ctx)
-        super.exitFunctionBody(ctx)
-    }
 
     override fun enterAssignment(ctx: KotlinParser.AssignmentContext) {
         EventBus.post(ctx)
@@ -41,6 +37,11 @@ class KotlinAstListener : AstListener, KotlinParserBaseListener() {
     override fun enterPropertyDeclaration(ctx: KotlinParser.PropertyDeclarationContext) {
         EventBus.post(ctx)
         super.enterPropertyDeclaration(ctx)
+    }
+
+    override fun enterTypeAlias(ctx: KotlinParser.TypeAliasContext) {
+        EventBus.post(ctx)
+        super.enterTypeAlias(ctx)
     }
 
     override fun enterElvisExpression(ctx: KotlinParser.ElvisExpressionContext) {

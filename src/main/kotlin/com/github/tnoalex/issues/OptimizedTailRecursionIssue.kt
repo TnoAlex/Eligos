@@ -3,8 +3,8 @@ package com.github.tnoalex.issues
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.utils.encodeBySHA1ToString
 
-data class OptimizedTailRecursionIssue(
-    val affectedFile: String,
+class OptimizedTailRecursionIssue(
+    affectedFile: String,
     val functionSignature: String
 ) :
     Issue(AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile)) {

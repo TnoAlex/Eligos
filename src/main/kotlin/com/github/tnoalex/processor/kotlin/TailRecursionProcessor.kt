@@ -3,10 +3,7 @@ package com.github.tnoalex.processor.kotlin
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.OptimizedTailRecursionIssue
 import com.github.tnoalex.processor.AstProcessorWithContext
-import com.github.tnoalex.utils.independent
-import com.github.tnoalex.utils.nearestCallSuffixExpression
-import com.github.tnoalex.utils.paramsNum
-import com.github.tnoalex.utils.signature
+import com.github.tnoalex.utils.*
 import depends.extractor.kotlin.KotlinParser.*
 import depends.extractor.kotlin.KotlinParserBaseVisitor
 
@@ -15,11 +12,9 @@ class TailRecursionProcessor : AstProcessorWithContext() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 
-    @EventListener(
-        "!com.github.tnoalex.utils.KotlinAstUtilKt.isClosure(#{ctx}) && " +
-                "com.github.tnoalex.utils.KotlinAstUtilKt.functionModifier(#{ctx}) != \"tailrec\""
-    )
+    @EventListener("!com.github.tnoalex.utils.KotlinAstUtilKt.isClosure(#{ctx})","enter")
     fun process(ctx: FunctionDeclarationContext) {
+        if (ctx.modifiers()?.functionModifier() == "tailrec") return
         var isTailRec = false
         ctx.functionBody()?.let { isTailRec = findRecursion(it, ctx.simpleIdentifier().text, ctx.paramsNum()) }
         if (isTailRec) {

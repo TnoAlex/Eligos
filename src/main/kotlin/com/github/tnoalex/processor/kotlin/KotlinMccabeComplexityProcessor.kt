@@ -2,14 +2,17 @@ package com.github.tnoalex.processor.kotlin
 
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.processor.metrics.MccabeComplexityProcessor
-import com.github.tnoalex.utils.*
+import com.github.tnoalex.utils.getParentFunction
+import com.github.tnoalex.utils.id
+import com.github.tnoalex.utils.signature
 import depends.extractor.kotlin.KotlinParser.*
+import org.antlr.v4.runtime.ParserRuleContext
 
 class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 
-    @EventListener
+    @EventListener(eventPrefix = "enter")
     private fun processFunctionDeclaration(ctx: FunctionDeclarationContext) {
         val parentFunc = getParentFunction(ctx) // determine whether it is a closure function
         val id = ctx.id()
@@ -19,11 +22,9 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         }
     }
 
-    @EventListener
-    private fun processExitFunction(ctx: FunctionBodyContext) {
-        val parentFunc = getParentFunction(ctx)
-            ?: throw RuntimeException("Unintended structures, which should not be function exports here")
-        val id = parentFunc.id()
+    @EventListener(eventPrefix = "exit")
+    private fun processExitFunction(ctx: FunctionDeclarationContext) {
+        val id = ctx.id()
         addTerminatedNode(id)
     }
 
@@ -35,31 +36,24 @@ class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
         addArc(id, 2)
     }
 
-    @EventListener("#{ctx}.children.size > 1")
+    @EventListener
     private fun processAssignment(ctx: AssignmentContext) {
-        val parentFunc = getParentFunction(ctx) ?: return //top level
-        val id = parentFunc.id()
-        addArc(id)
-        addNode(id)
-    }
-
-    @EventListener("#{ctx}.children.size > 1")
-    private fun processPropertyDeclaration(ctx: PropertyDeclarationContext) {
-        val parentFunc = getParentFunction(ctx) ?: return
-        val id = parentFunc.id()
-        addArc(id)
-        addNode(id)
+        processStatement(ctx)
     }
 
     @EventListener
-    private fun processExpression(ctx: ExpressionContext) {
+    private fun processPropertyDeclaration(ctx: PropertyDeclarationContext) {
+        processStatement(ctx)
+    }
+
+    @EventListener
+    private fun processTypeAlias(ctx: TypeAliasContext) {
+        processStatement(ctx)
+    }
+
+    private fun processStatement(ctx: ParserRuleContext) {
         val parentFunc = getParentFunction(ctx) ?: return
         val id = parentFunc.id()
-        if (ctx.nearestIfExpression() != null) return
-        else if (ctx.nearestWhenExpression() != null) return
-        else if (ctx.nearestElvisExpression() != null) return
-        else if (ctx.nearestTryExpression() != null) return
-        else if (ctx.nearestJumpExpression() != null) return // other hook process
         addArc(id) //Except for the above expressions, the rest of the expressions are considered linear
         addNode(id)
     }

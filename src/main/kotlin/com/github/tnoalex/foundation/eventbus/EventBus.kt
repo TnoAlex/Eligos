@@ -24,22 +24,23 @@ object EventBus {
     /**
      * Publishes an event to the listeners.
      *
-     * @param event
-     * @param targets The event object, which can be of any type.
+     * @param event The event object, which can be of any type.
      * @param targets The list of target listener types.
      * It is used to specify specific recipients when the event object is a Kotlin built-in type, such as String.
      */
-    fun post(event: Any, targets: List<KClass<*>>? = null) {
+    fun post(event: Any, targets: List<KClass<*>>? = null, prefix: String = "") {
         val methods = listenerMap[event::class] ?: return
         val filteredMethods = methods.filter {
             targets == null || targets.find { t -> t.isSuperclassOf(it.listener::class) } != null
         }
-        filteredMethods.forEach { postEvent(it, event) }
+        filteredMethods.forEach { postEvent(it, event, prefix) }
     }
 
-    private fun postEvent(wrapper: ListenerMethod, event: Any) {
+    private fun postEvent(wrapper: ListenerMethod, event: Any, prefix: String) {
         if (wrapper.filterEl.isBlank() || evaluateBooleanElExpression(wrapper.filterEl, wrapper.listener, event)) {
-            invokeTarget(wrapper, event)
+            if (wrapper.eventPrefix.isBlank() || wrapper.eventPrefix == prefix){
+                invokeTarget(wrapper, event)
+            }
         }
     }
 
@@ -77,7 +78,8 @@ object EventBus {
                     it,
                     null,
                     it.parameters[1].type.classifier as KClass<*>,
-                    (getMethodAnnotation(EventListener::class, it)[0] as EventListener).filter
+                    (getMethodAnnotation(EventListener::class, it)[0] as EventListener).filter,
+                    (getMethodAnnotation(EventListener::class, it)[0] as EventListener).eventPrefix
                 )
             }
         val propertyList = getMutablePropertiesAnnotateWith(EventListener::class, listener::class).map {
@@ -86,7 +88,8 @@ object EventBus {
                 null,
                 it,
                 it.setter.parameters[1].type.classifier as KClass<*>,
-                (getPropertyAnnotation(EventListener::class, it)[0] as EventListener).filter
+                (getPropertyAnnotation(EventListener::class, it)[0] as EventListener).filter,
+                (getPropertyAnnotation(EventListener::class, it)[0] as EventListener).eventPrefix,
             )
         }
         return methodList + propertyList

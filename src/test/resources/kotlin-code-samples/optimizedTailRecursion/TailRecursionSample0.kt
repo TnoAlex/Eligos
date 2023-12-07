@@ -1,4 +1,4 @@
-package `kotlin-code-samples`.optimizedTailRecursion
+package optimizedTailRecursion
 
 fun factorial0(n: Int, acc: Int = 1): Int {
     if (n != 0) {

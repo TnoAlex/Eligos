@@ -1,4 +1,4 @@
-package `kotlin-code-samples`.circularceferences.pkg0
+package circularceferences.pkg0
 
 class CircularReferences1 {
     val c0 = CircularReferences0()

@@ -9,5 +9,6 @@ data class ListenerMethod(
     val method: KFunction<*>?,
     val property: KMutableProperty<*>?,
     val eventType: KClass<*>,
-    val filterEl: String
+    val filterEl: String,
+    val eventPrefix:String
 )

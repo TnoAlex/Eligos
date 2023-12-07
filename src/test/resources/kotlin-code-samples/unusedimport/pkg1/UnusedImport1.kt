@@ -1,4 +1,4 @@
-package `kotlin-code-samples`.unusedimport.pkg1
+package unusedimport.pkg1
 
 class UnusedImport1 {
 }

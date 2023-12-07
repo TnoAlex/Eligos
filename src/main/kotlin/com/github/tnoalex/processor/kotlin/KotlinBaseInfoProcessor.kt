@@ -2,9 +2,9 @@ package com.github.tnoalex.processor.kotlin
 
 import com.github.tnoalex.elements.AbstractElement
 import com.github.tnoalex.elements.FileElement
-import com.github.tnoalex.elements.FunctionParameterElement
-import com.github.tnoalex.elements.kotlin.KotlinClassElement
-import com.github.tnoalex.elements.kotlin.KotlinFunctionElement
+import com.github.tnoalex.elements.jvm.kotlin.KotlinClassElement
+import com.github.tnoalex.elements.jvm.kotlin.KotlinFunctionElement
+import com.github.tnoalex.elements.jvm.kotlin.KotlinParameterElement
 import com.github.tnoalex.events.FileEnterEvent
 import com.github.tnoalex.events.FileExitEvent
 import com.github.tnoalex.foundation.eventbus.EventBus
@@ -23,7 +23,7 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
 
     private lateinit var currentFileContext: KotlinFileContext
 
-    @EventListener("\${currentFileName}.endsWith(\".kt\")")
+    @EventListener("\${currentFileName}.endsWith(\".kt\")","enter")
     private fun enterFile(ctx: KotlinFileContext) {
         val fileElement = FileElement(
             currentFileName,
@@ -62,9 +62,12 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
             ctx.start.line,
             ctx.stop.line,
             parent,
+            ctx.modifiers()?.annotations() ?: LinkedList(),
             currentFileContext.packageHeader().identifier().text,
             "class",
-            ctx.modifiers()?.text
+            ctx.modifiers()?.visibilityModifier(),
+            ctx.modifiers()?.classModifier(),
+            ctx.modifiers()?.inheritanceModifier()
         )
 
     private fun createObjectElement(ctx: ObjectDeclarationContext, parent: AbstractElement) =
@@ -73,26 +76,32 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
             ctx.start.line,
             ctx.stop.line,
             parent,
+            ctx.modifiers()?.annotations() ?: LinkedList(),
             currentFileContext.packageHeader().identifier().text,
             "object",
-            ctx.modifiers()?.text
+            ctx.modifiers()?.visibilityModifier(),
+            ctx.modifiers()?.classModifier(),
+            ctx.modifiers()?.inheritanceModifier()
         )
 
-    private fun createFunctionParameters(ctx: FunctionValueParametersContext): LinkedList<FunctionParameterElement> {
-        val params = LinkedList<FunctionParameterElement>()
+    private fun createFunctionParameters(ctx: FunctionValueParametersContext): LinkedList<KotlinParameterElement> {
+        val params = LinkedList<KotlinParameterElement>()
         ctx.functionValueParameter()?.forEach {
             params.add(
-                FunctionParameterElement(
-                it.parameter().simpleIdentifier().text,
-                it.start.line,
-                it.stop.line,
-                it.parameter().type().text,
-                null
-            )
+                KotlinParameterElement(
+                    it.parameter().simpleIdentifier().text,
+                    it.start.line,
+                    it.stop.line,
+                    it.parameter().type().text,
+                    null,
+                    it.parameterModifiers()?.parameterAnnotations() ?: LinkedList(),
+                    it.parameterModifiers()?.modifiers()
+                )
             )
         }
         return params
     }
+
 
     private fun createFunctionElement(ctx: FunctionDeclarationContext, parent: AbstractElement) =
         KotlinFunctionElement(
@@ -101,9 +110,10 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
             ctx.stop.line,
             parent,
             createFunctionParameters(ctx.functionValueParameters()),
-            ctx.visibilityModifier(),
-            ctx.functionModifier(),
-            ctx.inheritanceModifier()
+            ctx.modifiers()?.annotations() ?: LinkedList(),
+            ctx.modifiers()?.visibilityModifier(),
+            ctx.modifiers()?.functionModifier(),
+            ctx.modifiers()?.inheritanceModifier()
         )
 
     private fun getInnerElement(context: ParserRuleContext, element: AbstractElement): List<AbstractElement> {
