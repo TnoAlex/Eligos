@@ -1,15 +1,25 @@
 package com.github.tnoalex.issues
 
 import com.github.tnoalex.AnalysisHierarchyEnum
-import com.github.tnoalex.utils.encodeBySHA1ToString
 
 class OptimizedTailRecursionIssue(
     affectedFile: String,
     val functionSignature: String
 ) :
     Issue(AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile)) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        if (!super.equals(other)) return false
 
-    override val identifier by lazy {
-        encodeBySHA1ToString(functionSignature)
+        other as OptimizedTailRecursionIssue
+
+        return functionSignature == other.functionSignature
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + functionSignature.hashCode()
+        return result
     }
 }

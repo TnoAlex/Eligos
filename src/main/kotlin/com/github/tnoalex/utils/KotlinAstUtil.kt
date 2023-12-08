@@ -161,53 +161,68 @@ fun ExpressionContext.nearestCallSuffixExpression(): CallSuffixContext? {
     return callSuffixContext
 }
 
+fun ConjunctionContext.independent(): Boolean {
+    return (parent as DisjunctionContext).DISJ().isNullOrEmpty()
+}
+
+fun EqualityContext.independent(): Boolean {
+    val parent = parent as ConjunctionContext
+    return parent.independent() && parent.CONJ().isNullOrEmpty()
+}
+
+fun ComparisonContext.independent(): Boolean {
+    val parent = parent as EqualityContext
+    return parent.independent() && parent.equalityOperator().isNullOrEmpty()
+}
+
+fun GenericCallLikeComparisonContext.independent(): Boolean {
+    val parent = parent as ComparisonContext
+    return parent.independent() && parent.comparisonOperator().isNullOrEmpty()
+}
+
+fun InfixOperationContext.independent(): Boolean {
+    val parent = parent as GenericCallLikeComparisonContext
+    return parent.independent() && parent.callSuffix().isNullOrEmpty()
+}
+
+fun ElvisExpressionContext.independent(): Boolean {
+    val parent = parent as InfixOperationContext
+    return parent.independent() && parent.inOperator().isNullOrEmpty()
+}
+
+fun InfixFunctionCallContext.independent(): Boolean {
+    val parent = parent as ElvisExpressionContext
+    return parent.independent() && parent.elvis().isNullOrEmpty()
+}
+
+fun RangeExpressionContext.independent(): Boolean {
+    val parent = parent as InfixFunctionCallContext
+    return parent.independent() && parent.simpleIdentifier().isNullOrEmpty()
+}
+
+fun AdditiveExpressionContext.independent(): Boolean {
+    val parent = parent as RangeExpressionContext
+    return parent.independent() && (parent.RANGE().isNullOrEmpty() && parent.RANGE_UNTIL().isNullOrEmpty())
+}
+
+fun MultiplicativeExpressionContext.independent(): Boolean {
+    val parent = parent as AdditiveExpressionContext
+    return parent.independent() && parent.additiveOperator().isNullOrEmpty()
+}
+
+fun AsExpressionContext.independent(): Boolean {
+    val parent = parent as MultiplicativeExpressionContext
+    return parent.independent() && parent.multiplicativeOperator().isNullOrEmpty()
+}
+
+fun PrefixUnaryExpressionContext.independent(): Boolean {
+    val parent = parent as AsExpressionContext
+    return parent.independent() && parent.asOperator().isNullOrEmpty()
+}
+
 fun PostfixUnaryExpressionContext.independent(): Boolean {
-    var parent = parent
-
-    while (parent !is ExpressionContext) {
-        when (parent) {
-            is PrefixUnaryExpressionContext ->
-                if (!parent.unaryPrefix().isNullOrEmpty()) return false
-
-            is AsExpressionContext ->
-                if (!parent.asOperator().isNullOrEmpty()) return false
-
-            is MultiplicativeExpressionContext ->
-                if (!parent.multiplicativeOperator().isNullOrEmpty()) return false
-
-            is AdditiveExpressionContext ->
-                if (!parent.additiveOperator().isNullOrEmpty()) return false
-
-            is RangeExpressionContext ->
-                if (!(parent.RANGE().isNullOrEmpty() || parent.RANGE_UNTIL().isNullOrEmpty())) return false
-
-            is InfixFunctionCallContext ->
-                if (!parent.simpleIdentifier().isNullOrEmpty()) return false
-
-            is ElvisExpressionContext ->
-                if (!parent.elvis().isNullOrEmpty()) return false
-
-            is InfixOperationContext ->
-                if (!parent.inOperator().isNullOrEmpty()) return false
-
-            is GenericCallLikeComparisonContext ->
-                if (!parent.callSuffix().isNullOrEmpty()) return false
-
-            is ComparisonContext ->
-                if (!parent.comparisonOperator().isNullOrEmpty()) return false
-
-            is EqualityContext ->
-                if (!parent.equalityOperator().isNullOrEmpty()) return false
-
-            is ConjunctionContext ->
-                if (!parent.CONJ().isNullOrEmpty()) return false
-
-            is DisjunctionContext ->
-                if (!parent.DISJ().isNullOrEmpty()) return false
-        }
-        parent = parent.parent
-    }
-    return true
+    val parent = parent as PrefixUnaryExpressionContext
+    return parent.independent() && parent.unaryPrefix().isNullOrEmpty()
 }
 
 fun ModifiersContext.annotations(): LinkedList<String> {
@@ -236,6 +251,7 @@ fun ModifiersContext.classModifier(): String? {
 fun ModifiersContext.functionModifier(): String? {
     return modifier().firstOrNull { it.functionModifier() != null }?.text
 }
+
 fun ModifiersContext.inheritanceModifier(): String? {
     return modifier().firstOrNull { it.inheritanceModifier() != null }?.text
 }

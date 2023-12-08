@@ -2,7 +2,6 @@ package com.github.tnoalex.foundation.algorithm
 
 import com.github.tnoalex.foundation.algorithm.DuplicateEdgeStrategy.APPEND
 import com.github.tnoalex.foundation.algorithm.DuplicateEdgeStrategy.DISCARD
-import com.github.tnoalex.utils.encodeBySHA1ToString
 import java.util.*
 import kotlin.math.min
 
@@ -15,9 +14,6 @@ class AdjacencyList<T : Any> {
     var arcNum: Int = 0
         private set
 
-    val identifier by lazy {
-        generateId()
-    }
 
     fun addNodes(nodes: Collection<T>) {
         nodes.forEach {
@@ -230,23 +226,27 @@ class AdjacencyList<T : Any> {
         return res
     }
 
-    private fun generateId(): String {
-        val builder = StringBuilder()
-        nodesArray.forEach {
-            var arc = it.firstArc
-            builder.append(it.id)
-            while (arc != null) {
-                builder.append(arc.info.hashCode())
-                arc = arc.nextArc
-            }
-        }
-        depthFirstTraversal().forEach {
-            builder.append(it.hashCode())
-        }
-        return encodeBySHA1ToString(builder.toString())
-    }
-
     private fun locatingNode(data: T): Int {
         return nodesArray.indexOf(nodesArray.find { it.data == data })
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as AdjacencyList<*>
+
+        if (nodesArray != other.nodesArray) return false
+        if (nodeNum != other.nodeNum) return false
+        if (arcNum != other.arcNum) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = nodesArray.hashCode()
+        result = 31 * result + nodeNum
+        result = 31 * result + arcNum
+        return result
     }
 }

@@ -70,8 +70,15 @@ class ProcessorTest {
     @Test
     fun testOptimizedTailRecursion() {
         val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(OptimizedTailRecursionIssue::class)
-        assertEquals(2,issues.size)
-        assertNotNull(issues.find { (it as OptimizedTailRecursionIssue).functionSignature =="factorial0(n:Int,acc:Int=1)" })
-        assertNotNull(issues.find { (it as OptimizedTailRecursionIssue).functionSignature =="factorial4(n:Int,acc:Int=1)" })
+        assertEquals(2, issues.size)
+        assertNotNull(issues.find { (it as OptimizedTailRecursionIssue).functionSignature == "factorial0(n:Int,acc:Int=1)" })
+        assertNotNull(issues.find { (it as OptimizedTailRecursionIssue).functionSignature == "factorial4(n:Int,acc:Int=1)" })
+    }
+
+    @Test
+    fun testImplicitSingleExprFunction() {
+        val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(ImplicitSingleExprFunctionIssue::class)
+        assertEquals(1, issues.size)
+        assertEquals("test0()", (issues[0] as ImplicitSingleExprFunctionIssue).functionSignature)
     }
 }

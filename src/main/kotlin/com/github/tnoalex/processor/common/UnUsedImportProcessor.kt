@@ -36,7 +36,7 @@ class UnUsedImportProcessor : AstProcessor {
     private fun foundUnusedImportPattern(affectedFilesIndexes: List<Int>, context: Context) {
         val affectedFiles =
             affectedFilesIndexes.map { context.getDependencyMatrix(AnalysisHierarchyEnum.FILE)!!.getNodeName(it) }
-        val issue = issues.filter { it.identifier == affectedFiles[0] }
+        val issue = issues.filter { it.useFile == affectedFiles[0] }
         if (issue.isEmpty()) {
             issues.add(UnusedImportIssue(affectedFiles.toHashSet(), affectedFiles[0]))
         } else {

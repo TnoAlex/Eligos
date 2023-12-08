@@ -11,6 +11,7 @@ import com.github.tnoalex.processor.AstProcessor
 import com.github.tnoalex.utils.getEntitiesByType
 import depends.entity.FunctionEntity
 import java.util.*
+import kotlin.collections.HashMap
 
 class TooManyParametersProcessor : AstProcessor {
     private val issues = LinkedList<ExcessiveParamsIssue>()
@@ -34,7 +35,11 @@ class TooManyParametersProcessor : AstProcessor {
             val file = functionDependency!!.nodes.first { f ->
                 f.split("(")[1] == it.qualifiedName + ")"
             }.split("(")[0]
-            issues.add(ExcessiveParamsIssue(file, it.qualifiedName.split(".").last(), it.parameters.size))
+            val params = HashMap<String,String>()
+            it.parameters.forEach {p->
+                params[p.rawName.name] = p.rawType.name
+            }
+            issues.add(ExcessiveParamsIssue(file, it.qualifiedName.split(".").last(), params))
         }
     }
 }

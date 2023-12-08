@@ -38,7 +38,7 @@ object EventBus {
 
     private fun postEvent(wrapper: ListenerMethod, event: Any, prefix: String) {
         if (wrapper.filterEl.isBlank() || evaluateBooleanElExpression(wrapper.filterEl, wrapper.listener, event)) {
-            if (wrapper.eventPrefix.isBlank() || wrapper.eventPrefix == prefix){
+            if (prefix.isBlank() || wrapper.eventPrefix.isBlank() || wrapper.eventPrefix == prefix) {
                 invokeTarget(wrapper, event)
             }
         }
