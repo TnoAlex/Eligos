@@ -5,13 +5,18 @@ import depends.extractor.java.JavaParser
 import depends.extractor.java.JavaParserBaseListener
 
 
-class JavaAstListener : AstListener, JavaParserBaseListener(){
+class JavaAstListener : AstListener, JavaParserBaseListener() {
     override val supportLanguage: List<String>
         get() = listOf("java")
 
     override fun enterCompilationUnit(ctx: JavaParser.CompilationUnitContext) {
-        EventBus.post(ctx)
+        EventBus.post(ctx, prefix = "enter")
         super.enterCompilationUnit(ctx)
+    }
+
+    override fun exitCompilationUnit(ctx: JavaParser.CompilationUnitContext) {
+        EventBus.post(ctx, prefix = "exit")
+        super.exitCompilationUnit(ctx)
     }
 
     override fun enterClassDeclaration(ctx: JavaParser.ClassDeclarationContext) {

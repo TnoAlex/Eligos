@@ -13,7 +13,7 @@ import org.junit.jupiter.api.TestInstance
 import java.io.File
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ProcessorTest {
+class KotlinProcessorTest {
     private var analyzer = Analyzer(JsonFormatter(), listOf("kotlin"))
 
     init {
@@ -30,7 +30,7 @@ class ProcessorTest {
 
     @Test
     fun findCircularReferences() {
-        val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(CircularReferencesIssue::class)
+        val issues = analyzer.getContext().getIssuesByType(CircularReferencesIssue::class)
         assertEquals(2, issues.size)
         assertNotNull(issues.find { it.affectedFiles.size == 2 })
         assertNotNull(issues.find { it.affectedFiles.size == 3 })
@@ -46,14 +46,14 @@ class ProcessorTest {
 
     @Test
     fun tesFindTooManyParameters() {
-        val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(ExcessiveParamsIssue::class)
+        val issues = analyzer.getContext().getIssuesByType(ExcessiveParamsIssue::class)
         assertEquals(2, issues.size)
         assertEquals(8, (issues[0] as ExcessiveParamsIssue).arity)
     }
 
     @Test
     fun testUnUsedImport() {
-        val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(UnusedImportIssue::class)
+        val issues = analyzer.getContext().getIssuesByType(UnusedImportIssue::class)
         assertEquals(2, issues.size)
         assertNotNull(issues.find { it.affectedFiles.size == 2 })
         assertNotNull(issues.find { it.affectedFiles.size == 3 })
@@ -61,7 +61,7 @@ class ProcessorTest {
 
     @Test
     fun testMccabe() {
-        val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(ComplexMethodIssue::class)
+        val issues = analyzer.getContext().getIssuesByType(ComplexMethodIssue::class)
         assertEquals(1, issues.size)
         assertEquals("solveSCC()", (issues[0] as ComplexMethodIssue).methodSignature)
         assertEquals(12, (issues[0] as ComplexMethodIssue).circleComplexity)
@@ -69,7 +69,7 @@ class ProcessorTest {
 
     @Test
     fun testOptimizedTailRecursion() {
-        val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(OptimizedTailRecursionIssue::class)
+        val issues = analyzer.getContext().getIssuesByType(OptimizedTailRecursionIssue::class)
         assertEquals(2, issues.size)
         assertNotNull(issues.find { (it as OptimizedTailRecursionIssue).functionSignature == "factorial0(n:Int,acc:Int=1)" })
         assertNotNull(issues.find { (it as OptimizedTailRecursionIssue).functionSignature == "factorial4(n:Int,acc:Int=1)" })
@@ -77,7 +77,7 @@ class ProcessorTest {
 
     @Test
     fun testImplicitSingleExprFunction() {
-        val issues = analyzer.getContextByLang("kotlin")!!.getIssuesByType(ImplicitSingleExprFunctionIssue::class)
+        val issues = analyzer.getContext().getIssuesByType(ImplicitSingleExprFunctionIssue::class)
         assertEquals(1, issues.size)
         assertEquals("test0()", (issues[0] as ImplicitSingleExprFunctionIssue).functionSignature)
     }

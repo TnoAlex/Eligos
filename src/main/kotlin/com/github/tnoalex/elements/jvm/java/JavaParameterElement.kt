@@ -8,7 +8,14 @@ class JavaParameterElement(
     parameterStartLine: Int,
     parameterStopLine: Int,
     val parameterType: String,
+    val lastParameter: Boolean,
     parent: AbstractElement?,
     annotations: LinkedList<String>,
-    private val modifier: String
-) : JavaElement(parameterName, parameterStartLine, parameterStopLine, parent, annotations, LinkedList(listOf(modifier)))
+    modifier: String?
+) : JavaElement(
+    parameterName,
+    parameterStartLine,
+    parameterStopLine,
+    parent,
+    annotations,
+    modifier?.let { LinkedList(listOf(it)) })

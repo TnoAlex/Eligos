@@ -16,9 +16,7 @@ import java.util.*
 import kotlin.collections.LinkedHashSet
 import kotlin.reflect.KClass
 
-class Context(
-    val lang: String
-) {
+class Context{
     private lateinit var dependsRepo: EntityRepo
 
     private val dependsMatrices: EnumMap<AnalysisHierarchyEnum, DependencyMatrix> =

@@ -24,7 +24,7 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
     private lateinit var currentFileContext: KotlinFileContext
 
     @EventListener("\${currentFileName}.endsWith(\".kt\")","enter")
-    private fun enterFile(ctx: KotlinFileContext) {
+    private fun enterKotlinFile(ctx: KotlinFileContext) {
         val fileElement = FileElement(
             currentFileName,
             ctx.start.line,
@@ -166,7 +166,7 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
     }
 
     @EventListener("#{fileName}.startsWith(\"exit\") && #{fileName}.endsWith(\".kt\")")
-    private fun exitFile(fileName: String) {
+    private fun exitKotlinFile(fileName: String) {
         EventBus.post(FileExitEvent(context.getLastElement()))
     }
 

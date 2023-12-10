@@ -13,13 +13,19 @@ class Analyzer(
     private val formatter: IFormatter,
     private val languages: List<String?>
 ) {
-    private val contexts = HashMap<String, Context>()
+    private lateinit var context: Context
+
     fun analyze() {
         cleanUpBeforeStart()
         buildAndParserAst()
     }
 
-    fun getContextByLang(languages: String) = contexts[languages]
+    fun getContext(): Context {
+        if (this::context.isInitialized)
+            return context
+        throw RuntimeException("Context not initialized yet")
+    }
+
     private fun cleanUpBeforeStart() {
         logger.info("------ Clean up framework ------")
         AstProcessorContainer.getKeys().filter { !languages.contains(it) }.filter { it != "any" }.forEach {
@@ -29,27 +35,29 @@ class Analyzer(
     }
 
     private fun buildAndParserAst() {
-        languages.filterNotNull().forEach { lang ->
-            logger.info("Create context for $lang")
-            val context = Context(lang)
-            AstProcessorContainer.registerByLang(lang, context)
-            val langProcessor = LangProcessorRegistration.getRegistry().getProcessorOf(lang)
-            langProcessor.addExtraListener(FileListener)
-            langProcessor.addExtraListener(AstListenerContainer.getByKey(lang))
-            logger.info("------ Build dependencies ------")
-            val bindingResolver = langProcessor.createBindingResolver(false,true)
-            val entityRepo =
-                langProcessor.buildDependencies(FileContainer.sourceFilePath!!.path, arrayOf(), bindingResolver)
-            RelationCounter(entityRepo, langProcessor, bindingResolver).computeRelations()
-            contexts[lang] = context
-            logger.info("Finished")
-            context.setDependsRepo(entityRepo)
-            logger.info("------ Clean up framework ------")
-            AstProcessorContainer.unregistersByLang(lang)
-            AstProcessorContainer.cleanUpProcessor(lang)
-            langProcessor.clearExtraListeners()
-            logger.info("Finished")
+        logger.info("Create context ")
+        context = Context()
+        val astListeners = languages.filterNotNull().map {
+            AstProcessorContainer.registerByLang(it, context)
+            AstListenerContainer.getByKey(it)!!
         }
+        val langProcessor = LangProcessorRegistration.getRegistry().getProcessorOf(languages[0])
+        langProcessor.addExtraListener(FileListener)
+        langProcessor.addExtraListeners(astListeners)
+        logger.info("------ Build dependencies ------")
+        val bindingResolver = langProcessor.createBindingResolver(false, false)
+        val entityRepo =
+            langProcessor.buildDependencies(FileContainer.sourceFilePath!!.path, arrayOf(), bindingResolver)
+        RelationCounter(entityRepo, langProcessor, bindingResolver).computeRelations()
+        logger.info("Finished")
+        context.setDependsRepo(entityRepo)
+        logger.info("------ Clean up framework ------")
+        langProcessor.clearExtraListeners()
+        languages.filterNotNull().forEach {
+            AstProcessorContainer.unregistersByLang(it)
+            AstProcessorContainer.cleanUpProcessor(it)
+        }
+        logger.info("Finished")
     }
 
     companion object {
