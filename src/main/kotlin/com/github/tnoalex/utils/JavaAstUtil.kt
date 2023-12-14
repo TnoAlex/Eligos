@@ -8,7 +8,7 @@ import java.util.*
 fun getParentClassOrBlockDeclaration(ctx: ParserRuleContext): RuleContext? {
     var parent = ctx.parent
     while (parent != null) {
-        if (parent is ClassDeclarationContext || parent is BlockContext)
+        if (parent is ClassDeclarationContext || parent is BlockContext || parent is ClassCreatorRestContext || parent is InterfaceDeclarationContext)
             return parent
         parent = parent.parent
     }
@@ -85,6 +85,16 @@ fun ClassBodyDeclarationContext.modifiersOfMember(): LinkedList<String> {
         modifiers.addAll(it.modifiers())
     }
     return modifiers
+}
+
+fun InterfaceBodyDeclarationContext.annotationsOfMember(): LinkedList<String> {
+    val annotations = LinkedList<String>()
+    modifier().forEach {
+        it.classOrInterfaceModifier()?.annotation()?.let { a ->
+            annotations.add(a.qualifiedName().text)
+        }
+    }
+    return annotations
 }
 
 fun TypeDeclarationContext.modifiersOfType(): LinkedList<String> {

@@ -18,12 +18,14 @@ import java.util.*
 
 class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
 
+    override val order: Int
+        get() = Int.MAX_VALUE
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 
     private lateinit var currentFileContext: KotlinFileContext
 
-    @EventListener("\${currentFileName}.endsWith(\".kt\")","enter")
+    @EventListener("\${currentFileName}.endsWith(\".kt\")", "enter")
     private fun enterKotlinFile(ctx: KotlinFileContext) {
         val fileElement = FileElement(
             currentFileName,
@@ -67,7 +69,8 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
             "class",
             ctx.modifiers()?.visibilityModifier(),
             ctx.modifiers()?.classModifier(),
-            ctx.modifiers()?.inheritanceModifier()
+            ctx.modifiers()?.inheritanceModifier(),
+            ctx.INTERFACE() != null
         )
 
     private fun createObjectElement(ctx: ObjectDeclarationContext, parent: AbstractElement) =
@@ -81,7 +84,8 @@ class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
             "object",
             ctx.modifiers()?.visibilityModifier(),
             ctx.modifiers()?.classModifier(),
-            ctx.modifiers()?.inheritanceModifier()
+            ctx.modifiers()?.inheritanceModifier(),
+            false
         )
 
     private fun createFunctionParameters(ctx: FunctionValueParametersContext): LinkedList<KotlinParameterElement> {

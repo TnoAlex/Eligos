@@ -7,13 +7,14 @@ class KotlinClassElement(
     className: String?,
     classStartLine: Int,
     classStopLine: Int,
-    parent: AbstractElement,
+    override var parent: AbstractElement?,
     annotations: LinkedList<String>,
     private val packageName: String?,
     private val type: String,
     visibilityModifier: String?,
     classModifiers: String?,
-    inheritanceModifier: String?
+    inheritanceModifier: String?,
+    val isInterface: Boolean
 ) : KotlinElement(
     className,
     classStartLine,
@@ -25,7 +26,13 @@ class KotlinClassElement(
     inheritanceModifier
 ) {
     val qualifiedName: String
-        get() = "$packageName.$elementName"
+        get() {
+            return if (parent is KotlinClassElement) {
+                "${(parent as KotlinClassElement).qualifiedName}.$elementName"
+            } else {
+                "$packageName.$elementName"
+            }
+        }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

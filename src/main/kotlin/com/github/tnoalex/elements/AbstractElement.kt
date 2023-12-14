@@ -14,6 +14,14 @@ abstract class AbstractElement(
     val innerElement = LinkedList<AbstractElement>()
 
     abstract var parent: AbstractElement?
+    open fun <T> accept(consumer: (AbstractElement) -> T) {
+        consumer(this)
+        innerElement.forEach {
+            consumer(it)
+            it.accept(consumer)
+        }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

@@ -8,10 +8,10 @@ open class JavaElement(
     elementName: String?,
     elementStartLine: Int,
     elementStopLine: Int,
-    parent: AbstractElement?,
+    override var parent: AbstractElement?,
     annotations: LinkedList<String>,
     private val modifiers: LinkedList<String>?
-) : AbstractJvmElement(elementName, elementStartLine, elementStopLine, parent, annotations) {
+) : AbstractJvmElement(elementName, elementStartLine, elementStopLine, annotations) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

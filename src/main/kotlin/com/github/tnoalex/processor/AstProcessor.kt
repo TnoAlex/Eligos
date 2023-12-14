@@ -9,7 +9,7 @@ interface AstProcessor : LanguageSupportInfo {
      * This property is used to identify the order in which the processor registers into the event bus
      * (affecting the order in which it is called).
      * when it is greater than [Short.MAX_VALUE],it will be called during the AST traversal phase,
-     * when it is less than [Short.MAX_VALUE] and greater than 0,it will be called at the end of the AST traversal,
+     * when it is less than [Short.MAX_VALUE] and greater than 0,it will be called at The dependency graph is built,
      * and when it is less than 0, it will be called at the end.
      */
     val order: Int

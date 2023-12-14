@@ -9,10 +9,12 @@ import depends.extractor.kotlin.KotlinParserBaseVisitor
 
 
 class TailRecursionProcessor : AstProcessorWithContext() {
+    override val order: Int
+        get() = Int.MAX_VALUE
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 
-    @EventListener("!com.github.tnoalex.utils.KotlinAstUtilKt.isClosure(#{ctx})","enter")
+    @EventListener("!com.github.tnoalex.utils.KotlinAstUtilKt.isClosure(#{ctx})", "enter")
     fun process(ctx: FunctionDeclarationContext) {
         if (ctx.modifiers()?.functionModifier() == "tailrec") return
         var isTailRec = false

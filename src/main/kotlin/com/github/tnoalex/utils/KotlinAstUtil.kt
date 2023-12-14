@@ -65,6 +65,7 @@ fun FunctionDeclarationContext.signature(): String {
     return "${simpleIdentifier().text}${functionValueParameters().text}"
 }
 
+@Suppress("UNUSED")
 fun FunctionDeclarationContext.isClosure(): Boolean {
     var parent = parent
     while (parent != null) {
@@ -74,77 +75,6 @@ fun FunctionDeclarationContext.isClosure(): Boolean {
         parent = parent.parent
     }
     return false
-}
-
-
-fun ExpressionContext.nearestIfExpression(): IfExpressionContext? {
-    var ifExpressionContext: IfExpressionContext? = null
-    var flag = false
-    accept(object : KotlinParserBaseVisitor<Unit>() {
-        override fun visitIfExpression(ctx: IfExpressionContext?) {
-            if (flag) return
-            ifExpressionContext = ctx
-            flag = true
-            super.visitIfExpression(ctx)
-        }
-    })
-    return ifExpressionContext
-}
-
-fun ExpressionContext.nearestWhenExpression(): WhenExpressionContext? {
-    var whenExpressionContext: WhenExpressionContext? = null
-    var flag = false
-    accept(object : KotlinParserBaseVisitor<Unit>() {
-        override fun visitWhenExpression(ctx: WhenExpressionContext?) {
-            if (flag) return
-            whenExpressionContext = ctx
-            flag = true
-            super.visitWhenExpression(ctx)
-        }
-    })
-    return whenExpressionContext
-}
-
-fun ExpressionContext.nearestTryExpression(): TryExpressionContext? {
-    var tryExpressionContext: TryExpressionContext? = null
-    var flag = false
-    accept(object : KotlinParserBaseVisitor<Unit>() {
-        override fun visitTryExpression(ctx: TryExpressionContext?) {
-            if (flag) return
-            tryExpressionContext = ctx
-            flag = true
-            super.visitTryExpression(ctx)
-        }
-    })
-    return tryExpressionContext
-}
-
-fun ExpressionContext.nearestJumpExpression(): JumpExpressionContext? {
-    var jumpExpressionContext: JumpExpressionContext? = null
-    var flag = false
-    accept(object : KotlinParserBaseVisitor<Unit>() {
-        override fun visitJumpExpression(ctx: JumpExpressionContext?) {
-            if (flag) return
-            jumpExpressionContext = ctx
-            flag = true
-            super.visitJumpExpression(ctx)
-        }
-    })
-    return jumpExpressionContext
-}
-
-fun ExpressionContext.nearestElvisExpression(): ElvisExpressionContext? {
-    var elvisExpressionContext: ElvisExpressionContext? = null
-    var flag = false
-    accept(object : KotlinParserBaseVisitor<Unit>() {
-        override fun visitElvisExpression(ctx: ElvisExpressionContext?) {
-            if (flag) return
-            elvisExpressionContext = ctx
-            flag = true
-            super.visitElvisExpression(ctx)
-        }
-    })
-    return elvisExpressionContext
 }
 
 fun ExpressionContext.nearestCallSuffixExpression(): CallSuffixContext? {
@@ -273,4 +203,8 @@ fun ParameterModifiersContext.parameterAnnotations(): LinkedList<String> {
         }
     }
     return res
+}
+
+fun PostfixUnarySuffixContext.isFunctionCall(): Boolean {
+    return callSuffix() != null && callSuffix().valueArguments() != null
 }

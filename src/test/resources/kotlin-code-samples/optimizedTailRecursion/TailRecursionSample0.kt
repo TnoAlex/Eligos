@@ -2,7 +2,9 @@ package optimizedTailRecursion
 
 fun factorial0(n: Int, acc: Int = 1): Int {
     if (n != 0) {
-        return factorial0(n - 1, acc * n)
+        val t = n-1
+        val sum = acc*n
+        return factorial0(t, sum)
     }
     return acc + 1
 }

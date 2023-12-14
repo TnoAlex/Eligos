@@ -7,3 +7,6 @@ com.github.tnoalex.processor.common.TooManyParametersProcessor
 com.github.tnoalex.processor.common.UnUsedImportProcessor
 
 com.github.tnoalex.processor.java.JavaBaseInfoProcessor
+
+com.github.tnoalex.processor.cross.kotlinjava.IllegalMaterializationProcessor
+com.github.tnoalex.processor.cross.kotlinjava.UnclearPlatformTypeProcessor

@@ -15,6 +15,8 @@ import org.antlr.v4.runtime.ParserRuleContext
 import java.util.*
 
 class JavaBaseInfoProcessor : AbstractBaseInfoProcessor() {
+    override val order: Int
+        get() = Int.MAX_VALUE
     override val supportLanguage: List<String>
         get() = listOf("java")
 
@@ -31,29 +33,49 @@ class JavaBaseInfoProcessor : AbstractBaseInfoProcessor() {
         val innerElement = LinkedList<JavaElement>()
         ctx.typeDeclaration().forEach {
             // Only class will be parsed yet
-            if (it.classDeclaration() == null) return@forEach
-            val classElement = createClassElement(it, fileElement)
-            classElement.innerElement.addAll(getClassInnerElement(it.classDeclaration(), classElement))
-            innerElement.add(classElement)
+            if (it.classDeclaration() != null) {
+                val classElement = createClassElement(it, fileElement, false)
+                classElement.innerElement.addAll(getClassOrInterFaceInnerElement(it.classDeclaration(), classElement))
+                innerElement.add(classElement)
+            }
+            if (it.interfaceDeclaration() == null) return@forEach
+            val interfaceElement = createClassElement(it, fileElement, true)
+            interfaceElement.innerElement.addAll(
+                getClassOrInterFaceInnerElement(
+                    it.interfaceDeclaration(),
+                    interfaceElement
+                )
+            )
+            innerElement.add(interfaceElement)
         }
         fileElement.innerElement.addAll(innerElement)
         context.addFileElement(fileElement)
 
     }
 
-    private fun createClassElement(ctx: TypeDeclarationContext, parent: AbstractElement): JavaClassElement {
+    private fun createClassElement(
+        ctx: TypeDeclarationContext,
+        parent: AbstractElement,
+        isInterface: Boolean
+    ): JavaClassElement {
         return JavaClassElement(
-            ctx.classDeclaration().IDENTIFIER().text,
+            if (!isInterface) ctx.classDeclaration().IDENTIFIER().text else ctx.interfaceDeclaration().IDENTIFIER().text,
             ctx.start.line,
             ctx.stop.line,
             parent,
             ctx.annotationsOfType(),
             ctx.modifiersOfType(),
-            currentFileContext.packageDeclaration().qualifiedName().text
+            currentFileContext.packageDeclaration().qualifiedName().text,
+            isInterface
         )
     }
 
-    private fun createClassElement(ctx: ClassDeclarationContext, elementParent: AbstractElement): JavaClassElement {
+    private fun createClassElement(
+        ctx: ParserRuleContext,
+        elementParent: AbstractElement
+    ): JavaClassElement {
+        if (ctx !is ClassDeclarationContext && ctx !is InterfaceDeclarationContext)
+            throw RuntimeException("Unsupported parser tree context")
         val annotations: LinkedList<String>
         val modifiers: LinkedList<String>
         when (val parent = ctx.parent) {
@@ -67,17 +89,38 @@ class JavaBaseInfoProcessor : AbstractBaseInfoProcessor() {
                 modifiers = (parent.parent as ClassBodyDeclarationContext).modifiersOfMember()
             }
 
+            is InterfaceMemberDeclarationContext -> {
+                annotations = (parent.parent as InterfaceBodyDeclarationContext).annotationsOfMember()
+                modifiers = LinkedList()
+            }
+
             else -> throw RuntimeException("Unsupported parser tree context")
         }
-        return JavaClassElement(
-            ctx.IDENTIFIER().text,
-            ctx.start.line,
-            ctx.stop.line,
-            elementParent,
-            annotations,
-            modifiers,
-            currentFileContext.packageDeclaration().qualifiedName().text
-        )
+        when (ctx) {
+            is ClassDeclarationContext -> return JavaClassElement(
+                ctx.IDENTIFIER().text,
+                ctx.start.line,
+                ctx.stop.line,
+                elementParent,
+                annotations,
+                modifiers,
+                currentFileContext.packageDeclaration().qualifiedName().text,
+                false
+            )
+
+            is InterfaceDeclarationContext -> return JavaClassElement(
+                ctx.IDENTIFIER().text,
+                ctx.start.line,
+                ctx.stop.line,
+                elementParent,
+                annotations,
+                modifiers,
+                currentFileContext.packageDeclaration().qualifiedName().text,
+                true
+            )
+
+            else -> throw RuntimeException("Unsupported parser tree context")
+        }
     }
 
     private fun createBlockElement(ctx: BlockContext, parent: JavaElement): JavaElement {
@@ -93,33 +136,35 @@ class JavaBaseInfoProcessor : AbstractBaseInfoProcessor() {
 
     private fun createParameterElements(ctx: FormalParametersContext): LinkedList<JavaParameterElement> {
         val params = LinkedList<JavaParameterElement>()
-        ctx.formalParameterList().formalParameter().forEach {
-            params.add(
-                JavaParameterElement(
-                    it.variableDeclaratorId().IDENTIFIER().text,
-                    it.start.line,
-                    it.stop.line,
-                    it.typeType().text,
-                    false,
-                    null,
-                    it.annotationsOfParam(),
-                    if (it.isFinal()) "final" else null
+        ctx.formalParameterList()?.run {
+            formalParameter().forEach {
+                params.add(
+                    JavaParameterElement(
+                        it.variableDeclaratorId().IDENTIFIER().text,
+                        it.start.line,
+                        it.stop.line,
+                        it.typeType().text,
+                        false,
+                        null,
+                        it.annotationsOfParam(),
+                        if (it.isFinal()) "final" else null
+                    )
                 )
-            )
-        }
-        ctx.formalParameterList().lastFormalParameter()?.let {
-            params.add(
-                JavaParameterElement(
-                    it.variableDeclaratorId().IDENTIFIER().text,
-                    it.start.line,
-                    it.stop.line,
-                    it.typeType().text,
-                    true,
-                    null,
-                    it.annotationsOfLastParam(),
-                    if (it.isFinal()) "final" else null
+            }
+            lastFormalParameter()?.let {
+                params.add(
+                    JavaParameterElement(
+                        it.variableDeclaratorId().IDENTIFIER().text,
+                        it.start.line,
+                        it.stop.line,
+                        it.typeType().text,
+                        true,
+                        null,
+                        it.annotationsOfLastParam(),
+                        if (it.isFinal()) "final" else null
+                    )
                 )
-            )
+            }
         }
         return params
     }
@@ -137,7 +182,24 @@ class JavaBaseInfoProcessor : AbstractBaseInfoProcessor() {
         )
     }
 
-    private fun getClassInnerElement(context: ParserRuleContext, parent: JavaElement): LinkedList<JavaElement> {
+    private fun createAnonymousInnerClass(ctx: CreatorContext, parent: AbstractElement): JavaClassElement {
+        return JavaClassElement(
+            null,
+            ctx.start.line,
+            ctx.stop.line,
+            parent,
+            LinkedList(),
+            LinkedList(),
+            currentFileContext.packageDeclaration().qualifiedName().text,
+            false,
+            ctx.createdName().text
+        )
+    }
+
+    private fun getClassOrInterFaceInnerElement(
+        context: ParserRuleContext,
+        parent: JavaElement
+    ): LinkedList<JavaElement> {
         val innerElements = LinkedList<JavaElement>()
         val innerMap = HashMap<JavaElement, ParserRuleContext>()
         val visitor = object : JavaParserBaseVisitor<Unit>() {
@@ -165,10 +227,27 @@ class JavaBaseInfoProcessor : AbstractBaseInfoProcessor() {
                 }
                 super.visitMethodDeclaration(ctx)
             }
+
+            override fun visitClassCreatorRest(ctx: ClassCreatorRestContext) {
+                if (getParentClassOrBlockDeclaration(ctx) == context) {
+                    val creator = ctx.parent as CreatorContext
+                    innerElements.add(createAnonymousInnerClass(creator, parent))
+                    innerMap[innerElements.last] = ctx
+                }
+                super.visitClassCreatorRest(ctx)
+            }
+
+            override fun visitInterfaceDeclaration(ctx: InterfaceDeclarationContext) {
+                if (getParentClassOrBlockDeclaration(ctx) == context) {
+                    innerElements.add(createClassElement(ctx, parent))
+                    innerMap[innerElements.last] = ctx
+                }
+                super.visitInterfaceDeclaration(ctx)
+            }
         }
         context.accept(visitor)
         innerMap.forEach { (k, v) ->
-            k.innerElement.addAll(getClassInnerElement(v, k))
+            k.innerElement.addAll(getClassOrInterFaceInnerElement(v, k))
         }
         return innerElements
     }

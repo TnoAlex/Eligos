@@ -7,6 +7,8 @@ import com.github.tnoalex.utils.signature
 import depends.extractor.kotlin.KotlinParser.FunctionDeclarationContext
 
 class ImplicitSingleExprFunctionProcessor : AstProcessorWithContext() {
+    override val order: Int
+        get() = Int.MAX_VALUE
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 

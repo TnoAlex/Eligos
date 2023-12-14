@@ -8,7 +8,6 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ComplexMethodIssue
 import com.github.tnoalex.processor.AstProcessorWithContext
 import java.util.*
-import kotlin.collections.HashSet
 
 abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
     private val functionMap = HashMap<String, ArrayList<Int>>()
@@ -17,7 +16,7 @@ abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
     private val terminatedMap = HashSet<String>()
 
     override val order: Int
-        get() = Short.MAX_VALUE.toInt()
+        get() = Int.MAX_VALUE - 1
 
     @EventListener
     fun process(event: FileExitEvent) {

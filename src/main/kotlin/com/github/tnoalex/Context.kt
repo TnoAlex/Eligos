@@ -26,8 +26,8 @@ class Context{
 
     private val fileElements = LinkedList<FileElement>()
 
-    fun getFileElement(fileName: String): List<FileElement> {
-        return fileElements.filter { it.elementName == fileName }
+    fun getFileElement(fileName: String): FileElement {
+        return fileElements.first { it.elementName == fileName }
     }
 
     fun getLastElement(): FileElement {

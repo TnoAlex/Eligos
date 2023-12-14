@@ -17,7 +17,7 @@ class TooManyParametersProcessor : AstProcessor {
     private val issues = LinkedList<ExcessiveParamsIssue>()
 
     override val order: Int
-        get() = -1
+        get() = Short.MAX_VALUE.toInt()
 
     @EventListener
     fun process(event: EntityRepoFinishedEvent) {

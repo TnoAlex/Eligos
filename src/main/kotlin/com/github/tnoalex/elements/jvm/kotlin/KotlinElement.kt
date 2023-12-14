@@ -8,12 +8,12 @@ open class KotlinElement(
     elementName: String?,
     elementStartLine: Int,
     elementStopLine: Int,
-    parent: AbstractElement?,
+    override var parent: AbstractElement?,
     annotations: LinkedList<String>,
     private val visibilityModifier: String?,
     protected val elementModifier: List<String>?,
     private val inheritanceModifier: String?
-) : AbstractJvmElement(elementName, elementStartLine, elementStopLine, parent, annotations) {
+) : AbstractJvmElement(elementName, elementStartLine, elementStopLine, annotations) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -34,5 +34,9 @@ open class KotlinElement(
         result = 31 * result + (elementModifier?.hashCode() ?: 0)
         result = 31 * result + (inheritanceModifier?.hashCode() ?: 0)
         return result
+    }
+
+    fun isInternal(): Boolean {
+        return visibilityModifier != null && visibilityModifier.contains("internal")
     }
 }

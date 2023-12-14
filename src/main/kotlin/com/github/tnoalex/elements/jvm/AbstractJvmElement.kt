@@ -7,7 +7,6 @@ abstract class AbstractJvmElement(
     elementName: String?,
     elementStartLine: Int,
     elementStopLine: Int,
-    override var parent: AbstractElement?,
     protected val annotations: LinkedList<String>
 ) : AbstractElement(elementName, elementStartLine, elementStopLine){
     override fun equals(other: Any?): Boolean {
