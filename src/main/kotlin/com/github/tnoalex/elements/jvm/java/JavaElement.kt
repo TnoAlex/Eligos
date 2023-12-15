@@ -27,4 +27,21 @@ open class JavaElement(
         result = 31 * result + (modifiers?.hashCode() ?: 0)
         return result
     }
+
+    fun isPublicVisibility(): Boolean {
+        return modifiers != null && modifiers.find { it == "public" } != null
+    }
+
+    fun isPrivateVisibility(): Boolean {
+        return modifiers != null && modifiers.find { it == "private" } != null
+    }
+
+    fun isProtectedVisibility(): Boolean {
+        return modifiers != null && modifiers.find { it == "protected" } != null
+    }
+
+    fun isPackageVisibility(): Boolean {
+        return !isProtectedVisibility() && !isPrivateVisibility() && !isPublicVisibility()
+    }
+
 }

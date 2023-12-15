@@ -4,7 +4,7 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.elements.jvm.java.JavaClassElement
 import com.github.tnoalex.elements.jvm.kotlin.KotlinClassElement
 
-class ImproperInternalConcretizationIssue(
+class ImproperInternalExposedIssue(
     affectedFiles: HashSet<String>,
     val javaClassElement: JavaClassElement,
     val kotlinClassElement: KotlinClassElement,

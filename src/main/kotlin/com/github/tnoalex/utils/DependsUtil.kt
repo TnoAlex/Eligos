@@ -20,9 +20,6 @@ fun DependencyMatrix.toAdjacencyList(): AdjacencyList<Int> {
     return adjacencyList
 }
 
-fun DependencyMatrix.getDependencyPairByType(dependencyType: String): List<DependencyPair> {
-    return dependencyPairs.filter { it.dependencies.find { d -> d.type == dependencyType } != null }
-}
 
 fun Entity.getTargetTypeParent(type :Class<*>): Entity? {
     var parent = parent

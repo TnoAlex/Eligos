@@ -4,7 +4,7 @@ import com.github.tnoalex.Analyzer
 import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.json.JsonFormatter
 import com.github.tnoalex.foundation.filetools.FileContainer
-import com.github.tnoalex.issues.ImproperInternalConcretizationIssue
+import com.github.tnoalex.issues.ImproperInternalExposedIssue
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,9 +31,9 @@ class JavaKotlinCrossProcessorTest {
 
     @Test
     fun testInternalExtendsOrImplements() {
-        val issues = analyzer.getContext().getIssuesByType(ImproperInternalConcretizationIssue::class)
-        assertEquals(5, issues.size)
-        val issue = issues.map { it as ImproperInternalConcretizationIssue }
+        val issues = analyzer.getContext().getIssuesByType(ImproperInternalExposedIssue::class)
+        assertEquals(4, issues.size)
+        val issue = issues.map { it as ImproperInternalExposedIssue }
             .find { it.javaClassElement.qualifiedName == "internaltest.java.UseInternalInJava0" }
         assertNotNull(issues)
         assertEquals("internaltest.kotlin.InternalOpenClassInKotlin", issue!!.kotlinClassElement.qualifiedName)

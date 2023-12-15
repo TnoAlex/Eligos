@@ -2,6 +2,6 @@ package internaltest.java;
 
 import internaltest.kotlin.InternalInterfaceInKotlin;
 
-interface UseInternalInJava2 extends InternalInterfaceInKotlin {
+public interface UseInternalInJava2 extends InternalInterfaceInKotlin {
 
 }
