@@ -61,7 +61,7 @@ class InternalExposedProcessor : AstProcessorWithContext() {
         val repoIterator = context.getRepo().entityIterator()
         val relations = HashMap<Pair<TypeEntity, KotlinTypeEntity>, String>()
         repoIterator.forEach loop@{
-            if (it is TypeEntity) {
+            if (it is TypeEntity && it !is KotlinTypeEntity) {
                 it.relations.forEach { r ->
                     if (r.type != DependencyType.IMPLEMENT && r.type != DependencyType.INHERIT) return@forEach
                     if (r.entity !is KotlinTypeEntity) return@forEach

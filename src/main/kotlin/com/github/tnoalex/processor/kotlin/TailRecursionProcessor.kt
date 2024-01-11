@@ -38,6 +38,7 @@ class TailRecursionProcessor : AstProcessorWithContext() {
                 val callSuffixContext = ctx.expression()?.nearestCallSuffixExpression() ?: return
                 val postfixUnaryExpressionContext = (callSuffixContext.parent.parent as PostfixUnaryExpressionContext)
 
+                callSuffixContext.valueArguments() ?: return
                 val invokeParams = callSuffixContext.valueArguments().valueArgument().size
                 val invokeName = postfixUnaryExpressionContext.postfixUnaryExpression().text
 

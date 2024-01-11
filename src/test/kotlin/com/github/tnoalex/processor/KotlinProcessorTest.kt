@@ -14,7 +14,8 @@ import java.io.File
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class KotlinProcessorTest {
-    private var analyzer = Analyzer(JsonFormatter(), listOf("kotlin"))
+    private var analyzer = Analyzer(JsonFormatter(), listOf("kotlin","java"))
+    private val systemOut = System.out
 
     init {
         StdOutErrWrapper.init()
@@ -23,6 +24,7 @@ class KotlinProcessorTest {
 
         FileContainer.initFileContainer(
             File("E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples"),
+//            File("E:\\code\\spring-framework"),
             File("./"), "out"
         )
         analyzer.analyze()

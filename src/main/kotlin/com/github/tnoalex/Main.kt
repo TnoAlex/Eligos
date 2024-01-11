@@ -8,7 +8,6 @@ import java.util.*
 fun main(args: Array<String>) {
     showBanner()
     LangRegister.register()
-    StdOutErrWrapper.init()
     CommandParser().main(args)
 }
 

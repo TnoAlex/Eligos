@@ -118,7 +118,7 @@ fun ClassOrInterfaceModifierContext.modifier(): String? {
 
 fun ModifierContext.modifiers(): LinkedList<String> {
     val modifiers = LinkedList<String>()
-    classOrInterfaceModifier().modifier()?.let { modifiers.add(it) }
+    classOrInterfaceModifier()?.modifier()?.let { modifiers.add(it) }
     NATIVE()?.let { modifiers.add("native") }
     SYNCHRONIZED().let { modifiers.add("synchronized") }
     TRANSIENT().let { modifiers.add("transient") }

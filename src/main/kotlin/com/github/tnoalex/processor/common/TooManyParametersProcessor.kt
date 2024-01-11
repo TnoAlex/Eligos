@@ -37,6 +37,7 @@ class TooManyParametersProcessor : AstProcessor {
             }.split("(")[0]
             val params = HashMap<String,String>()
             it.parameters.forEach {p->
+                if(p.rawType == null) return@forEach
                 params[p.rawName.name] = p.rawType.name
             }
             issues.add(ExcessiveParamsIssue(file, it.qualifiedName.split(".").last(), params))

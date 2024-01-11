@@ -12,7 +12,7 @@ class ImplicitSingleExprFunctionProcessor : AstProcessorWithContext() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 
-    @EventListener(filter = "#{ctx}.functionBody().ASSIGNMENT() != null", eventPrefix = "enter")
+    @EventListener(filter = "#{ctx}.functionBody().?ASSIGNMENT() != null", eventPrefix = "enter")
     fun process(ctx: FunctionDeclarationContext) {
         if (ctx.type() == null) {
             context.reportIssue(
