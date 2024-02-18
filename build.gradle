@@ -47,6 +47,10 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
 }
 
+configurations.configureEach {
+    it.exclude group:"org.slf4j", module: "slf4j-reload4j"
+}
+
 shadowJar {
     minimize()
 }

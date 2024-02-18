@@ -3,6 +3,7 @@ package com.github.tnoalex.processor
 import com.github.tnoalex.Analyzer
 import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.json.JsonFormatter
+import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.filetools.FileContainer
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
@@ -16,7 +17,6 @@ class JavaProcessorTest {
 
     init {
         StdOutErrWrapper.init()
-        ConfigParser.parserRules(null)
         LangRegister.register()
 
         FileContainer.initFileContainer(

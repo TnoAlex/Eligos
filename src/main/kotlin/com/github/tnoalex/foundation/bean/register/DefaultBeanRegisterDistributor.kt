@@ -18,22 +18,25 @@ object DefaultBeanRegisterDistributor : BeanRegisterDistributor {
             dispatcherMap[it::class.simpleName!!] = it
         }
         ApplicationContext.visitContainers { beanScope, beanContainer ->
-            if (beanContainer.containerId == 0){
+            if (beanContainer.containerId == 0) {
                 containerMap[beanScope] = beanContainer
             }
         }
-        scanClasses()?.forEach {
-            val annotation = it.getAnnotation(Component::class.java)
-            val registerName = annotation.beanRegister
-            val beanName = annotation.beanName.ifEmpty { it.simpleName }
-            val scope = annotation.scope
-            val register =
-                dispatcherMap[registerName] ?: throw RuntimeException("Can not find bean factory named '$registerName'")
-            register.registerBean(
-                beanName,
-                it,
-                containerMap[scope] ?: throw RuntimeException("Invalid scope: '$scope'")
-            )
+        scanClasses()?.run {
+            sortedByDescending { getComponentOrder(it) }.forEach {
+                val annotation = it.getAnnotation(Component::class.java)
+                val registerName = annotation.beanRegister
+                val beanName = annotation.beanName.ifEmpty { it.simpleName }
+                val scope = annotation.scope
+                val register =
+                    dispatcherMap[registerName]
+                        ?: throw RuntimeException("Can not find bean factory named '$registerName'")
+                register.registerBean(
+                    beanName,
+                    it,
+                    containerMap[scope] ?: throw RuntimeException("Invalid scope: '$scope'")
+                )
+            }
         }
     }
 
@@ -45,5 +48,9 @@ object DefaultBeanRegisterDistributor : BeanRegisterDistributor {
                 .addScanners(Scanners.TypesAnnotated)
         )
         return reflection.getTypesAnnotatedWith(Component::class.java)
+    }
+
+    private fun getComponentOrder(bean: Class<*>): Int {
+        return (bean.annotations.find { it.annotationClass == Component::class }!! as Component).order
     }
 }

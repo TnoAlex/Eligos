@@ -53,6 +53,7 @@ object ApplicationContext {
     private fun initBeanPreRegisterHandler() {
         Reflections(
             ConfigurationBuilder()
+                .forPackages("")
                 .setClassLoaders(arrayOf(Thread.currentThread().contextClassLoader))
                 .setScanners(Scanners.SubTypes)
         ).getSubTypesOf(BeanPreRegisterHandler::class.java)?.forEach {

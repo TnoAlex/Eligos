@@ -21,7 +21,6 @@ class KotlinProcessorTest {
 
     init {
         StdOutErrWrapper.init()
-        ConfigParser.parserRules(null)
         LangRegister.register()
         ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor))
         ApplicationContext.init()

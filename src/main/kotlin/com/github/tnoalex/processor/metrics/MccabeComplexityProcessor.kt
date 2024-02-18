@@ -1,7 +1,6 @@
 package com.github.tnoalex.processor.metrics
 
-import com.github.tnoalex.config.ConfigContainer
-import com.github.tnoalex.config.FunctionConfig
+import com.github.tnoalex.config.WiredConfig
 import com.github.tnoalex.elements.FileElement
 import com.github.tnoalex.events.FileExitEvent
 import com.github.tnoalex.foundation.eventbus.EventListener
@@ -15,6 +14,9 @@ abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
     private val idMap = HashMap<String, String>()
     private val terminatedMap = HashSet<String>()
 
+    @WiredConfig("function.maxCyclomaticComplexity")
+    protected var maxCyclomaticComplexity = 0
+
     override val order: Int
         get() = Int.MAX_VALUE - 1
 
@@ -22,7 +24,7 @@ abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
     fun process(event: FileExitEvent) {
         val issues = LinkedList<ComplexMethodIssue>()
         getMccabeComplex().filterValues {
-            it >= (ConfigContainer.getByType(FunctionConfig::class) as FunctionConfig).maxCyclomaticComplexity
+            it >= maxCyclomaticComplexity
         }.forEach { (k, v) ->
             issues.add(
                 ComplexMethodIssue(
