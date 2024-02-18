@@ -1,11 +1,14 @@
 package com.github.tnoalex
 
+import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.foundation.bean.register.DefaultBeanRegisterDistributor
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
 import java.util.*
 
 
 fun main(args: Array<String>) {
+    initApplication()
     showBanner()
     LangRegister.register()
     CommandParser().main(args)
@@ -21,4 +24,9 @@ private fun showBanner() {
         }
         println(banner.toString())
     }
+}
+
+private fun initApplication(){
+    ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor))
+    ApplicationContext.init()
 }

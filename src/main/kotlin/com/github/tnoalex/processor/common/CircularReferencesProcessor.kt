@@ -4,12 +4,14 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.Context
 import com.github.tnoalex.events.EntityRepoFinishedEvent
 import com.github.tnoalex.foundation.algorithm.AdjacencyList
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.CircularReferencesIssue
 import com.github.tnoalex.processor.AstProcessor
 import com.github.tnoalex.utils.toAdjacencyList
 import java.util.*
 
+@Component
 class CircularReferencesProcessor : AstProcessor {
     private val issues = LinkedList<CircularReferencesIssue>()
 

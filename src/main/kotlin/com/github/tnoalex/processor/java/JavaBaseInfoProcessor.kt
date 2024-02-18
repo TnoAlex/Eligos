@@ -6,6 +6,7 @@ import com.github.tnoalex.elements.jvm.java.JavaClassElement
 import com.github.tnoalex.elements.jvm.java.JavaElement
 import com.github.tnoalex.elements.jvm.java.JavaFunctionElement
 import com.github.tnoalex.elements.jvm.java.JavaParameterElement
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.processor.AbstractBaseInfoProcessor
 import com.github.tnoalex.utils.*
@@ -14,6 +15,7 @@ import depends.extractor.java.JavaParserBaseVisitor
 import org.antlr.v4.runtime.ParserRuleContext
 import java.util.*
 
+@Component
 class JavaBaseInfoProcessor : AbstractBaseInfoProcessor() {
     override val order: Int
         get() = Int.MAX_VALUE

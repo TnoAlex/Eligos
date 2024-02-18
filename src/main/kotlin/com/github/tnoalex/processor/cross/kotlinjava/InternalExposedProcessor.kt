@@ -4,6 +4,7 @@ import com.github.tnoalex.elements.FileElement
 import com.github.tnoalex.elements.jvm.java.JavaClassElement
 import com.github.tnoalex.elements.jvm.java.JavaElement
 import com.github.tnoalex.events.EntityRepoFinishedEvent
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ImproperInternalExposedIssue
 import com.github.tnoalex.processor.AstProcessorWithContext
@@ -16,6 +17,7 @@ import depends.entity.FileEntity
 import depends.entity.KotlinTypeEntity
 import depends.entity.TypeEntity
 
+@Component
 class InternalExposedProcessor : AstProcessorWithContext() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin", "java")

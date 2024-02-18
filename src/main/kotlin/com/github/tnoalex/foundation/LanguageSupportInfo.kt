@@ -1,4 +1,4 @@
-package com.github.tnoalex.foundation.common
+package com.github.tnoalex.foundation
 
 /**
  * Identifies the languages supported by the language-sensitive component in the analyzer,

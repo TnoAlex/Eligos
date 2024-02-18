@@ -7,6 +7,7 @@ import com.github.tnoalex.elements.jvm.kotlin.KotlinFunctionElement
 import com.github.tnoalex.elements.jvm.kotlin.KotlinParameterElement
 import com.github.tnoalex.events.FileEnterEvent
 import com.github.tnoalex.events.FileExitEvent
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventBus
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.processor.AbstractBaseInfoProcessor
@@ -16,6 +17,7 @@ import depends.extractor.kotlin.KotlinParserBaseVisitor
 import org.antlr.v4.runtime.ParserRuleContext
 import java.util.*
 
+@Component
 class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
 
     override val order: Int

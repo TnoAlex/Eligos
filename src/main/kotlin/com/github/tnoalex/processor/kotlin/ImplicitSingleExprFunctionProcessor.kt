@@ -1,11 +1,13 @@
 package com.github.tnoalex.processor.kotlin
 
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ImplicitSingleExprFunctionIssue
 import com.github.tnoalex.processor.AstProcessorWithContext
 import com.github.tnoalex.utils.signature
 import depends.extractor.kotlin.KotlinParser.FunctionDeclarationContext
 
+@Component
 class ImplicitSingleExprFunctionProcessor : AstProcessorWithContext() {
     override val order: Int
         get() = Int.MAX_VALUE

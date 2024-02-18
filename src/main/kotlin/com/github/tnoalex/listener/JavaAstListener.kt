@@ -1,10 +1,12 @@
 package com.github.tnoalex.listener
 
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventBus
 import depends.extractor.java.JavaParser
 import depends.extractor.java.JavaParserBaseListener
 
 
+@Component(beanName = "JavaAstListener")
 class JavaAstListener : AstListener, JavaParserBaseListener() {
     override val supportLanguage: List<String>
         get() = listOf("java")

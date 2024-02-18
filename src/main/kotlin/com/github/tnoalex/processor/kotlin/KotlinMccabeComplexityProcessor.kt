@@ -1,5 +1,6 @@
 package com.github.tnoalex.processor.kotlin
 
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.processor.metrics.MccabeComplexityProcessor
 import com.github.tnoalex.utils.getParentFunction
@@ -8,6 +9,7 @@ import com.github.tnoalex.utils.signature
 import depends.extractor.kotlin.KotlinParser.*
 import org.antlr.v4.runtime.ParserRuleContext
 
+@Component
 class KotlinMccabeComplexityProcessor : MccabeComplexityProcessor() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")

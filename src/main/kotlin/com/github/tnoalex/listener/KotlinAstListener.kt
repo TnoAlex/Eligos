@@ -1,9 +1,11 @@
 package com.github.tnoalex.listener
 
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventBus
 import depends.extractor.kotlin.KotlinParser
 import depends.extractor.kotlin.KotlinParserBaseListener
 
+@Component(beanName = "KotlinAstListener")
 class KotlinAstListener : AstListener, KotlinParserBaseListener() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")

@@ -1,12 +1,14 @@
 package com.github.tnoalex
 
 import com.github.tnoalex.formatter.IFormatter
+import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.filetools.FileContainer
-import com.github.tnoalex.listener.AstListenerContainer
+import com.github.tnoalex.listener.AstListener
 import com.github.tnoalex.listener.FileListener
-import com.github.tnoalex.processor.AstProcessorContainer
+import com.github.tnoalex.processor.AstProcessor
 import depends.extractor.LangProcessorRegistration
 import depends.relations.RelationCounter
+import org.antlr.v4.runtime.tree.ParseTreeListener
 import org.slf4j.LoggerFactory
 
 class Analyzer(
@@ -16,7 +18,6 @@ class Analyzer(
     private lateinit var context: Context
 
     fun analyze() {
-        cleanUpBeforeStart()
         buildAndParserAst()
     }
 
@@ -26,24 +27,37 @@ class Analyzer(
         throw RuntimeException("Context not initialized yet")
     }
 
-    private fun cleanUpBeforeStart() {
-        logger.info("------ Clean up framework ------")
-        AstProcessorContainer.getKeys().filter { !languages.contains(it) }.filter { it != "any" }.forEach {
-            AstProcessorContainer.cleanUpProcessor(it)
-        }
-        logger.info("Finished")
-    }
 
     private fun buildAndParserAst() {
         logger.info("Create context ")
         context = Context()
-        val astListeners = languages.filterNotNull().map {
-            AstProcessorContainer.registerByLang(it, context)
-            AstListenerContainer.getByKey(it)!!
+        val astProcessors = ArrayList<AstProcessor>()
+        val astListeners = ArrayList<AstListener>()
+        ApplicationContext.getBean(AstProcessor::class.java).map { it as AstProcessor }.forEach {
+            if (it.supportLanguage.contains("any")) {
+                it.registerListener(context)
+                astProcessors.add(it)
+            } else {
+                languages.forEach { l ->
+                    if (it.supportLanguage.contains(l)) {
+                        it.registerListener(context)
+                        astProcessors.add(it)
+                    }
+                }
+            }
         }
+
+        ApplicationContext.getBean(AstListener::class.java).map { it as AstListener }.forEach {
+            languages.forEach { l->
+                if (it.supportLanguage.contains(l)){
+                    astListeners.add(it)
+                }
+            }
+        }
+
         val langProcessor = LangProcessorRegistration.getRegistry().getProcessorOf(languages[0])
         langProcessor.addExtraListener(FileListener)
-        langProcessor.addExtraListeners(astListeners)
+        langProcessor.addExtraListeners(astListeners.toList())
         logger.info("------ Build dependencies ------")
         val bindingResolver = langProcessor.createBindingResolver(false, false)
         val entityRepo =
@@ -53,9 +67,9 @@ class Analyzer(
         context.setDependsRepo(entityRepo)
         logger.info("------ Clean up framework ------")
         langProcessor.clearExtraListeners()
-        languages.filterNotNull().forEach {
-            AstProcessorContainer.unregistersByLang(it)
-            AstProcessorContainer.cleanUpProcessor(it)
+
+        astProcessors.forEach {
+            it.unregisterListener()
         }
         logger.info("Finished")
     }

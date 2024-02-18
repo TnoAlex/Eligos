@@ -1,7 +1,7 @@
 package com.github.tnoalex.processor
 
 import com.github.tnoalex.Context
-import com.github.tnoalex.foundation.common.LanguageSupportInfo
+import com.github.tnoalex.foundation.LanguageSupportInfo
 import com.github.tnoalex.foundation.eventbus.EventBus
 
 interface AstProcessor : LanguageSupportInfo {

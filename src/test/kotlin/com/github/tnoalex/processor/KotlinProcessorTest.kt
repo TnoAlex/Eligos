@@ -3,6 +3,8 @@ package com.github.tnoalex.processor
 import com.github.tnoalex.Analyzer
 import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.json.JsonFormatter
+import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.foundation.bean.register.DefaultBeanRegisterDistributor
 import com.github.tnoalex.foundation.filetools.FileContainer
 import com.github.tnoalex.issues.*
 import com.github.tnoalex.utils.StdOutErrWrapper
@@ -14,14 +16,15 @@ import java.io.File
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class KotlinProcessorTest {
-    private var analyzer = Analyzer(JsonFormatter(), listOf("kotlin","java"))
+    private var analyzer = Analyzer(JsonFormatter(), listOf("kotlin", "java"))
     private val systemOut = System.out
 
     init {
         StdOutErrWrapper.init()
         ConfigParser.parserRules(null)
         LangRegister.register()
-
+        ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor))
+        ApplicationContext.init()
         FileContainer.initFileContainer(
             File("E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples"),
 //            File("E:\\code\\spring-framework"),
@@ -50,7 +53,7 @@ class KotlinProcessorTest {
     fun tesFindTooManyParameters() {
         val issues = analyzer.getContext().getIssuesByType(ExcessiveParamsIssue::class)
         assertEquals(2, issues.size)
-        assertEquals(8, (issues[0] as ExcessiveParamsIssue).arity)
+        assertTrue(issues.map { it as ExcessiveParamsIssue }.find { it.arity == 8 } != null)
     }
 
     @Test

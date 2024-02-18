@@ -3,12 +3,14 @@ package com.github.tnoalex.processor.common
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.Context
 import com.github.tnoalex.events.EntityRepoFinishedEvent
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.UnusedImportIssue
 import com.github.tnoalex.processor.AstProcessor
 import depends.deptypes.DependencyType
 import java.util.*
 
+@Component
 class UnUsedImportProcessor : AstProcessor {
     private val issues = LinkedList<UnusedImportIssue>()
 

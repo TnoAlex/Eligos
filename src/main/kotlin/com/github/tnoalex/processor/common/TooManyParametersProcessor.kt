@@ -5,6 +5,7 @@ import com.github.tnoalex.Context
 import com.github.tnoalex.config.ConfigContainer
 import com.github.tnoalex.config.FunctionConfig
 import com.github.tnoalex.events.EntityRepoFinishedEvent
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ExcessiveParamsIssue
 import com.github.tnoalex.processor.AstProcessor
@@ -13,6 +14,7 @@ import depends.entity.FunctionEntity
 import java.util.*
 import kotlin.collections.HashMap
 
+@Component
 class TooManyParametersProcessor : AstProcessor {
     private val issues = LinkedList<ExcessiveParamsIssue>()
 
