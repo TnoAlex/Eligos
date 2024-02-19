@@ -1,18 +1,20 @@
 package com.github.tnoalex.foundation.filetools
 
+import com.github.tnoalex.foundation.bean.Component
 import java.io.File
 
-object FileContainer {
-    var sourceFilePath: File? = null
+@Component(order = Int.MAX_VALUE)
+class FileHelper {
+    lateinit var sourceFilePath: File
         private set
 
-    var outputPath: File? = null
+    lateinit var outputPath: File
         private set
 
     var outputFilePrefix: String = "analysis_result"
         private set
 
-    fun initFileContainer(sourcePath: File, outPath: File?, prefix: String?) {
+    fun setFileInfo(sourcePath: File, outPath: File?, prefix: String?) {
         sourceFilePath = sourcePath
         outputPath = outPath ?: File(sourcePath.path + File.pathSeparator + "out")
         outputFilePrefix = prefix ?: outputFilePrefix
@@ -33,6 +35,6 @@ object FileContainer {
                 }
             }
         }
-        visit(sourceFilePath!!)
+        visit(sourceFilePath)
     }
 }

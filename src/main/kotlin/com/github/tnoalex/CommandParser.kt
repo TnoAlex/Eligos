@@ -11,9 +11,8 @@ import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.FormatterFactory
 import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.ApplicationContext
-import com.github.tnoalex.foundation.filetools.FileContainer
+import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.utils.StdOutErrWrapper
-import org.slf4j.LoggerFactory
 
 class CommandParser : CliktCommand() {
 
@@ -53,8 +52,12 @@ class CommandParser : CliktCommand() {
 
     override fun run() {
         StdOutErrWrapper.init()
-        FileContainer.initFileContainer(srcPath.toFile(), outPath?.toFile(), outputPrefix)
-        (ApplicationContext.getBean("ConfigParser") as ConfigParser).extendRules = extendRules
+        ApplicationContext.getBean(FileHelper::class.java)[0].setFileInfo(
+            srcPath.toFile(),
+            outPath?.toFile(),
+            outputPrefix
+        )
+        ApplicationContext.getBean(ConfigParser::class.java)[0].extendRules = extendRules
         Analyzer(
             FormatterFactory.getFormatter(outFormat) ?: throw RuntimeException("Unsupported  formatter"),
             listOf(lang, crossLang)

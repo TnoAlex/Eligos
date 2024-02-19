@@ -1,10 +1,9 @@
 package com.github.tnoalex.processor
 
 import com.github.tnoalex.Analyzer
-import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.json.JsonFormatter
 import com.github.tnoalex.foundation.ApplicationContext
-import com.github.tnoalex.foundation.filetools.FileContainer
+import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.issues.ImproperInternalExposedIssue
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
@@ -22,7 +21,7 @@ class JavaKotlinCrossProcessorTest {
         StdOutErrWrapper.init()
         LangRegister.register()
 
-        FileContainer.initFileContainer(
+        ApplicationContext.getBean(FileHelper::class.java)[0].setFileInfo(
             File("E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\kotlininternal"),
             File("./"), "out"
         )

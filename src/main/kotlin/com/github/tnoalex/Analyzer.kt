@@ -2,13 +2,12 @@ package com.github.tnoalex
 
 import com.github.tnoalex.formatter.IFormatter
 import com.github.tnoalex.foundation.ApplicationContext
-import com.github.tnoalex.foundation.filetools.FileContainer
+import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.listener.AstListener
 import com.github.tnoalex.listener.FileListener
 import com.github.tnoalex.processor.AstProcessor
 import depends.extractor.LangProcessorRegistration
 import depends.relations.RelationCounter
-import org.antlr.v4.runtime.tree.ParseTreeListener
 import org.slf4j.LoggerFactory
 
 class Analyzer(
@@ -33,7 +32,7 @@ class Analyzer(
         context = Context()
         val astProcessors = ArrayList<AstProcessor>()
         val astListeners = ArrayList<AstListener>()
-        ApplicationContext.getBean(AstProcessor::class.java).map { it as AstProcessor }.forEach {
+        ApplicationContext.getBean(AstProcessor::class.java).forEach {
             if (it.supportLanguage.contains("any")) {
                 it.registerListener(context)
                 astProcessors.add(it)
@@ -47,9 +46,9 @@ class Analyzer(
             }
         }
 
-        ApplicationContext.getBean(AstListener::class.java).map { it as AstListener }.forEach {
-            languages.forEach { l->
-                if (it.supportLanguage.contains(l)){
+        ApplicationContext.getBean(AstListener::class.java).forEach {
+            languages.forEach { l ->
+                if (it.supportLanguage.contains(l)) {
                     astListeners.add(it)
                 }
             }
@@ -61,7 +60,11 @@ class Analyzer(
         logger.info("------ Build dependencies ------")
         val bindingResolver = langProcessor.createBindingResolver(false, false)
         val entityRepo =
-            langProcessor.buildDependencies(FileContainer.sourceFilePath!!.path, arrayOf(), bindingResolver)
+            langProcessor.buildDependencies(
+                ApplicationContext.getBean(FileHelper::class.java)[0].sourceFilePath.path,
+                arrayOf(),
+                bindingResolver
+            )
         RelationCounter(entityRepo, langProcessor, bindingResolver).computeRelations()
         logger.info("Finished")
         context.setDependsRepo(entityRepo)

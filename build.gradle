@@ -18,6 +18,12 @@ repositories {
         allowInsecureProtocol = true
     }
     mavenLocal()
+    maven{
+        url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide/'
+    }
+    maven {
+        url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies/'
+    }
     maven {
         url 'https://maven.aliyun.com/repository/public/'
     }
@@ -31,6 +37,7 @@ configurations {
 }
 
 dependencies {
+    implementation 'org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22'
     implementation 'cn.emergentdesign.se:depends-kotlin:1.0.0-SNAPSHOT'
     implementation 'cn.emergentdesign.se:depends-core:0.9.8-SNAPSHOT'
     implementation 'cn.emergentdesign.se:depends-java:0.9.8-SNAPSHOT'

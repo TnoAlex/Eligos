@@ -1,11 +1,10 @@
 package com.github.tnoalex.processor
 
 import com.github.tnoalex.Analyzer
-import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.json.JsonFormatter
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.bean.register.DefaultBeanRegisterDistributor
-import com.github.tnoalex.foundation.filetools.FileContainer
+import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.issues.*
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
@@ -24,7 +23,7 @@ class KotlinProcessorTest {
         LangRegister.register()
         ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor))
         ApplicationContext.init()
-        FileContainer.initFileContainer(
+        ApplicationContext.getBean(FileHelper::class.java)[0].setFileInfo(
             File("E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples"),
 //            File("E:\\code\\spring-framework"),
             File("./"), "out"

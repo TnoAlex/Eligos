@@ -8,10 +8,12 @@ interface BeanContainer {
     val containerId: Int
 
     fun addBean(beanName: String, bean: Any)
-    fun removeBean(beanName: String): Boolean
-    fun removeBean(beanType: Class<*>): Boolean
+    fun removeBean(beanName: String): Any?
+    fun removeBean(beanType: Class<*>): List<Any>
     fun getBean(beanName: String): Any?
-    fun getBean(beanType: Class<*>): List<Any>?
+
+    fun visitBeans(visitor: (String, Any) -> Unit)
+    fun <T> getBean(beanType: Class<T>): List<T>?
     fun containsBean(beanName: String): Boolean {
         return BeanNameManager.containsBean(beanName)
     }

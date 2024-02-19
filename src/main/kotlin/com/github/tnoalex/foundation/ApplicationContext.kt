@@ -4,29 +4,38 @@ import com.github.tnoalex.foundation.bean.BeanNameManager
 import com.github.tnoalex.foundation.bean.BeanScope
 import com.github.tnoalex.foundation.bean.container.BeanContainer
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
-import com.github.tnoalex.foundation.bean.handler.BeanHandler
-import com.github.tnoalex.foundation.bean.handler.BeanPreRegisterHandler
+import com.github.tnoalex.foundation.bean.handler.*
 import com.github.tnoalex.foundation.bean.register.BeanRegisterDistributor
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
 import org.slf4j.LoggerFactory
+import java.lang.reflect.Modifier
 import kotlin.reflect.full.memberProperties
 
 object ApplicationContext {
     private val beanContainers = HashMap<BeanScope, ArrayList<BeanContainer>>()
+
     val beanPreRegisterHandler = BeanHandler.DefaultBeanHandler()
+    val beanPostRegisterHandler = BeanHandler.DefaultBeanHandler()
+    private val beansAfterRegisterHandler = BeanHandler.DefaultBeanHandler()
+    val beanPreRemoveHandler = BeanHandler.DefaultBeanHandler()
+    val beanAfterRemoveHandler = BeanHandler.DefaultBeanHandler()
+
     private val beanRegisterDistributors: ArrayList<BeanRegisterDistributor> = ArrayList()
+    private val delayRemoveCache = ArrayList<Any>()
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun init() {
         initBeanContainer()
-        initBeanPreRegisterHandler()
+        initBeanHandler()
         beanRegisterDistributors.forEach {
             it.dispatch()
         }
         beanPreRegisterHandler.removeHandlers()
+        invokeAfterBeansRegisterHandler()
+        beansAfterRegisterHandler.removeHandlers()
     }
 
     private fun initBeanContainer() {
@@ -50,15 +59,43 @@ object ApplicationContext {
         }
     }
 
-    private fun initBeanPreRegisterHandler() {
+    private fun initBeanHandler() {
         Reflections(
             ConfigurationBuilder()
                 .forPackages("")
                 .setClassLoaders(arrayOf(Thread.currentThread().contextClassLoader))
                 .setScanners(Scanners.SubTypes)
-        ).getSubTypesOf(BeanPreRegisterHandler::class.java)?.forEach {
-            beanPreRegisterHandler.addHandler(it.getDeclaredConstructor().newInstance())
+        ).getSubTypesOf(BeanHandler::class.java)?.forEach {
+            if (Modifier.isAbstract(it.modifiers)) return@forEach
+            when {
+                BeanPreRegisterHandler::class.java.isAssignableFrom(it) -> {
+                    beanPreRegisterHandler.addHandler(it.getDeclaredConstructor().newInstance())
+                }
+
+                BeanPostRegisterHandler::class.java.isAssignableFrom(it) -> {
+                    beanPostRegisterHandler.addHandler(it.getDeclaredConstructor().newInstance())
+                }
+
+                BeansAfterRegisterHandler::class.java.isAssignableFrom(it) -> {
+                    beansAfterRegisterHandler.addHandler(it.getDeclaredConstructor().newInstance())
+                }
+
+                BeanPreRemoveHandler::class.java.isAssignableFrom(it) -> {
+                    beanPreRemoveHandler.addHandler(it.getDeclaredConstructor().newInstance())
+                }
+
+                BeanAfterRemoveHandler::class.java.isAssignableFrom(it) -> {
+                    beanAfterRemoveHandler.addHandler(it.getDeclaredConstructor().newInstance())
+                }
+            }
         }
+    }
+
+    private fun invokeAfterBeansRegisterHandler() {
+        visitContainers { _, beanContainer ->
+            beanContainer.visitBeans { _, bean -> beansAfterRegisterHandler.handle(bean) }
+        }
+        doDelayRemove()
     }
 
     fun addBeanRegisterDistributor(distributors: List<BeanRegisterDistributor>) {
@@ -83,7 +120,7 @@ object ApplicationContext {
         }
         beanContainers.values.forEach {
             it.forEach { c ->
-                if (c.removeBean(beanName)) {
+                if (c.removeBean(beanName) != null) {
                     return
                 }
             }
@@ -96,11 +133,24 @@ object ApplicationContext {
         }
         beanContainers.values.forEach {
             it.forEach { c ->
-                if (c.removeBean(beanType)) {
-                    return
-                }
+                c.removeBean(beanType)
             }
         }
+    }
+
+    fun delayRemove(beanNameOrType: Any) {
+        delayRemoveCache.add(beanNameOrType)
+    }
+
+    fun doDelayRemove() {
+        delayRemoveCache.forEach {
+            when (it) {
+                is String -> removeBean(it)
+                is Class<*> -> removeBean(it)
+                else -> throw RuntimeException("Unknown bean type or name")
+            }
+        }
+        delayRemoveCache.clear()
     }
 
     fun getBean(beanName: String): Any? {
@@ -118,8 +168,8 @@ object ApplicationContext {
         return null
     }
 
-    fun getBean(beanType: Class<*>): List<Any> {
-        val list = ArrayList<Any>()
+    fun <T> getBean(beanType: Class<T>): List<T> {
+        val list = ArrayList<T>()
         if (!BeanNameManager.containsBean(beanType)) {
             logger.warn("Can not find bean with type ${beanType.typeName}")
             return list

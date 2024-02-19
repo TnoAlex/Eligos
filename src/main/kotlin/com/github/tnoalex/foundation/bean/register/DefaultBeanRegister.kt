@@ -8,5 +8,6 @@ class DefaultBeanRegister : BeanRegister {
         val beanInstance = beanClass.getDeclaredConstructor().newInstance()
         ApplicationContext.beanPreRegisterHandler.handle(beanInstance)
         beanContainer.addBean(beanName, beanInstance)
+        ApplicationContext.beanPostRegisterHandler.handle(beanInstance)
     }
 }

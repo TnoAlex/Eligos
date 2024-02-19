@@ -1,5 +1,6 @@
 package com.github.tnoalex.foundation.bean.container
 
+import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.bean.BeanNameManager
 import com.github.tnoalex.foundation.bean.BeanScope
 
@@ -15,37 +16,49 @@ object SimpleSingletonBeanContainer : BeanContainer {
         container[beanName] = bean
     }
 
-    override fun removeBean(beanName: String): Boolean {
+    override fun removeBean(beanName: String): Any? {
+        if (!container.containsKey(beanName))
+            return null
+        ApplicationContext.beanPreRemoveHandler.handle(container[beanName]!!)
         val bean = container.remove(beanName)
         if (bean != null) {
             BeanNameManager.removeBeanName(beanName, bean::class.java)
+            ApplicationContext.beanAfterRemoveHandler.handle(bean)
         }
-        return bean != null
+        return bean
     }
 
-    override fun removeBean(beanType: Class<*>): Boolean {
+    override fun removeBean(beanType: Class<*>): List<Any> {
         val it = container.iterator()
+        val removed = ArrayList<Any>()
         while (it.hasNext()) {
             val entity = it.next()
-            if (entity.value.javaClass == beanType) {
+            if (beanType.isAssignableFrom(entity.value::class.java)) {
+                ApplicationContext.beanPreRemoveHandler.handle(entity.value)
                 BeanNameManager.removeBeanName(entity.key, entity.value.javaClass)
+                removed.add(entity.value)
                 it.remove()
-                return true
+                ApplicationContext.beanAfterRemoveHandler.handle(entity.value)
             }
         }
-        return false
+        return removed
     }
 
     override fun getBean(beanName: String): Any? {
         return container[beanName]
     }
 
-    override fun getBean(beanType: Class<*>): List<Any> {
-        val list = ArrayList<Any>()
+    @Suppress("UNCHECKED_CAST")
+    override fun <T> getBean(beanType: Class<T>): List<T> {
+        val list = ArrayList<T>()
         container.forEach { (_, v) ->
             if (beanType.isAssignableFrom(v.javaClass))
-                list.add(v)
+                list.add(v as T)
         }
         return list
+    }
+
+    override fun visitBeans(visitor: (String, Any) -> Unit) {
+        container.forEach { (k, v) -> visitor(k, v) }
     }
 }
