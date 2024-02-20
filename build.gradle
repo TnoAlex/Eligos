@@ -19,6 +19,9 @@ repositories {
     }
     mavenLocal()
     maven{
+        url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies/'
+    }
+    maven{
         url 'https://www.jetbrains.com/intellij-repository/releases/'
     }
     maven {
@@ -35,6 +38,8 @@ configurations {
 
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22'
+
+
     // https://mvnrepository.com/artifact/com.jetbrains.intellij.java/java-psi
     implementation 'com.jetbrains.intellij.java:java-psi-impl:233.14475.28'
     // https://mvnrepository.com/artifact/gnu.trove/trove
