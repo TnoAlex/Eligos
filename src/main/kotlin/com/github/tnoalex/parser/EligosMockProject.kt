@@ -1,9 +1,9 @@
 package com.github.tnoalex.parser
 
-import com.intellij.mock.MockProject
-import com.intellij.openapi.Disposable
-import com.intellij.openapi.vfs.VirtualFile
-import org.picocontainer.PicoContainer
+import org.jetbrains.kotlin.com.intellij.mock.MockProject
+import org.jetbrains.kotlin.com.intellij.openapi.Disposable
+import org.jetbrains.kotlin.com.intellij.openapi.vfs.VirtualFile
+import org.jetbrains.kotlin.org.picocontainer.PicoContainer
 
 class EligosMockProject(parent: PicoContainer?, parentDisposable: Disposable) : MockProject(parent, parentDisposable){
     override fun isDefault(): Boolean {
