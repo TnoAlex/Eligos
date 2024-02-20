@@ -19,10 +19,7 @@ repositories {
     }
     mavenLocal()
     maven{
-        url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide/'
-    }
-    maven {
-        url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies/'
+        url 'https://www.jetbrains.com/intellij-repository/releases/'
     }
     maven {
         url 'https://maven.aliyun.com/repository/public/'
@@ -38,6 +35,14 @@ configurations {
 
 dependencies {
     implementation 'org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22'
+    // https://mvnrepository.com/artifact/com.jetbrains.intellij.java/java-psi
+    implementation 'com.jetbrains.intellij.java:java-psi-impl:233.14475.28'
+    // https://mvnrepository.com/artifact/gnu.trove/trove
+    // https://mvnrepository.com/artifact/net.sf.trove4j/trove4j
+    implementation 'net.sf.trove4j:trove4j:2.0.2'
+    // https://mvnrepository.com/artifact/it.unimi.dsi/fastutil
+    implementation 'it.unimi.dsi:fastutil:8.5.13'
+
     implementation 'cn.emergentdesign.se:depends-kotlin:1.0.0-SNAPSHOT'
     implementation 'cn.emergentdesign.se:depends-core:0.9.8-SNAPSHOT'
     implementation 'cn.emergentdesign.se:depends-java:0.9.8-SNAPSHOT'

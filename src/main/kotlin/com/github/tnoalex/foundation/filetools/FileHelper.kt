@@ -2,6 +2,11 @@ package com.github.tnoalex.foundation.filetools
 
 import com.github.tnoalex.foundation.bean.Component
 import java.io.File
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 
 @Component(order = Int.MAX_VALUE)
 class FileHelper {
@@ -21,20 +26,11 @@ class FileHelper {
     }
 
     fun visitSourcesFile(hook: (File) -> Unit) {
-        fun visit(file: File) {
-            if (file.isDirectory()) {
-                val files = file.listFiles()
-                if (files != null) {
-                    for (f in files) {
-                        if (f.isDirectory()) {
-                            visit(f)
-                        } else {
-                            hook(f)
-                        }
-                    }
-                }
+        Files.walkFileTree(sourceFilePath.toPath(), object : SimpleFileVisitor<Path>() {
+            override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
+                hook(file.toFile())
+                return super.visitFile(file, attrs)
             }
-        }
-        visit(sourceFilePath)
+        })
     }
 }
