@@ -6,6 +6,9 @@ import com.github.tnoalex.foundation.bean.container.BeanContainer
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.foundation.bean.handler.*
 import com.github.tnoalex.foundation.bean.register.BeanRegisterDistributor
+import org.jetbrains.kotlin.com.intellij.core.CoreFileTypeRegistry
+import org.jetbrains.kotlin.com.intellij.openapi.fileTypes.FileType
+import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
@@ -14,14 +17,14 @@ import java.lang.reflect.Modifier
 import kotlin.reflect.full.memberProperties
 
 object ApplicationContext {
-    private val beanContainers = HashMap<BeanScope, ArrayList<BeanContainer>>()
 
-    val beanPreRegisterHandler = BeanHandler.DefaultBeanHandler()
-    val beanPostRegisterHandler = BeanHandler.DefaultBeanHandler()
-    private val beansAfterRegisterHandler = BeanHandler.DefaultBeanHandler()
     val beanPreRemoveHandler = BeanHandler.DefaultBeanHandler()
     val beanAfterRemoveHandler = BeanHandler.DefaultBeanHandler()
+    val beanPreRegisterHandler = BeanHandler.DefaultBeanHandler()
+    val beanPostRegisterHandler = BeanHandler.DefaultBeanHandler()
 
+    private val beanContainers = HashMap<BeanScope, ArrayList<BeanContainer>>()
+    private val beansAfterRegisterHandler = BeanHandler.DefaultBeanHandler()
     private val beanRegisterDistributors: ArrayList<BeanRegisterDistributor> = ArrayList()
     private val delayRemoveCache = ArrayList<Any>()
 
@@ -164,7 +167,6 @@ object ApplicationContext {
                 if (bean != null) return bean
             }
         }
-        logger.warn("Can not find bean named $beanName")
         return null
     }
 
@@ -182,7 +184,6 @@ object ApplicationContext {
                 }
             }
         }
-        logger.warn("Can not find bean with type ${beanType.typeName}")
         return list
     }
 

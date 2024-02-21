@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.bean.Component
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 
-@Component(order = Int.MAX_VALUE)
+@Component(order = Short.MAX_VALUE.toInt())
 class ConfigParser {
     val rules by lazy { parserRules() }
     var extendRules: File? = null
