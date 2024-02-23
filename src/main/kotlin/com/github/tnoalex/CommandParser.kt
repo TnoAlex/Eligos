@@ -11,6 +11,7 @@ import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.FormatterFactory
 import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.foundation.environment.JvmCompilerEnvironmentContext
 import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.utils.StdOutErrWrapper
 
@@ -57,7 +58,8 @@ class CommandParser : CliktCommand() {
             outPath?.toFile(),
             outputPrefix
         )
-        ApplicationContext.getBean(ConfigParser::class.java)[0].extendRules = extendRules
+        ApplicationContext.getExactBean(ConfigParser::class.java)?.extendRules = extendRules
+        ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)?.setProjectDir(srcPath.toFile())
         Analyzer(
             FormatterFactory.getFormatter(outFormat) ?: throw RuntimeException("Unsupported  formatter"),
             listOf(lang, crossLang)

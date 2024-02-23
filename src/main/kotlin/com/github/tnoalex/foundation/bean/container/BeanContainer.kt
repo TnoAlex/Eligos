@@ -14,6 +14,8 @@ interface BeanContainer {
 
     fun visitBeans(visitor: (String, Any) -> Unit)
     fun <T> getBean(beanType: Class<T>): List<T>?
+
+    fun <T> getExactBean(beanType: Class<T>): T?
     fun containsBean(beanName: String): Boolean {
         return BeanNameManager.containsBean(beanName)
     }

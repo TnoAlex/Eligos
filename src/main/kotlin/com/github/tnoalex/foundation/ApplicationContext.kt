@@ -6,9 +6,6 @@ import com.github.tnoalex.foundation.bean.container.BeanContainer
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.foundation.bean.handler.*
 import com.github.tnoalex.foundation.bean.register.BeanRegisterDistributor
-import org.jetbrains.kotlin.com.intellij.core.CoreFileTypeRegistry
-import org.jetbrains.kotlin.com.intellij.openapi.fileTypes.FileType
-import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer
 import org.reflections.Reflections
 import org.reflections.scanners.Scanners
 import org.reflections.util.ConfigurationBuilder
@@ -185,6 +182,22 @@ object ApplicationContext {
             }
         }
         return list
+    }
+
+    fun <T> getExactBean(beanType: Class<T>): T? {
+        if (!BeanNameManager.containsBean(beanType)){
+            logger.warn("Can not find bean with type ${beanType.typeName}")
+            return null
+        }
+        beanContainers.values.forEach {
+            it.forEach { c->
+                val bean = c.getExactBean(beanType)
+                if (bean != null){
+                    return bean
+                }
+            }
+        }
+        return null
     }
 
     fun containsBean(beanName: String): Boolean {

@@ -61,4 +61,9 @@ object SimpleSingletonBeanContainer : BeanContainer {
     override fun visitBeans(visitor: (String, Any) -> Unit) {
         container.forEach { (k, v) -> visitor(k, v) }
     }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T> getExactBean(beanType: Class<T>): T? {
+        return container.values.firstOrNull { it.javaClass == beanType } as T?
+    }
 }

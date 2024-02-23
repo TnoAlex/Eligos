@@ -1,10 +1,8 @@
 package com.github.tnoalex.processor.cross.kotlinjava
 
-import com.github.tnoalex.processor.AstProcessorWithContext
+import com.github.tnoalex.processor.PsiProcessorWithContext
 
-class UnclearPlatformTypeProcessor : AstProcessorWithContext() {
-    override val order: Int
-        get() = -1
+class UnclearPlatformTypeProcessor : PsiProcessorWithContext() {
     override val supportLanguage: List<String>
         get() = listOf("java","kotlin")
 }

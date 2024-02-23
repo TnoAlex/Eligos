@@ -6,7 +6,7 @@ import com.github.tnoalex.elements.FunctionCallElement
 import com.github.tnoalex.elements.jvm.kotlin.DeclarationExpressionElement
 import com.github.tnoalex.elements.jvm.kotlin.KotlinFunctionElement
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.processor.AstProcessorWithContext
+import com.github.tnoalex.processor.PsiProcessorWithContext
 import com.github.tnoalex.utils.isFunctionCall
 import com.github.tnoalex.utils.signature
 import depends.extractor.kotlin.KotlinParser.*
@@ -14,12 +14,8 @@ import depends.extractor.kotlin.KotlinParserBaseVisitor
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.RuleContext
 import java.util.*
-import kotlin.math.exp
 
-class KotlinCallExpressionProcessor : AstProcessorWithContext() {
-    override val order: Int
-        get() = Int.MAX_VALUE - 2
-
+class KotlinCallExpressionProcessor : PsiProcessorWithContext() {
     @EventListener(eventPrefix = "enter")
     fun findCallExpressionInFunction(ctx: FunctionDeclarationContext) {
         val functionElement = getFunctionElement(ctx.signature()) ?: throw RuntimeException("Inner Error!")

@@ -2,10 +2,12 @@ package com.github.tnoalex
 
 import com.github.tnoalex.formatter.IFormatter
 import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.listener.AstListener
 import com.github.tnoalex.listener.FileListener
-import com.github.tnoalex.processor.AstProcessor
+import com.github.tnoalex.parser.FileDistributor
+import com.github.tnoalex.processor.PsiProcessor
 import depends.extractor.LangProcessorRegistration
 import depends.relations.RelationCounter
 import org.slf4j.LoggerFactory
@@ -14,33 +16,33 @@ class Analyzer(
     private val formatter: IFormatter,
     private val languages: List<String?>
 ) {
-    private lateinit var context: Context
+    val context: Context = Context()
 
     fun analyze() {
+        ApplicationContext.addBean("context", context, SimpleSingletonBeanContainer)
         buildAndParserAst()
+        dispatchFiles()
     }
 
-    fun getContext(): Context {
-        if (this::context.isInitialized)
-            return context
-        throw RuntimeException("Context not initialized yet")
+    private fun dispatchFiles() {
+        ApplicationContext.getBean(FileDistributor::class.java).forEach {
+            it.dispatch()
+        }
     }
-
 
     private fun buildAndParserAst() {
         logger.info("Create context ")
-        context = Context()
-        val astProcessors = ArrayList<AstProcessor>()
+        val psiProcessors = ArrayList<PsiProcessor>()
         val astListeners = ArrayList<AstListener>()
-        ApplicationContext.getBean(AstProcessor::class.java).forEach {
+        ApplicationContext.getBean(PsiProcessor::class.java).forEach {
             if (it.supportLanguage.contains("any")) {
                 it.registerListener(context)
-                astProcessors.add(it)
+                psiProcessors.add(it)
             } else {
                 languages.forEach { l ->
                     if (it.supportLanguage.contains(l)) {
                         it.registerListener(context)
-                        astProcessors.add(it)
+                        psiProcessors.add(it)
                     }
                 }
             }
@@ -71,13 +73,14 @@ class Analyzer(
         logger.info("------ Clean up framework ------")
         langProcessor.clearExtraListeners()
 
-        astProcessors.forEach {
+        psiProcessors.forEach {
             it.unregisterListener()
         }
         logger.info("Finished")
     }
 
     companion object {
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(Analyzer::class.java)
     }
 }

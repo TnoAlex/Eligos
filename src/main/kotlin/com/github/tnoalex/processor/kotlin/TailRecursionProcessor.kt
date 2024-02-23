@@ -3,15 +3,13 @@ package com.github.tnoalex.processor.kotlin
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.OptimizedTailRecursionIssue
-import com.github.tnoalex.processor.AstProcessorWithContext
+import com.github.tnoalex.processor.PsiProcessorWithContext
 import com.github.tnoalex.utils.*
 import depends.extractor.kotlin.KotlinParser.*
 import depends.extractor.kotlin.KotlinParserBaseVisitor
 
 @Component
-class TailRecursionProcessor : AstProcessorWithContext() {
-    override val order: Int
-        get() = Int.MAX_VALUE
+class TailRecursionProcessor : PsiProcessorWithContext() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 

@@ -27,7 +27,7 @@ class JavaProcessorTest {
 
     @Test
     fun testBaseInfo(){
-        val file = analyzer.getContext()
+        val file = analyzer.context
             .getFileElement("E:\\code\\depends-smell\\src\\test\\resources\\java-code-samples\\javabaseinfos\\JavaBaseInfoSample0.java")
         println()
     }

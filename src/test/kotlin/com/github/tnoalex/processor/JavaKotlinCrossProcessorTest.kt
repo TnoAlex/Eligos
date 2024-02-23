@@ -30,7 +30,7 @@ class JavaKotlinCrossProcessorTest {
 
     @Test
     fun testInternalExtendsOrImplements() {
-        val issues = analyzer.getContext().getIssuesByType(ImproperInternalExposedIssue::class)
+        val issues = analyzer.context.getIssuesByType(ImproperInternalExposedIssue::class)
         assertEquals(4, issues.size)
         val issue = issues.map { it as ImproperInternalExposedIssue }
             .find { it.javaClassElement.qualifiedName == "internaltest.java.UseInternalInJava0" }

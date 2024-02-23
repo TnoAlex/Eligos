@@ -7,16 +7,13 @@ import com.github.tnoalex.foundation.algorithm.AdjacencyList
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.CircularReferencesIssue
-import com.github.tnoalex.processor.AstProcessor
+import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.utils.toAdjacencyList
 import java.util.*
 
 @Component
-class CircularReferencesProcessor : AstProcessor {
+class CircularReferencesProcessor : PsiProcessor {
     private val issues = LinkedList<CircularReferencesIssue>()
-
-    override val order: Int
-        get() = Short.MAX_VALUE.toInt()
 
     @EventListener
     fun process(event: EntityRepoFinishedEvent) {

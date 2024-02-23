@@ -1,7 +1,6 @@
 package com.github.tnoalex.foundation.eventbus
 
 import com.github.tnoalex.utils.*
-import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSuperclassOf
 
@@ -11,14 +10,15 @@ import kotlin.reflect.full.isSuperclassOf
  * This is not a thread-safe implementation
  */
 object EventBus {
-    private val listenerMap = HashMap<KClass<*>, LinkedList<ListenerMethod>>()
-    private val eventMap = HashMap<Any, LinkedList<KClass<*>>>()
+    private val listenerMap = HashMap<KClass<*>, ArrayList<ListenerMethod>>()
+    private val eventMap = HashMap<Any, ArrayList<KClass<*>>>()
 
 
     fun register(listener: Any) {
         getListenerMethod(listener).forEach {
             subscribe(listener, it)
         }
+        sortEvent()
     }
 
     /**
@@ -29,13 +29,23 @@ object EventBus {
      * It is used to specify specific recipients when the event object is a Kotlin built-in type, such as String.
      */
     fun post(event: Any, targets: List<KClass<*>>? = null, prefix: String = "") {
-        val methods = listenerMap[event::class] ?: return
+        val methods = getEventReceiver(event)
+        if (methods.isEmpty()) return
         val filteredMethods = methods.filter {
             targets == null || targets.find { t -> t.isSuperclassOf(it.listener::class) } != null
         }
         filteredMethods.forEach { postEvent(it, event, prefix) }
     }
 
+    private fun getEventReceiver(event: Any): ArrayList<ListenerMethod> {
+        val methods = ArrayList<ListenerMethod>()
+        listenerMap.keys.forEach {
+            if (it.java.isAssignableFrom(event.javaClass)){
+                listenerMap[it]?.let { it1 -> methods.addAll(it1) }
+            }
+        }
+        return methods
+    }
     private fun postEvent(wrapper: ListenerMethod, event: Any, prefix: String) {
         if (wrapper.filterEl.isBlank() || evaluateBooleanElExpression(wrapper.filterEl, wrapper.listener, event)) {
             if (prefix.isBlank() || wrapper.eventPrefix.isBlank() || wrapper.eventPrefix == prefix) {
@@ -62,49 +72,60 @@ object EventBus {
             val listenerList = listenerMap[it] ?: return
             for (i in listenerList.indices) {
                 if (listenerList[i] == listener) {
-                    listenerList.remove()
+                    listenerList.removeAt(i)
                 }
             }
         }
         eventMap.remove(listener)
     }
 
+    private fun sortEvent() {
+        listenerMap.forEach { (_, v) ->
+            v.sortByDescending { it.order }
+        }
+    }
+
     private fun getListenerMethod(listener: Any): List<ListenerMethod> {
         val methodList = getMethodsAnnotatedWith(EventListener::class, listener::class)
             .filter { it.parameters.size == 2 }
             .map {
+                val annotation = getMethodAnnotation(EventListener::class, it).first() as EventListener
                 ListenerMethod(
                     listener,
                     it,
                     null,
                     it.parameters[1].type.classifier as KClass<*>,
-                    (getMethodAnnotation(EventListener::class, it)[0] as EventListener).filter,
-                    (getMethodAnnotation(EventListener::class, it)[0] as EventListener).eventPrefix
+                    annotation.filter,
+                    annotation.eventPrefix,
+                    annotation.order
                 )
             }
-        val propertyList = getMutablePropertiesAnnotateWith(EventListener::class, listener::class).map {
-            ListenerMethod(
-                listener,
-                null,
-                it,
-                it.setter.parameters[1].type.classifier as KClass<*>,
-                (getPropertyAnnotation(EventListener::class, it)[0] as EventListener).filter,
-                (getPropertyAnnotation(EventListener::class, it)[0] as EventListener).eventPrefix,
-            )
-        }
+        val propertyList = getMutablePropertiesAnnotateWith(EventListener::class, listener::class)
+            .map {
+                val annotation = getPropertyAnnotation(EventListener::class, it).first() as EventListener
+                ListenerMethod(
+                    listener,
+                    null,
+                    it,
+                    it.setter.parameters[1].type.classifier as KClass<*>,
+                    annotation.filter,
+                    annotation.eventPrefix,
+                    annotation.order
+                )
+            }
         return methodList + propertyList
     }
 
     private fun subscribe(listener: Any, listenerMethod: ListenerMethod) {
         val methodList = listenerMap[listenerMethod.eventType]
         if (methodList == null) {
-            listenerMap[listenerMethod.eventType] = LinkedList(listOf(listenerMethod))
+            listenerMap[listenerMethod.eventType] = ArrayList(listOf(listenerMethod))
         } else {
             listenerMap[listenerMethod.eventType]?.add(listenerMethod)
         }
         val events = eventMap[listener]
         if (events == null) {
-            eventMap[listener] = LinkedList(listOf(listenerMethod.eventType))
+            eventMap[listener] = ArrayList(listOf(listenerMethod.eventType))
         } else {
             eventMap[listener]?.add(listenerMethod.eventType)
         }

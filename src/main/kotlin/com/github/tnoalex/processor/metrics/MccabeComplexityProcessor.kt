@@ -5,10 +5,10 @@ import com.github.tnoalex.elements.FileElement
 import com.github.tnoalex.events.FileExitEvent
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ComplexMethodIssue
-import com.github.tnoalex.processor.AstProcessorWithContext
+import com.github.tnoalex.processor.PsiProcessorWithContext
 import java.util.*
 
-abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
+abstract class MccabeComplexityProcessor : PsiProcessorWithContext() {
     private val functionMap = HashMap<String, ArrayList<Int>>()
     private val closureFunctionMap = HashMap<String, HashSet<String>>()
     private val idMap = HashMap<String, String>()
@@ -17,8 +17,6 @@ abstract class MccabeComplexityProcessor : AstProcessorWithContext() {
     @WiredConfig("function.maxCyclomaticComplexity")
     protected var maxCyclomaticComplexity = 0
 
-    override val order: Int
-        get() = Int.MAX_VALUE - 1
 
     @EventListener
     fun process(event: FileExitEvent) {

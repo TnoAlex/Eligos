@@ -7,7 +7,7 @@ import com.github.tnoalex.events.EntityRepoFinishedEvent
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ImproperInternalExposedIssue
-import com.github.tnoalex.processor.AstProcessorWithContext
+import com.github.tnoalex.processor.PsiProcessorWithContext
 import com.github.tnoalex.utils.getJavaClassElementByQualifiedName
 import com.github.tnoalex.utils.getKotlinClassElementByQualifiedName
 import com.github.tnoalex.utils.getTargetTypeParent
@@ -18,12 +18,9 @@ import depends.entity.KotlinTypeEntity
 import depends.entity.TypeEntity
 
 @Component
-class InternalExposedProcessor : AstProcessorWithContext() {
+class InternalExposedProcessor : PsiProcessorWithContext() {
     override val supportLanguage: List<String>
         get() = listOf("kotlin", "java")
-
-    override val order: Int
-        get() = Int.MIN_VALUE
 
     @EventListener
     private fun process(event: EntityRepoFinishedEvent) {

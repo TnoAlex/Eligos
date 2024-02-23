@@ -6,16 +6,13 @@ import com.github.tnoalex.events.EntityRepoFinishedEvent
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.UnusedImportIssue
-import com.github.tnoalex.processor.AstProcessor
+import com.github.tnoalex.processor.PsiProcessor
 import depends.deptypes.DependencyType
 import java.util.*
 
 @Component
-class UnUsedImportProcessor : AstProcessor {
+class UnUsedImportProcessor : PsiProcessor {
     private val issues = LinkedList<UnusedImportIssue>()
-
-    override val order: Int
-        get() = Short.MAX_VALUE.toInt()
 
     @EventListener
     fun process(event: EntityRepoFinishedEvent) {

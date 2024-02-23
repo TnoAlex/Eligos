@@ -2,10 +2,7 @@ package com.github.tnoalex.processor
 
 import com.github.tnoalex.foundation.eventbus.EventListener
 
-abstract class AbstractBaseInfoProcessor : AstProcessorWithContext() {
-    override val order: Int
-        get() = Int.MAX_VALUE
-
+abstract class AbstractBaseInfoProcessor : PsiProcessorWithContext() {
     @EventListener
     protected var currentFileName: String = ""
         set(value) {

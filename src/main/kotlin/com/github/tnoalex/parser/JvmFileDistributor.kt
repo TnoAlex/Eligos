@@ -3,6 +3,7 @@ package com.github.tnoalex.parser
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.environment.JvmCompilerEnvironmentContext
+import com.github.tnoalex.foundation.eventbus.EventBus
 import org.jetbrains.kotlin.com.intellij.ide.highlighter.ArchiveFileType
 import org.jetbrains.kotlin.com.intellij.ide.highlighter.JavaClassFileType
 import org.jetbrains.kotlin.com.intellij.ide.highlighter.JavaFileType
@@ -12,11 +13,12 @@ import org.jetbrains.kotlin.com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.parsing.KotlinParserDefinition
-import java.io.File
 
 
 @Component(order = Short.MAX_VALUE.toInt())
-class JvmFileParser : FileParser {
+class JvmFileDistributor : FileDistributor {
+    private val psiManager: PsiManager
+
     init {
         val environmentContext = ApplicationContext.getBean(JvmCompilerEnvironmentContext::class.java).first()
         with(environmentContext) {
@@ -33,14 +35,35 @@ class JvmFileParser : FileParser {
                 registerCoreFileType(k, v)
             }
             initPsiProject()
+            psiManager = psiApplication.getService(PsiManager::class.java)
         }
     }
 
-    override fun parseFile(file: File): PsiFile? {
-        val environmentContext = ApplicationContext.getBean(JvmCompilerEnvironmentContext::class.java).first()
-        val virtualFile = environmentContext.createVirtualFile(file)
-        val psiManager = environmentContext.project.getService(PsiManager::class.java)
+    override fun dispatch() {
+        val project = ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)?.project
+            ?: throw RuntimeException("Can not find the project of ${this::class.java.typeName}")
+        project.projectFile.refresh(false, true)
+        visitVirtualFile(project.projectFile) {
+            psiManager.findFile(it)?.let { psi ->
+                EventBus.post(psi)
+            }
+        }
+    }
+
+    override fun virtualFileConvert(virtualFile: Any): PsiFile {
+        require(virtualFile is VirtualFile)
         return psiManager.findFile(virtualFile)
+            ?: throw RuntimeException("Can not find psi file with path: ${virtualFile.path}")
+    }
+
+    private fun visitVirtualFile(virtualFile: VirtualFile, visitor: (file: VirtualFile) -> Unit) {
+        if (virtualFile.isDirectory) {
+            virtualFile.children.forEach {
+                visitVirtualFile(it, visitor)
+            }
+        } else {
+            visitor(virtualFile)
+        }
     }
 
 }

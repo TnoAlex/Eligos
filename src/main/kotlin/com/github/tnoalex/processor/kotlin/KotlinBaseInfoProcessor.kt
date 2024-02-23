@@ -19,9 +19,6 @@ import java.util.*
 
 @Component
 class KotlinBaseInfoProcessor : AbstractBaseInfoProcessor() {
-
-    override val order: Int
-        get() = Int.MAX_VALUE
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 

@@ -10,5 +10,6 @@ data class ListenerMethod(
     val property: KMutableProperty<*>?,
     val eventType: KClass<*>,
     val filterEl: String,
-    val eventPrefix:String
+    val eventPrefix: String,
+    val order: Int
 )
