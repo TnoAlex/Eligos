@@ -52,8 +52,6 @@ class TooManyParametersProcessor : PsiProcessor {
             override fun visitMethod(method: PsiMethod) {
                 if (method.parameters.size >= arity) {
                     with(method) {
-                        //fixme getName throw Class cast exception
-                        name
                         issues.add(ExcessiveParamsIssue(containingFile.virtualFile.path, name, parameters.size))
                     }
                 }

@@ -14,6 +14,7 @@ import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.environment.JvmCompilerEnvironmentContext
 import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.utils.StdOutErrWrapper
+import kotlin.io.path.absolutePathString
 
 class CommandParser : CliktCommand() {
 
@@ -53,13 +54,13 @@ class CommandParser : CliktCommand() {
 
     override fun run() {
         StdOutErrWrapper.init()
-        ApplicationContext.getBean(FileHelper::class.java)[0].setFileInfo(
+        ApplicationContext.getExactBean(FileHelper::class.java)?.setFileInfo(
             srcPath.toFile(),
             outPath?.toFile(),
             outputPrefix
         )
         ApplicationContext.getExactBean(ConfigParser::class.java)?.extendRules = extendRules
-        ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)?.setProjectDir(srcPath.toFile())
+        ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)?.initCompilerEnv(srcPath)
         Analyzer(
             FormatterFactory.getFormatter(outFormat) ?: throw RuntimeException("Unsupported  formatter"),
             listOf(lang, crossLang)

@@ -10,6 +10,9 @@ import com.github.tnoalex.parser.FileDistributor
 import com.github.tnoalex.processor.PsiProcessor
 import depends.extractor.LangProcessorRegistration
 import depends.relations.RelationCounter
+import org.reflections.Reflections
+import org.reflections.scanners.Scanners
+import org.reflections.util.ConfigurationBuilder
 import org.slf4j.LoggerFactory
 
 class Analyzer(
@@ -25,6 +28,9 @@ class Analyzer(
     }
 
     private fun dispatchFiles() {
+        ApplicationContext.getBean(FileDistributor::class.java).forEach {
+            it.init()
+        }
         ApplicationContext.getBean(FileDistributor::class.java).forEach {
             it.dispatch()
         }

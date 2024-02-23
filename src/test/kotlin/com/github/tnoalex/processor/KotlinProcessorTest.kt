@@ -25,7 +25,7 @@ class KotlinProcessorTest {
         ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor))
         ApplicationContext.init()
         ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)
-            ?.setProjectDir(File("E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\toomanyparams"))
+            ?.initCompilerEnv(File("E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\toomanyparams").toPath())
         ApplicationContext.getBean(FileHelper::class.java)[0].setFileInfo(
             File("E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\toomanyparams"),
             File("./"), "out"
@@ -52,7 +52,7 @@ class KotlinProcessorTest {
     @Test
     fun tesFindTooManyParameters() {
         val issues = analyzer.context.getIssuesByType(ExcessiveParamsIssue::class)
-        assertEquals(2, issues.size)
+        assertEquals(3, issues.size)
         assertTrue(issues.map { it as ExcessiveParamsIssue }.find { it.arity == 8 } != null)
     }
 
