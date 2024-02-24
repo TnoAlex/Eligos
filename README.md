@@ -1,4 +1,4 @@
-# depends-smell
+# Eligos
 
 ![GitHub License](https://img.shields.io/github/license/TnoAlex/depends-smell)
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/TnoAlex/depends-smell/gradle-publish.yml)
