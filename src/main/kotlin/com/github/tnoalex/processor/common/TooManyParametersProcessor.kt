@@ -23,15 +23,7 @@ class TooManyParametersProcessor : PsiProcessor {
 
     @WiredConfig("function.arity")
     private var arity: Int = 0
-
-
-    @EventListener
-    fun process(event: EntityRepoFinishedEvent) {
-        findTooManyParameters(event.source as Context)
-        (event.source as Context).reportIssues(issues)
-        issues.clear()
-    }
-
+    
     @EventListener
     fun process(psiFile: PsiFile) {
         when (psiFile) {
@@ -67,23 +59,6 @@ class TooManyParametersProcessor : PsiProcessor {
                         issues.add(ExcessiveParamsIssue(containingFile.virtualFile.path, name!!, valueParameters.size))
                     }
                 }
-            }
-        }
-    }
-
-    private fun findTooManyParameters(context: Context) {
-        val functionEntities = context.getRepo().getEntitiesByType(FunctionEntity::class.java)
-        val functionDependency = context.getDependencyMatrix(AnalysisHierarchyEnum.METHOD)
-        functionEntities.map { it as FunctionEntity }.filter {
-            it.parameters.size > arity
-        }.forEach {
-            val file = functionDependency!!.nodes.first { f ->
-                f.split("(")[1] == it.qualifiedName + ")"
-            }.split("(")[0]
-            val params = HashMap<String, String>()
-            it.parameters.forEach { p ->
-                if (p.rawType == null) return@forEach
-                params[p.rawName.name] = p.rawType.name
             }
         }
     }
