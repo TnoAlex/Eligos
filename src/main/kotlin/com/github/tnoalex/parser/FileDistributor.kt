@@ -1,6 +1,8 @@
 package com.github.tnoalex.parser
 
-interface FileDistributor {
+import com.github.tnoalex.foundation.LanguageSupportInfo
+
+interface FileDistributor : LanguageSupportInfo {
     fun init()
     fun dispatch()
     fun virtualFileConvert(virtualFile: Any): Any

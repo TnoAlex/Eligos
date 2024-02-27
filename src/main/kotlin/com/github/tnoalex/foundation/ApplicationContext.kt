@@ -167,7 +167,7 @@ object ApplicationContext {
         return null
     }
 
-    fun <T> getBean(beanType: Class<T>): List<T> {
+    fun <T> getBean(beanType: Class<T>): ArrayList<T> {
         val list = ArrayList<T>()
         if (!BeanNameManager.containsBean(beanType)) {
             logger.warn("Can not find bean with type ${beanType.typeName}")

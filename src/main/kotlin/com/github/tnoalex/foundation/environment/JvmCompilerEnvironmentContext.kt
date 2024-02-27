@@ -4,20 +4,26 @@ import com.github.tnoalex.foundation.bean.Component
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.config.addKotlinSourceRoots
 import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
+import org.jetbrains.kotlin.cli.common.messages.AnalyzerWithCompilerReport
+import org.jetbrains.kotlin.cli.common.messages.MessageCollector
 import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
+import org.jetbrains.kotlin.cli.jvm.compiler.NoScopeRecordCliBindingTrace
+import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
 import org.jetbrains.kotlin.cli.jvm.config.configureJdkClasspathRoots
 import org.jetbrains.kotlin.com.intellij.mock.MockProject
-import org.jetbrains.kotlin.com.intellij.openapi.application.ApplicationManager
 import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer
 import org.jetbrains.kotlin.com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.kotlin.com.intellij.openapi.vfs.local.CoreLocalFileSystem
 import org.jetbrains.kotlin.com.intellij.openapi.vfs.local.CoreLocalVirtualFile
 import org.jetbrains.kotlin.config.*
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import java.io.File
 import java.io.PrintStream
 import java.nio.file.Path
@@ -26,28 +32,39 @@ import kotlin.io.path.isDirectory
 
 @Component(order = Int.MAX_VALUE)
 class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
+    override val supportLanguage: List<String>
+        get() = listOf("java", "kotlin")
+
     private val disposer = Disposer.newDisposable()
-    val psiApplication get() = ApplicationManager.getApplication()
+
     private val fileSystem: CoreLocalFileSystem = CoreLocalFileSystem()
     lateinit var project: MockProject
         private set
     lateinit var baseDir: VirtualFile
         private set
+    lateinit var bindingContext: BindingContext
+        private set
 
     override fun initCompilerEnv(filePath: Path) {
+        val jdkHome = File(System.getProperty("java.home")).toPath()
         val compilerEnvironmentContext = createCompilerConfiguration(
             listOf(filePath),
             listOf(filePath.absolutePathString()),
-            jdkHome = File(System.getProperty("java.home")).toPath()
+            jdkHome = jdkHome
         )
-        createKotlinCoreEnvironment(compilerEnvironmentContext)
+        val kotlinCoreEnvironment = createKotlinCoreEnvironment(compilerEnvironmentContext)
         baseDir = CoreLocalVirtualFile(fileSystem, filePath.toFile(), filePath.isDirectory())
+        bindingContext = generateBindingContext(
+            kotlinCoreEnvironment,
+            listOf(filePath.absolutePathString()),
+            kotlinCoreEnvironment.getSourceFiles()
+        )
     }
 
     private fun createKotlinCoreEnvironment(
         configuration: CompilerConfiguration = CompilerConfiguration(),
         printStream: PrintStream = System.err,
-    ) {
+    ): KotlinCoreEnvironment {
         setIdeaIoUseFallback()
         configuration.put(
             CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY,
@@ -66,6 +83,7 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
         project = requireNotNull(projectCandidate as? MockProject) {
             "MockProject type expected, actual - ${projectCandidate.javaClass.simpleName}"
         }
+        return environment
     }
 
     private fun createCompilerConfiguration(
@@ -106,5 +124,35 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
             jdkHome?.let { put(JVMConfigurationKeys.JDK_HOME, it.toFile()) }
             configureJdkClasspathRoots()
         }
+    }
+
+    private fun generateBindingContext(
+        environment: KotlinCoreEnvironment,
+        classpath: List<String>,
+        files: List<KtFile>
+    ): BindingContext {
+        if (classpath.isEmpty()) {
+            return BindingContext.EMPTY
+        }
+
+        val messageCollector = MessageCollector.NONE
+
+        val analyzer = AnalyzerWithCompilerReport(
+            messageCollector,
+            environment.configuration.languageVersionSettings,
+            false,
+        )
+        analyzer.analyzeAndReport(files) {
+            TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+                environment.project,
+                files,
+                NoScopeRecordCliBindingTrace(),
+                environment.configuration,
+                environment::createPackagePartProvider,
+                ::FileBasedDeclarationProviderFactory
+            )
+        }
+
+        return analyzer.analysisResult.bindingContext
     }
 }

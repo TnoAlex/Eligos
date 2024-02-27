@@ -3,18 +3,72 @@ package com.github.tnoalex.processor.common
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.Context
 import com.github.tnoalex.events.EntityRepoFinishedEvent
+import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.bean.Component
+import com.github.tnoalex.foundation.environment.JvmCompilerEnvironmentContext
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.UnusedImportIssue
 import com.github.tnoalex.processor.PsiProcessor
 import depends.deptypes.DependencyType
+import org.jetbrains.kotlin.com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.com.intellij.psi.PsiImportList
+import org.jetbrains.kotlin.com.intellij.psi.PsiJavaFile
+import org.jetbrains.kotlin.com.intellij.psi.PsiJavaReference
+import org.jetbrains.kotlin.com.intellij.psi.PsiReference
+import org.jetbrains.kotlin.com.intellij.psi.PsiReferenceService
+import org.jetbrains.kotlin.com.intellij.psi.PsiReferenceServiceImpl
+import org.jetbrains.kotlin.com.intellij.psi.codeStyle.CodeStyleManager
+import org.jetbrains.kotlin.com.intellij.psi.search.PsiSearchScopeUtil
+import org.jetbrains.kotlin.com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall
+import org.jetbrains.kotlin.resolve.references.ReferenceAccess
 import java.util.*
+import kotlin.reflect.jvm.internal.impl.types.checker.KotlinTypeChecker
 
 @Component
 class UnUsedImportProcessor : PsiProcessor {
     private val issues = LinkedList<UnusedImportIssue>()
 
     @EventListener
+    fun process(psiFile: PsiFile) {
+        when (psiFile) {
+            is PsiJavaFile -> {
+                findJavaUseLessImport(psiFile)
+            }
+
+            is KtFile -> {
+                findKotlinUseLessImport(psiFile)
+            }
+        }
+    }
+
+    private fun findJavaUseLessImport(javaFile: PsiJavaFile) {
+        val importList = PsiTreeUtil.getChildOfType(javaFile, PsiImportList::class.java) ?: return
+        importList.importStatements.forEach {
+            val references = it.references
+            println()
+        }
+    }
+
+    private fun findKotlinUseLessImport(ktFile: KtFile) {
+        val importList = PsiTreeUtil.getChildOfType(ktFile, KtImportList::class.java) ?: return
+        val bindingContext = ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)!!.bindingContext
+        ktFile.accept(object : KtTreeVisitorVoid() {
+            override fun visitReferenceExpression(expression: KtReferenceExpression) {
+                if (expression is KtCallExpression){
+                    expression.getResolvedCall(bindingContext)
+                }
+                println()
+                super.visitReferenceExpression(expression)
+            }
+        })
+        importList.imports.forEach {
+            println()
+        }
+    }
+
     fun process(event: EntityRepoFinishedEvent) {
         findUselessImport(event.source as Context)
         (event.source as Context).reportIssues(issues)

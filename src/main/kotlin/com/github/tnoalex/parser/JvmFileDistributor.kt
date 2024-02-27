@@ -11,6 +11,9 @@ import org.jetbrains.kotlin.com.intellij.psi.PsiManager
 
 @Component(order = Short.MAX_VALUE.toInt())
 class JvmFileDistributor : FileDistributor {
+    override val supportLanguage: List<String>
+        get() = listOf("java", "kotlin")
+
     private lateinit var psiManager: PsiManager
 
     override fun init() {
