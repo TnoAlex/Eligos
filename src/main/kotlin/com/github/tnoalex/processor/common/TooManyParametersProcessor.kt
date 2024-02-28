@@ -11,7 +11,7 @@ import com.github.tnoalex.issues.ExcessiveParamsIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.utils.getEntitiesByType
 import depends.entity.FunctionEntity
-import org.jetbrains.kotlin.com.intellij.psi.*
+import /*org.jetbrains.kotlin.*/com.intellij.psi.*
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtTreeVisitorVoid

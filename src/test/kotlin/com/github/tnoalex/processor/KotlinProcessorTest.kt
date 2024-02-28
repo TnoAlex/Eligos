@@ -9,6 +9,7 @@ import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.issues.*
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
+import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -25,9 +26,9 @@ class KotlinProcessorTest {
         ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor))
         ApplicationContext.init()
         ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)
-            ?.initCompilerEnv(File("E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\toomanyparams").toPath())
+            ?.initCompilerEnv(File(".\\src\\test\\resources\\kotlin-code-samples\\unusedimport").toPath())
         ApplicationContext.getBean(FileHelper::class.java)[0].setFileInfo(
-            File("E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\toomanyparams"),
+            File(".\\src\\test\\resources\\kotlin-code-samples\\unusedimport"),
             File("./"), "out"
         )
         analyzer.analyze()
@@ -41,9 +42,9 @@ class KotlinProcessorTest {
         assertNotNull(issues.find { it.affectedFiles.size == 3 })
         assertArrayEquals(
             arrayOf(
-                "E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\circularceferences\\pkg1\\CircularReferences0.kt",
-                "E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\circularceferences\\pkg1\\CircularReferences1.kt",
-                "E:\\code\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\circularceferences\\pkg1\\CircularReferences2.kt"
+                ".\\src\\test\\resources\\kotlin-code-samples\\circularceferences\\pkg1\\CircularReferences0.kt",
+                ".\\src\\test\\resources\\kotlin-code-samples\\circularceferences\\pkg1\\CircularReferences1.kt",
+                ".\\src\\test\\resources\\kotlin-code-samples\\circularceferences\\pkg1\\CircularReferences2.kt"
             ),
             issues[1].affectedFiles.toArray()
         )

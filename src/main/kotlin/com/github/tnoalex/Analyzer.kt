@@ -10,9 +10,6 @@ import com.github.tnoalex.parser.FileDistributor
 import com.github.tnoalex.processor.PsiProcessor
 import depends.extractor.LangProcessorRegistration
 import depends.relations.RelationCounter
-import org.reflections.Reflections
-import org.reflections.scanners.Scanners
-import org.reflections.util.ConfigurationBuilder
 import org.slf4j.LoggerFactory
 
 class Analyzer(
@@ -28,10 +25,25 @@ class Analyzer(
     }
 
     private fun dispatchFiles() {
-        ApplicationContext.getBean(FileDistributor::class.java).forEach {
-            it.init()
+        val fileDistributor = ApplicationContext.getBean(FileDistributor::class.java)
+        val enableAllProcessors = enableAllProcessor()
+        val it = fileDistributor.iterator()
+        while (it.hasNext()) {
+            val distributor = it.next()
+            if (enableAllProcessors) {
+                distributor.init()
+            } else {
+                languages.filterNotNull().forEach { l ->
+                    if (distributor.supportLanguage.contains(l)) {
+                        distributor.init()
+                    } else {
+                        ApplicationContext.removeBean(distributor::class.java)
+                        it.remove()
+                    }
+                }
+            }
         }
-        ApplicationContext.getBean(FileDistributor::class.java).forEach {
+        fileDistributor.forEach {
             it.dispatch()
         }
     }
@@ -83,6 +95,10 @@ class Analyzer(
             it.unregisterListener()
         }
         logger.info("Finished")
+    }
+
+    private fun enableAllProcessor(): Boolean {
+        return languages.contains("any")
     }
 
     companion object {
