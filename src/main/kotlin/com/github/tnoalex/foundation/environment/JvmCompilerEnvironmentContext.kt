@@ -1,6 +1,11 @@
 package com.github.tnoalex.foundation.environment
 
 import com.github.tnoalex.foundation.bean.Component
+import com.intellij.mock.MockProject
+import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.local.CoreLocalFileSystem
+import com.intellij.openapi.vfs.local.CoreLocalVirtualFile
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.config.addKotlinSourceRoots
 import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
@@ -10,22 +15,19 @@ import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoot
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
 import org.jetbrains.kotlin.cli.jvm.config.configureJdkClasspathRoots
-import org.jetbrains.kotlin.com.intellij.mock.MockProject
-import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer
-import org.jetbrains.kotlin.com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.kotlin.com.intellij.openapi.vfs.local.CoreLocalFileSystem
-import org.jetbrains.kotlin.com.intellij.openapi.vfs.local.CoreLocalVirtualFile
 import org.jetbrains.kotlin.config.*
-import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
+import org.jetbrains.kotlin.idea.references.KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.references.fe10.base.KtFe10KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import java.io.File
 import java.io.PrintStream
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
+import org.jetbrains.kotlin.analysis.api.impl.base.references.HLApiReferenceProviderService
+import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
 
 @Component(order = Int.MAX_VALUE)
 class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
@@ -83,7 +85,12 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
             "MockProject type expected, actual - ${projectCandidate.javaClass.simpleName}"
         }
 
-        project.registerService(KotlinReferenceProvidersService::class.java)
+        project.registerService(
+            KotlinReferenceProviderContributor::class.java,
+            KtFe10KotlinReferenceProviderContributor::class.java
+        )
+
+        project.registerService(KotlinReferenceProvidersService::class.java, HLApiReferenceProviderService(project))
 
         return environment
     }

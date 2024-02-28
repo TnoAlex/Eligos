@@ -4,9 +4,9 @@ import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.environment.JvmCompilerEnvironmentContext
 import com.github.tnoalex.foundation.eventbus.EventBus
-import org.jetbrains.kotlin.com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.kotlin.com.intellij.psi.PsiFile
-import org.jetbrains.kotlin.com.intellij.psi.PsiManager
+import /*org.jetbrains.kotlin.*/com.intellij.openapi.vfs.VirtualFile
+import /*org.jetbrains.kotlin.*/com.intellij.psi.PsiFile
+import /*org.jetbrains.kotlin.*/com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.psi.KtPsiFactory
 
 

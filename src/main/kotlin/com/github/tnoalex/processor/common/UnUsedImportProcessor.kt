@@ -10,10 +10,10 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.UnusedImportIssue
 import com.github.tnoalex.processor.PsiProcessor
 import depends.deptypes.DependencyType
-import org.jetbrains.kotlin.com.intellij.psi.*
-import org.jetbrains.kotlin.com.intellij.psi.codeStyle.CodeStyleManager
-import org.jetbrains.kotlin.com.intellij.psi.search.PsiSearchScopeUtil
-import org.jetbrains.kotlin.com.intellij.psi.util.PsiTreeUtil
+import /*org.jetbrains.kotlin.*/com.intellij.psi.*
+import /*org.jetbrains.kotlin.*/com.intellij.psi.codeStyle.CodeStyleManager
+import /*org.jetbrains.kotlin.*/com.intellij.psi.search.PsiSearchScopeUtil
+import /*org.jetbrains.kotlin.*/com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall

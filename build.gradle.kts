@@ -35,7 +35,13 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22")
+    api(project(":kt-references-fe10"))
+    api(project(":analysis-api-impl-base"))
+    api(project(":analysis-api"))
+//    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22")
+    api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
+    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-compiler-for-ide
+//    implementation("org.jetbrains.kotlin:kotlin-compiler-for-ide:1.9.22")
     implementation("cn.emergentdesign.se:depends-kotlin:1.0.0-SNAPSHOT")
     implementation("cn.emergentdesign.se:depends-core:0.9.8-SNAPSHOT")
     implementation("cn.emergentdesign.se:depends-java:0.9.8-SNAPSHOT")
