@@ -22,7 +22,6 @@ import org.jetbrains.kotlin.resolve.BindingContext
  * The actual implementation in IDE, [KtFe10ReferenceResolutionHelperImpl], is not always available, e.g., in Android Lint CLI.
  * Other CLI clients that use reference resolution via PSI utils may need to register this dummy implementation too.
  */
-@Suppress("Unused")
 object DummyKtFe10ReferenceResolutionHelper : KtFe10ReferenceResolutionHelper {
     override fun isInProjectOrLibSource(element: PsiElement, includeScriptsOutsideSourceRoots: Boolean): Boolean = false
 

@@ -1,7 +1,9 @@
 package com.github.tnoalex.foundation.environment
 
 import com.github.tnoalex.foundation.bean.Component
+import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.local.CoreLocalFileSystem
@@ -21,7 +23,9 @@ import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.idea.references.KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.idea.references.ReadWriteAccessChecker
 import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
+import org.jetbrains.kotlin.references.fe10.base.DummyKtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.references.fe10.base.KtFe10KotlinReferenceProviderContributor
+import org.jetbrains.kotlin.references.fe10.base.KtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.resolve.BindingContext
 import java.io.File
 import java.io.PrintStream
@@ -92,7 +96,8 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
 
         project.registerService(KotlinReferenceProvidersService::class.java, HLApiReferenceProviderService(project))
         project.registerService(ReadWriteAccessChecker::class.java, ReadWriteAccessCheckerDescriptorsImpl())
-
+        val application = ApplicationManager.getApplication()
+        (application as MockApplication).registerService(KtFe10ReferenceResolutionHelper::class.java, DummyKtFe10ReferenceResolutionHelper)
         return environment
     }
 
