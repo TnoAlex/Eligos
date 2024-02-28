@@ -1,5 +1,6 @@
 package com.github.tnoalex.utils
 
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.PrintStream
 
@@ -11,11 +12,19 @@ object StdOutErrWrapper {
     private val logger = LoggerFactory.getLogger(StdOutErrWrapper::class.java)
 
     fun init() {
-        logger.warn("All stdOut and StdErr will be redirect to hear")
+        logger.warn("All stdOut and StdErr will be redirect to here")
         val printStreamForOut = createLoggingWrapper(System.out, false)
         val printStreamForErr = createLoggingWrapper(System.out, true)
         System.setOut(printStreamForOut)
         System.setErr(printStreamForErr)
+    }
+
+    private fun getCallerLogger(): Logger {
+        val stackTrace = Thread.currentThread().stackTrace
+        if (stackTrace.size < 6) {
+            return logger
+        }
+        return LoggerFactory.getLogger(stackTrace[5].className)
     }
 
     private fun createLoggingWrapper(
@@ -25,73 +34,73 @@ object StdOutErrWrapper {
         return object : PrintStream(printStream) {
             override fun print(string: String?) {
                 if (!isErr) {
-                    logger.info(string)
+                    getCallerLogger().info(string)
                 } else {
-                    logger.error(string)
+                    getCallerLogger().error(string)
                 }
             }
 
             override fun print(b: Boolean) {
                 if (!isErr) {
-                    logger.info(b.toString())
+                    getCallerLogger().info(b.toString())
                 } else {
-                    logger.error(b.toString())
+                    getCallerLogger().error(b.toString())
                 }
             }
 
             override fun print(c: Char) {
                 if (!isErr) {
-                    logger.info(c.toString())
+                    getCallerLogger().info(c.toString())
                 } else {
-                    logger.error(c.toString())
+                    getCallerLogger().error(c.toString())
                 }
             }
 
             override fun print(i: Int) {
                 if (!isErr) {
-                    logger.info(i.toString())
+                    getCallerLogger().info(i.toString())
                 } else {
-                    logger.error(i.toString())
+                    getCallerLogger().error(i.toString())
                 }
             }
 
             override fun print(l: Long) {
                 if (!isErr) {
-                    logger.info(l.toString())
+                    getCallerLogger().info(l.toString())
                 } else {
-                    logger.error(l.toString())
+                    getCallerLogger().error(l.toString())
                 }
             }
 
             override fun print(f: Float) {
                 if (!isErr) {
-                    logger.info(f.toString())
+                    getCallerLogger().info(f.toString())
                 } else {
-                    logger.error(f.toString())
+                    getCallerLogger().error(f.toString())
                 }
             }
 
             override fun print(d: Double) {
                 if (!isErr) {
-                    logger.info(d.toString())
+                    getCallerLogger().info(d.toString())
                 } else {
-                    logger.error(d.toString())
+                    getCallerLogger().error(d.toString())
                 }
             }
 
             override fun print(x: CharArray) {
                 if (!isErr) {
-                    logger.debug(String(x))
+                    getCallerLogger().debug(String(x))
                 } else {
-                    logger.error(String(x))
+                    getCallerLogger().error(String(x))
                 }
             }
 
             override fun print(obj: Any?) {
                 if (!isErr) {
-                    logger.info(obj?.toString())
+                    getCallerLogger().info(obj?.toString())
                 } else {
-                    logger.error(obj?.toString())
+                    getCallerLogger().error(obj?.toString())
                 }
             }
         }
