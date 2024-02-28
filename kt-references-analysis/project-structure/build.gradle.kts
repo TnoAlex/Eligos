@@ -5,14 +5,8 @@ plugins {
     application
 }
 
-dependencies {
-    api(project(":analysis-api"))
+dependencies{
     api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
-    kotlinOptions.freeCompilerArgs += "-opt-in=org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals"
 }
 
 sourceSets {

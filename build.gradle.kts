@@ -35,14 +35,11 @@ repositories {
 }
 
 dependencies {
-    api(project(":kt-references-fe10"))
-    api(project(":analysis-api-impl-base"))
-    api(project(":analysis-api"))
-    api(project(":analysis-api-fe10"))
-//    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22")
+    api(project(":kt-references-analysis:kt-references-fe10"))
+    api(project(":kt-references-analysis:analysis-api-impl-base"))
+    api(project(":kt-references-analysis:analysis-api"))
+    api(project(":kt-references-analysis:analysis-api-fe10"))
     api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
-    // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-compiler-for-ide
-//    implementation("org.jetbrains.kotlin:kotlin-compiler-for-ide:1.9.22")
     implementation("cn.emergentdesign.se:depends-kotlin:1.0.0-SNAPSHOT")
     implementation("cn.emergentdesign.se:depends-core:0.9.8-SNAPSHOT")
     implementation("cn.emergentdesign.se:depends-java:0.9.8-SNAPSHOT")
@@ -59,6 +56,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
 }
 
+configurations.forEach {
+    it.exclude(group = "org.slf4j", module = "slf4j-reload4j")
+}
 
 publishing {
     repositories {

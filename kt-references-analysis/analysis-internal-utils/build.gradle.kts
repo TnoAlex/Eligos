@@ -5,9 +5,7 @@ plugins {
     application
 }
 
-dependencies {
-    api(project(":project-structure"))
-    api(project(":analysis-internal-utils"))
+dependencies{
     api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
 }
 
@@ -29,8 +27,4 @@ repositories {
 }
 kotlin {
     jvmToolchain(17)
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
 }
