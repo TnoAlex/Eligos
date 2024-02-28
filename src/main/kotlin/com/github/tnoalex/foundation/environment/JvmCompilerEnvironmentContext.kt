@@ -4,15 +4,10 @@ import com.github.tnoalex.foundation.bean.Component
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.config.addKotlinSourceRoots
 import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
-import org.jetbrains.kotlin.cli.common.messages.AnalyzerWithCompilerReport
-import org.jetbrains.kotlin.cli.common.messages.MessageCollector
-import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
-import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
-import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
-import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
-import org.jetbrains.kotlin.cli.jvm.compiler.NoScopeRecordCliBindingTrace
-import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
+import org.jetbrains.kotlin.cli.common.messages.*
+import org.jetbrains.kotlin.cli.jvm.compiler.*
 import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
+import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoot
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
 import org.jetbrains.kotlin.cli.jvm.config.configureJdkClasspathRoots
 import org.jetbrains.kotlin.com.intellij.mock.MockProject
@@ -21,8 +16,10 @@ import org.jetbrains.kotlin.com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.kotlin.com.intellij.openapi.vfs.local.CoreLocalFileSystem
 import org.jetbrains.kotlin.com.intellij.openapi.vfs.local.CoreLocalVirtualFile
 import org.jetbrains.kotlin.config.*
+import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.lazy.ResolveSession
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import java.io.File
 import java.io.PrintStream
@@ -54,11 +51,13 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
         )
         val kotlinCoreEnvironment = createKotlinCoreEnvironment(compilerEnvironmentContext)
         baseDir = CoreLocalVirtualFile(fileSystem, filePath.toFile(), filePath.isDirectory())
-        bindingContext = generateBindingContext(
+        val analysisResult = KotlinToJVMBytecodeCompiler.analyze(kotlinCoreEnvironment)
+        bindingContext = analysisResult!!.bindingContext
+        /*bindingContext = generateBindingContext(
             kotlinCoreEnvironment,
             listOf(filePath.absolutePathString()),
             kotlinCoreEnvironment.getSourceFiles()
-        )
+        )*/
     }
 
     private fun createKotlinCoreEnvironment(
@@ -83,6 +82,9 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
         project = requireNotNull(projectCandidate as? MockProject) {
             "MockProject type expected, actual - ${projectCandidate.javaClass.simpleName}"
         }
+
+        project.registerService(KotlinReferenceProvidersService::class.java)
+
         return environment
     }
 
@@ -120,11 +122,21 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
             addJavaSourceRoots(javaFiles)
             addKotlinSourceRoots(kotlinFiles)
             addJvmClasspathRoots(classpathFiles)
+            addJvmClasspathRoot(kotlinStdLibPath())
+            addJvmClasspathRoot(File("."))
 
             jdkHome?.let { put(JVMConfigurationKeys.JDK_HOME, it.toFile()) }
             configureJdkClasspathRoots()
         }
     }
+
+    private fun kotlinStdLibPath(): File {
+        return File(CharRange::class.java.protectionDomain.codeSource.location.path)
+    }
+
+    /*private fun kotlinxCoroutinesCorePath(): File {
+        return File(CoroutineScope::class.java.protectionDomain.codeSource.location.path)
+    }*/
 
     private fun generateBindingContext(
         environment: KotlinCoreEnvironment,
@@ -135,7 +147,15 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
             return BindingContext.EMPTY
         }
 
-        val messageCollector = MessageCollector.NONE
+        val messageCollector = object : MessageCollector by MessageCollector.NONE {
+            override fun report(
+                severity: CompilerMessageSeverity,
+                message: String,
+                location: CompilerMessageSourceLocation?
+            ) {
+                println(message)
+            }
+        }
 
         val analyzer = AnalyzerWithCompilerReport(
             messageCollector,

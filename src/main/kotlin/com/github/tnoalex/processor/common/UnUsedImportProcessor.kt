@@ -10,13 +10,7 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.UnusedImportIssue
 import com.github.tnoalex.processor.PsiProcessor
 import depends.deptypes.DependencyType
-import org.jetbrains.kotlin.com.intellij.psi.PsiFile
-import org.jetbrains.kotlin.com.intellij.psi.PsiImportList
-import org.jetbrains.kotlin.com.intellij.psi.PsiJavaFile
-import org.jetbrains.kotlin.com.intellij.psi.PsiJavaReference
-import org.jetbrains.kotlin.com.intellij.psi.PsiReference
-import org.jetbrains.kotlin.com.intellij.psi.PsiReferenceService
-import org.jetbrains.kotlin.com.intellij.psi.PsiReferenceServiceImpl
+import org.jetbrains.kotlin.com.intellij.psi.*
 import org.jetbrains.kotlin.com.intellij.psi.codeStyle.CodeStyleManager
 import org.jetbrains.kotlin.com.intellij.psi.search.PsiSearchScopeUtil
 import org.jetbrains.kotlin.com.intellij.psi.util.PsiTreeUtil
@@ -56,8 +50,19 @@ class UnUsedImportProcessor : PsiProcessor {
         val importList = PsiTreeUtil.getChildOfType(ktFile, KtImportList::class.java) ?: return
         val bindingContext = ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)!!.bindingContext
         ktFile.accept(object : KtTreeVisitorVoid() {
+            override fun visitElement(element: PsiElement) {
+                println(element.reference)
+                println(element.text)
+                super.visitElement(element)
+            }
+
+            override fun visitExpression(expression: KtExpression) {
+                val type = bindingContext.getType(expression)
+                super.visitExpression(expression)
+            }
+
             override fun visitReferenceExpression(expression: KtReferenceExpression) {
-                if (expression is KtCallExpression){
+                if (expression is KtCallExpression) {
                     expression.getResolvedCall(bindingContext)
                 }
                 println()

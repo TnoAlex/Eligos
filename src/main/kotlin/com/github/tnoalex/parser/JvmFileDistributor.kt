@@ -7,6 +7,7 @@ import com.github.tnoalex.foundation.eventbus.EventBus
 import org.jetbrains.kotlin.com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.kotlin.com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.com.intellij.psi.PsiManager
+import org.jetbrains.kotlin.psi.KtPsiFactory
 
 
 @Component(order = Short.MAX_VALUE.toInt())

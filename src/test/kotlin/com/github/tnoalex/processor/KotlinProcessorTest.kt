@@ -9,6 +9,7 @@ import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.issues.*
 import com.github.tnoalex.utils.StdOutErrWrapper
 import depends.LangRegister
+import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -58,6 +59,13 @@ class KotlinProcessorTest {
 
     @Test
     fun testUnUsedImport() {
+        K2JVMCompiler.main(arrayOf(
+            "F:\\Code\\Java\\train\\depends-smell\\src\\test\\resources\\kotlin-code-samples\\unusedimport",
+            "-no-stdlib",
+            "-cp",
+            "C:\\Users\\lenovo\\.m2\\repository\\org\\jetbrains\\kotlin\\kotlin-stdlib\\1.9.22\\kotlin-stdlib-1.9.22.jar"
+        ))
+
         val issues = analyzer.context.getIssuesByType(UnusedImportIssue::class)
         assertEquals(2, issues.size)
         assertNotNull(issues.find { it.affectedFiles.size == 2 })
