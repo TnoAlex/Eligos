@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2023 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2021 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -20,11 +20,6 @@ public abstract class KtPsiTypeProvider : KtAnalysisSessionComponent() {
         isAnnotationMethod: Boolean,
         allowErrorTypes: Boolean
     ): PsiTypeElement?
-
-    public abstract fun asKtType(
-        psiType: PsiType,
-        useSitePosition: PsiElement
-    ): KtType?
 }
 
 public interface KtPsiTypeProviderMixIn : KtAnalysisSessionMixIn {
@@ -44,9 +39,7 @@ public interface KtPsiTypeProviderMixIn : KtAnalysisSessionMixIn {
      * A client can handle such case in its own way. For instance,
      *   * UAST will return `UastErrorType` as a default error type.
      *
-     * If [allowErrorTypes] set to true then erroneous types will be replaced with `error.NonExistentClass` type.
-     *
-     * Note: [PsiTypeElement] is JVM conception, so this method will return `null` for non-JVM platforms.
+     * If [allowErrorTypes] set to true then erroneous types will be replaced with `error.NonExistentClass` type
      */
     public fun KtType.asPsiTypeElement(
         useSitePosition: PsiElement,
@@ -62,9 +55,7 @@ public interface KtPsiTypeProviderMixIn : KtAnalysisSessionMixIn {
      *
      * This simply unwraps [PsiTypeElement] returned from [asPsiTypeElement].
      * Use this version if type annotation is not required. Otherwise, use [asPsiTypeElement] to get [PsiTypeElement] as an owner of
-     * annotations on [PsiType] and annotate the resulting [PsiType] with proper [PsiAnnotation][com.intellij.psi.PsiAnnotation].
-     *
-     * Note: [PsiType] is JVM conception, so this method will return `null` for non-JVM platforms.
+     * annotations on [PsiType] and annotate the resulting [PsiType] with proper [PsiAnnotation].
      */
     public fun KtType.asPsiType(
         useSitePosition: PsiElement,
@@ -73,14 +64,4 @@ public interface KtPsiTypeProviderMixIn : KtAnalysisSessionMixIn {
         isAnnotationMethod: Boolean = false
     ): PsiType? =
         asPsiTypeElement(useSitePosition, allowErrorTypes, mode, isAnnotationMethod)?.type
-
-    /**
-     * Converts given [PsiType] to [KtType].
-     *
-     * @receiver PsiType to be converted.
-     * @return The converted KtType, or null if conversion is not possible e.g., [PsiType] is not resolved
-     */
-    public fun PsiType.asKtType(useSitePosition: PsiElement): KtType? = withValidityAssertion {
-        analysisSession.psiTypeProvider.asKtType(this, useSitePosition)
-    }
 }

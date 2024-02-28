@@ -38,6 +38,7 @@ dependencies {
     api(project(":kt-references-fe10"))
     api(project(":analysis-api-impl-base"))
     api(project(":analysis-api"))
+    api(project(":analysis-api-fe10"))
 //    implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:1.9.22")
     api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
     // https://mvnrepository.com/artifact/org.jetbrains.kotlin/kotlin-compiler-for-ide

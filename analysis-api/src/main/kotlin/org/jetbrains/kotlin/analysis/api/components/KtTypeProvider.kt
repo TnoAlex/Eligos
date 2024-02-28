@@ -23,8 +23,6 @@ public abstract class KtTypeProvider : KtAnalysisSessionComponent() {
 
     public abstract fun approximateToSubPublicDenotableType(type: KtType, approximateLocalTypes: Boolean): KtType?
 
-    public abstract fun getEnhancedType(type: KtType): KtType?
-
     public abstract fun buildSelfClassType(symbol: KtNamedClassOrObjectSymbol): KtType
 
     public abstract fun commonSuperType(types: Collection<KtType>): KtType?
@@ -75,13 +73,6 @@ public interface KtTypeProviderMixIn : KtAnalysisSessionMixIn {
 
     public fun KtType.approximateToSuperPublicDenotableOrSelf(approximateLocalTypes: Boolean): KtType =
         withValidityAssertion { approximateToSuperPublicDenotable(approximateLocalTypes) ?: this }
-
-    /**
-     * Returns a warning-level enhanced type for [KtType] if it is present. Otherwise, returns `null`.
-     */
-    public fun KtType.getEnhancedType(): KtType? = withValidityAssertion { analysisSession.typeProvider.getEnhancedType(this) }
-
-    public fun KtType.getEnhancedTypeOrSelf(): KtType? = withValidityAssertion { getEnhancedType() ?: this }
 
     public fun KtNamedClassOrObjectSymbol.buildSelfClassType(): KtType =
         withValidityAssertion { analysisSession.typeProvider.buildSelfClassType(this) }

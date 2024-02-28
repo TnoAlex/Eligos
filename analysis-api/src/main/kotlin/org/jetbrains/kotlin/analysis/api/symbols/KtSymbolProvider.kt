@@ -32,8 +32,6 @@ public abstract class KtSymbolProvider : KtAnalysisSessionComponent() {
         is KtClassInitializer -> getClassInitializerSymbol(psi)
         is KtDestructuringDeclarationEntry -> getDestructuringDeclarationEntrySymbol(psi)
         is KtScript -> getScriptSymbol(psi)
-        is KtScriptInitializer -> getScriptSymbol(psi.containingDeclaration)
-        is KtDestructuringDeclaration -> getDestructuringDeclarationSymbol(psi)
         else -> error("Cannot build symbol for ${psi::class}")
     }
 
@@ -54,7 +52,6 @@ public abstract class KtSymbolProvider : KtAnalysisSessionComponent() {
     public abstract fun getPropertyAccessorSymbol(psi: KtPropertyAccessor): KtPropertyAccessorSymbol
     public abstract fun getClassInitializerSymbol(psi: KtClassInitializer): KtClassInitializerSymbol
     public abstract fun getDestructuringDeclarationEntrySymbol(psi: KtDestructuringDeclarationEntry): KtLocalVariableSymbol
-    public abstract fun getDestructuringDeclarationSymbol(psi: KtDestructuringDeclaration): KtDestructuringDeclarationSymbol
 
     public abstract fun getPackageSymbolIfPackageExists(packageFqName: FqName): KtPackageSymbol?
 
@@ -135,9 +132,6 @@ public interface KtSymbolProviderMixIn : KtAnalysisSessionMixIn {
 
     public fun KtFile.getFileSymbol(): KtFileSymbol =
         withValidityAssertion { analysisSession.symbolProvider.getFileSymbol(this) }
-
-    public fun KtScript.getScriptSymbol(): KtScriptSymbol =
-        withValidityAssertion { analysisSession.symbolProvider.getScriptSymbol(this) }
 
     /**
      * Returns [KtPackageSymbol] corresponding to [packageFqName] if corresponding package is exists and visible from current uses-site scope,

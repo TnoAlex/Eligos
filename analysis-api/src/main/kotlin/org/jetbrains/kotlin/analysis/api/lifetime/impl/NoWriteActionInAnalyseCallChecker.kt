@@ -14,7 +14,7 @@ import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
 public class NoWriteActionInAnalyseCallChecker(parentDisposable: Disposable) {
     init {
         val listener = object : ApplicationListener {
-            override fun writeActionFinished(action: Any) {
+             fun writeActionFinished(action: Any) {
                 if (currentAnalysisContextEnteringCount.get() > 0) {
                     throw WriteActionStartInsideAnalysisContextException()
                 }

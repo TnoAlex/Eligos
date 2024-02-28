@@ -16,14 +16,14 @@ public interface KtRendererBodyMemberScopeProvider {
     public object ALL : KtRendererBodyMemberScopeProvider {
         context(KtAnalysisSession)
         override fun getMemberScope(symbol: KtSymbolWithMembers): List<KtDeclarationSymbol> {
-            return symbol.getCombinedDeclaredMemberScope().getAllSymbols().toList()
+            return symbol.getDeclaredMemberScope().getAllSymbols().toList()
         }
     }
 
     public object ALL_DECLARED : KtRendererBodyMemberScopeProvider {
         context(KtAnalysisSession)
         override fun getMemberScope(symbol: KtSymbolWithMembers): List<KtDeclarationSymbol> {
-            return symbol.getCombinedDeclaredMemberScope().getAllSymbols()
+            return symbol.getDeclaredMemberScope().getAllSymbols()
                 .filter { member ->
                     val origin = member.origin
                     origin != KtSymbolOrigin.DELEGATED &&

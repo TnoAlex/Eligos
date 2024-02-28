@@ -74,7 +74,6 @@ public class KtDeclarationRenderer private constructor(
     public val valueParameterRenderer: KtValueParameterSymbolRenderer,
     public val samConstructorRenderer: KtSamConstructorSymbolRenderer,
     public val propertyAccessorsRenderer: KtPropertyAccessorsRenderer,
-    public val destructuringDeclarationRenderer: KtDestructuringDeclarationRenderer,
 
     public val classInitializerRender: KtClassInitializerRenderer,
     public val classOrObjectRenderer: KtNamedClassOrObjectSymbolRenderer,
@@ -109,7 +108,6 @@ public class KtDeclarationRenderer private constructor(
             is KtTypeParameterSymbol -> singleTypeParameterRenderer.renderSymbol(symbol, printer)
             is KtClassInitializerSymbol -> classInitializerRender.renderClassInitializer(symbol, printer)
             is KtScriptSymbol -> scriptRenderer.renderSymbol(symbol, printer)
-            is KtDestructuringDeclarationSymbol -> destructuringDeclarationRenderer.renderSymbol(symbol, printer)
         }
     }
 
@@ -163,7 +161,6 @@ public class KtDeclarationRenderer private constructor(
             this.valueParameterRenderer = renderer.valueParameterRenderer
             this.samConstructorRenderer = renderer.samConstructorRenderer
             this.propertyAccessorsRenderer = renderer.propertyAccessorsRenderer
-            this.destructuringDeclarationRenderer = renderer.destructuringDeclarationRenderer
 
             this.classInitializerRender = renderer.classInitializerRender
             this.classOrObjectRenderer = renderer.classOrObjectRenderer
@@ -232,7 +229,6 @@ public class KtDeclarationRenderer private constructor(
         public lateinit var valueParameterRenderer: KtValueParameterSymbolRenderer
         public lateinit var samConstructorRenderer: KtSamConstructorSymbolRenderer
         public lateinit var propertyAccessorsRenderer: KtPropertyAccessorsRenderer
-        public lateinit var destructuringDeclarationRenderer: KtDestructuringDeclarationRenderer
 
         public lateinit var classInitializerRender: KtClassInitializerRenderer
         public lateinit var classOrObjectRenderer: KtNamedClassOrObjectSymbolRenderer
@@ -290,7 +286,6 @@ public class KtDeclarationRenderer private constructor(
             valueParameterRenderer,
             samConstructorRenderer,
             propertyAccessorsRenderer,
-            destructuringDeclarationRenderer,
 
             classInitializerRender,
             classOrObjectRenderer,

@@ -6,6 +6,8 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.local.CoreLocalFileSystem
 import com.intellij.openapi.vfs.local.CoreLocalVirtualFile
+import org.jetbrains.kotlin.analysis.api.descriptors.references.ReadWriteAccessCheckerDescriptorsImpl
+import org.jetbrains.kotlin.analysis.api.impl.base.references.HLApiReferenceProviderService
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.config.addKotlinSourceRoots
 import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
@@ -17,6 +19,8 @@ import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
 import org.jetbrains.kotlin.cli.jvm.config.configureJdkClasspathRoots
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.idea.references.KotlinReferenceProviderContributor
+import org.jetbrains.kotlin.idea.references.ReadWriteAccessChecker
+import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.references.fe10.base.KtFe10KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.resolve.BindingContext
@@ -26,8 +30,6 @@ import java.io.PrintStream
 import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
-import org.jetbrains.kotlin.analysis.api.impl.base.references.HLApiReferenceProviderService
-import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
 
 @Component(order = Int.MAX_VALUE)
 class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
@@ -91,6 +93,7 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
         )
 
         project.registerService(KotlinReferenceProvidersService::class.java, HLApiReferenceProviderService(project))
+        project.registerService(ReadWriteAccessChecker::class.java, ReadWriteAccessCheckerDescriptorsImpl())
 
         return environment
     }
@@ -141,9 +144,6 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
         return File(CharRange::class.java.protectionDomain.codeSource.location.path)
     }
 
-    /*private fun kotlinxCoroutinesCorePath(): File {
-        return File(CoroutineScope::class.java.protectionDomain.codeSource.location.path)
-    }*/
 
     private fun generateBindingContext(
         environment: KotlinCoreEnvironment,

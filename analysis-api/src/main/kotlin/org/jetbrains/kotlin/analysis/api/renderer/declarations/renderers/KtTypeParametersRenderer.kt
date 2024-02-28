@@ -63,9 +63,7 @@ public interface KtTypeParametersRenderer {
                 )
                 if (typeParameter.upperBounds.size == 1) {
                     append(" : ")
-                    val ktType = typeParameter.upperBounds.single()
-                    val type = declarationTypeApproximator.approximateType(ktType, Variance.OUT_VARIANCE)
-                    typeRenderer.renderType(type, printer)
+                    typeRenderer.renderType(typeParameter.upperBounds.single(), printer)
                 }
             }
         }

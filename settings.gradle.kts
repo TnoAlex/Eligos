@@ -10,4 +10,4 @@ plugins {
 }
 
 rootProject.name = "Eligos"
-include(":kt-references-fe10",":analysis-api",":analysis-api-impl-base",":project-structure",":analysis-internal-utils")
+include(":kt-references-fe10",":analysis-api",":analysis-api-impl-base",":project-structure",":analysis-internal-utils","analysis-api-fe10")

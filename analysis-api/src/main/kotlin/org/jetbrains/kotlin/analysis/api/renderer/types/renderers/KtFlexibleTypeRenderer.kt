@@ -67,20 +67,10 @@ public interface KtFlexibleTypeRenderer {
                 lower.nullability == KtTypeNullability.NON_NULLABLE
                 && upper.nullability == KtTypeNullability.NULLABLE
             ) {
-                if (lower !is KtNonErrorClassType && upper !is KtNonErrorClassType) {
+                if ((lower !is KtNonErrorClassType || lower.ownTypeArguments.isEmpty()) &&
+                    (upper !is KtNonErrorClassType || upper.ownTypeArguments.isEmpty())
+                ) {
                     return true
-                }
-                if (lower is KtNonErrorClassType && upper is KtNonErrorClassType) {
-                    val lowerOwnTypeArguments = lower.ownTypeArguments
-                    val upperOwnTypeArguments = upper.ownTypeArguments
-                    if (lowerOwnTypeArguments.size == upperOwnTypeArguments.size) {
-                        for ((index, ktTypeProjection) in lowerOwnTypeArguments.withIndex()) {
-                            if (upperOwnTypeArguments[index].type != ktTypeProjection.type) {
-                                return false
-                            }
-                        }
-                        return true
-                    }
                 }
             }
             return false

@@ -28,6 +28,7 @@ public class KtReadActionConfinementLifetimeToken(project: Project) : KtLifetime
         error("Getting invalidation reason for valid validity token")
     }
 
+    @OptIn(KtAnalysisApiInternals::class)
     override fun isAccessible(): Boolean {
         val application = ApplicationManager.getApplication()
         if (application.isDispatchThread && !allowOnEdt.get()) return false
@@ -110,29 +111,6 @@ public inline fun <T> allowAnalysisOnEdt(action: () -> T): T {
 /**
  * Analysis is not supposed to be called from write action.
  * Such actions can lead to IDE freezes and incorrect behavior in some cases.
- *
- * There is no guarantee that PSI changes will be reflected in an Analysis API world inside
- * one [analyze] session.
- * Example:
- * ```
- * // code to be analyzed
- * fun foo(): Int = 0
- *
- * // use case code
- * fun useCase() {
- *   analyse(function) {
- *    // 'getConstantFromExpressionBody' is an imaginary function
- *    val valueBefore = function.getConstantFromExpressionBody() // valueBefore is 0
- *
- *    changeExpressionBodyTo(1) // now function will looks like `fun foo(): Int = 1`
- *    val valueAfter = function.getConstantFromExpressionBody() // Wrong way: valueAfter is not guarantied to be '1'
- *   }
- *
- *   analyse(function) {
- *    val valueAfter = function.getConstantFromExpressionBody() // OK: valueAfter is guarantied to be '1'
- *   }
- * }
- * ```
  *
  * @see KtAnalysisSession
  * @see KtReadActionConfinementLifetimeToken

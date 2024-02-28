@@ -18,7 +18,6 @@ import org.jetbrains.kotlin.analysis.api.symbols.markers.KtNamedSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.markers.KtPossiblyNamedSymbol
 import org.jetbrains.kotlin.analysis.api.types.KtClassErrorType
 import org.jetbrains.kotlin.analysis.api.types.KtClassTypeQualifier
-import org.jetbrains.kotlin.analysis.api.types.KtErrorType
 import org.jetbrains.kotlin.analysis.api.types.KtNonErrorClassType
 import org.jetbrains.kotlin.analysis.api.types.KtType
 import org.jetbrains.kotlin.analysis.project.structure.KtModule
@@ -29,7 +28,6 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
-import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.renderer.render
 import org.jetbrains.kotlin.resolve.deprecation.DeprecationInfo
 import org.jetbrains.kotlin.types.Variance
@@ -71,24 +69,10 @@ public class DebugSymbolRenderer(
 
             KtSymbolContainingDeclarationProviderMixIn::class
                 .declaredMemberExtensionFunctions
-                .filterNot {
-                    // Rendering a containing symbol is prone to stack overflow.
-                    // * function symbol will render its value parameter symbol(s)
-                    //   whose containing symbol is that function symbol.
-                    // * property symbol contains accessor symbol(s) and/or backing field symbol
-                    //   whose containing symbol is that property symbol.
-                    it.name == "getContainingSymbol"
-                }
+                .filter { it.name == "getContainingModule" }
                 .forEach {
-                    if (it.name == "getContainingJvmClassName") {
-                        if (symbol is KtCallableSymbol) {
-                            appendLine()
-                            renderFunction(it, renderSymbolsFully = false, this@KtAnalysisSession, symbol)
-                        }
-                    } else {
-                        appendLine()
-                        renderFunction(it, renderSymbolsFully = false, this@KtAnalysisSession, symbol)
-                    }
+                    appendLine()
+                    renderFunction(it, renderSymbolsFully = false, this@KtAnalysisSession, symbol)
                 }
 
             KtSymbolInfoProviderMixIn::class.declaredMemberExtensionProperties
@@ -203,7 +187,6 @@ public class DebugSymbolRenderer(
             is KtClassLikeSymbol -> renderId(symbol.classIdIfNonLocal, symbol)
             is KtCallableSymbol -> renderId(symbol.callableIdIfNonLocal, symbol)
             is KtNamedSymbol -> renderValue(symbol.name, renderSymbolsFully = false)
-            is KtFileSymbol -> renderValue((symbol.psi as KtFile).name, renderSymbolsFully = false)
             else -> error("Unsupported symbol ${symbol::class}")
         }
         append(")")
@@ -243,7 +226,7 @@ public class DebugSymbolRenderer(
             appendLine()
             append("type: ")
             when (typeToRender) {
-                is KtErrorType -> append("ERROR_TYPE")
+                is KtClassErrorType -> append("ERROR_TYPE")
                 else -> append(typeToRender.asStringForDebugging())
             }
         }
