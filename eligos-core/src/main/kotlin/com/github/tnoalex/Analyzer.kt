@@ -17,6 +17,8 @@ class Analyzer(
 
     fun analyze() {
         ApplicationContext.addBean("context", context, SimpleSingletonBeanContainer)
+        ApplicationContext.launchEnvironment = launchEnvironment
+        ApplicationContext.solveComponentEnv()
         registerProcessorEvent()
         dispatchFiles()
     }

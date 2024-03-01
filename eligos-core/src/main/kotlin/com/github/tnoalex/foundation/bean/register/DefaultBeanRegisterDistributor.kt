@@ -3,6 +3,7 @@ package com.github.tnoalex.foundation.bean.register
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.bean.BeanScope
 import com.github.tnoalex.foundation.bean.Component
+import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.bean.container.BeanContainer
 import com.github.tnoalex.utils.loadServices
 import org.reflections.Reflections
@@ -44,7 +45,7 @@ object DefaultBeanRegisterDistributor : BeanRegisterDistributor {
         val reflection = Reflections(
             ConfigurationBuilder()
                 .setClassLoaders(arrayOf(Thread.currentThread().contextClassLoader))
-                .forPackages("com.github.tnoalex")
+                .forPackages("")
                 .addScanners(Scanners.TypesAnnotated)
         )
         return reflection.getTypesAnnotatedWith(Component::class.java)

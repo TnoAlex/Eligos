@@ -2,6 +2,7 @@ package com.github.tnoalex.foundation
 
 import com.github.tnoalex.foundation.bean.BeanNameManager
 import com.github.tnoalex.foundation.bean.BeanScope
+import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.bean.container.BeanContainer
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.foundation.bean.handler.*
@@ -15,6 +16,7 @@ import kotlin.reflect.full.memberProperties
 
 object ApplicationContext {
 
+    var launchEnvironment: LaunchEnvironment = LaunchEnvironment.CLI
     val beanPreRemoveHandler = BeanHandler.DefaultBeanHandler()
     val beanAfterRemoveHandler = BeanHandler.DefaultBeanHandler()
     val beanPreRegisterHandler = BeanHandler.DefaultBeanHandler()
@@ -36,6 +38,23 @@ object ApplicationContext {
         beanPreRegisterHandler.removeHandlers()
         invokeAfterBeansRegisterHandler()
         beansAfterRegisterHandler.removeHandlers()
+    }
+
+    fun solveComponentEnv() {
+        val unSuitableComponents = ArrayList<String>()
+        visitContainers { _, beanContainer ->
+            beanContainer.visitBeans { name, bean ->
+                val clazz = bean.javaClass
+                if (!clazz.isAnnotationPresent(Suitable::class.java)) return@visitBeans
+                val suitable = clazz.getAnnotation(Suitable::class.java)
+                if (!LaunchEnvironment.isGreaterThan(launchEnvironment, suitable.environment)) {
+                    unSuitableComponents.add(name)
+                }
+            }
+        }
+        unSuitableComponents.forEach {
+            removeBean(it)
+        }
     }
 
     private fun initBeanContainer() {
@@ -185,14 +204,14 @@ object ApplicationContext {
     }
 
     fun <T> getExactBean(beanType: Class<T>): T? {
-        if (!BeanNameManager.containsBean(beanType)){
+        if (!BeanNameManager.containsBean(beanType)) {
             logger.warn("Can not find bean with type ${beanType.typeName}")
             return null
         }
         beanContainers.values.forEach {
-            it.forEach { c->
+            it.forEach { c ->
                 val bean = c.getExactBean(beanType)
-                if (bean != null){
+                if (bean != null) {
                     return bean
                 }
             }

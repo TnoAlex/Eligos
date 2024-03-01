@@ -3,6 +3,7 @@ package com.github.tnoalex.processor.common
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.Context
 import com.github.tnoalex.events.EntityRepoFinishedEvent
+import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.algorithm.AdjacencyList
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
