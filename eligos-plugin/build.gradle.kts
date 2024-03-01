@@ -9,10 +9,14 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":eligos-core"))
-    runtimeOnly(project(":eligos-processor"))
+    api(project(":eligos-core"))
+    runtimeOnly(project(":eligos-processor")){
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-compiler")
+    }
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
+
+
 
 intellij {
     version.set("2023.3.1")

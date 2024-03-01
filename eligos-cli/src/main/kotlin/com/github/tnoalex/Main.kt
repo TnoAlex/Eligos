@@ -1,6 +1,8 @@
 package com.github.tnoalex
 
 import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.foundation.bean.container.DefaultBeanContainerScanner
+import com.github.tnoalex.foundation.bean.handler.DefaultBeanHandlerScanner
 import com.github.tnoalex.foundation.bean.register.DefaultBeanRegisterDistributor
 import java.util.*
 
@@ -23,7 +25,9 @@ private fun showBanner() {
 }
 
 private fun initApplication() {
-    ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor))
+    ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor()))
+    ApplicationContext.addBeanContainerScanner(listOf(DefaultBeanContainerScanner()))
+    ApplicationContext.addBeanHandlerScanner(listOf(DefaultBeanHandlerScanner()))
     ApplicationContext.init()
 }
 

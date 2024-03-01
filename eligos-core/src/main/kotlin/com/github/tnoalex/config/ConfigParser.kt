@@ -1,5 +1,6 @@
 package com.github.tnoalex.config
 
+import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.bean.Component
 import org.yaml.snakeyaml.Yaml
 import java.io.File
@@ -10,13 +11,14 @@ class ConfigParser {
     var extendRules: File? = null
 
     private fun parserRules(): HashMap<String, Any?> {
-        val defaultRuleInputStream = Thread.currentThread().contextClassLoader.getResourceAsStream("config.yaml")
+        val defaultRuleInputStream = ApplicationContext.currentClassLoader.getResourceAsStream("config.yaml")
         val yaml = Yaml()
         val defaultRules: HashMap<String, Any?> = yaml.load(defaultRuleInputStream)
         if (extendRules != null) {
             val userRules: HashMap<String, Any?> = yaml.load(extendRules!!.inputStream())
             margeRules(defaultRules, userRules)
         }
+        defaultRuleInputStream?.close()
         return defaultRules
     }
 

@@ -3,7 +3,6 @@ package com.github.tnoalex
 import com.github.tnoalex.formatter.IFormatter
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
-import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.parser.FileDistributor
 import com.github.tnoalex.processor.PsiProcessor
 import org.slf4j.LoggerFactory
@@ -13,14 +12,17 @@ class Analyzer(
     private val languages: List<String?>,
     private val launchEnvironment: LaunchEnvironment
 ) {
-    val context: Context = Context()
+    val context: Context = ApplicationContext.getExactBean(Context::class.java)!!
+    private var analyzerInitialized = false
 
     fun analyze() {
-        ApplicationContext.addBean("context", context, SimpleSingletonBeanContainer)
-        ApplicationContext.launchEnvironment = launchEnvironment
-        ApplicationContext.solveComponentEnv()
-        registerProcessorEvent()
+        if (!analyzerInitialized) {
+            ApplicationContext.launchEnvironment = launchEnvironment
+            ApplicationContext.solveComponentEnv()
+            registerProcessorEvent()
+        }
         dispatchFiles()
+        analyzerInitialized = true
     }
 
     private fun dispatchFiles() {

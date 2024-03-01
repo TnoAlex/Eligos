@@ -43,16 +43,6 @@ class UnUsedImportProcessor : PsiProcessor {
                 super.visitElement(element)
             }
 
-            override fun visitExpression(expression: KtExpression) {
-                super.visitExpression(expression)
-            }
-
-            override fun visitReferenceExpression(expression: KtReferenceExpression) {
-                if (expression is KtCallExpression) {
-                }
-                println()
-                super.visitReferenceExpression(expression)
-            }
         })
         importList.imports.forEach {
             println()

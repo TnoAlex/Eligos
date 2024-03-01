@@ -4,10 +4,10 @@ plugins {
     kotlin("jvm") version "1.9.22"
 }
 
-configurations.forEach {
-    it.exclude(group = "org.slf4j", module = "slf4j-reload4j")
+repositories{
+    mavenLocal()
+    mavenCentral()
 }
-
 
 allprojects{
     group = "com.github.tnoalex"
@@ -27,6 +27,10 @@ subprojects {
 
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "17"
+    }
+
+    configurations.forEach {
+        it.exclude(group = "org.slf4j", module = "slf4j-reload4j")
     }
 
     repositories {

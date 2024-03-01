@@ -9,4 +9,11 @@
     <depends>com.intellij.java</depends>
     <depends>org.jetbrains.kotlin</depends>
 
+    <actions>
+        <action id="com.github.tnoalex.plugin.action.EligosProjectAnalyzeActions"
+                class="com.github.tnoalex.plugin.action.EligosProjectAnalyzeActions" text="Eligos Analyze ..."
+                description="Eligos project analyze">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="AnalyzeMenu"/>
+        </action>
+    </actions>
 </idea-plugin>

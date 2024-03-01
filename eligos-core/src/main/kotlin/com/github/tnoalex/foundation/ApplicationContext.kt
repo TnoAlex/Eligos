@@ -4,40 +4,50 @@ import com.github.tnoalex.foundation.bean.BeanNameManager
 import com.github.tnoalex.foundation.bean.BeanScope
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.bean.container.BeanContainer
+import com.github.tnoalex.foundation.bean.container.BeanContainerScanner
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.foundation.bean.handler.*
 import com.github.tnoalex.foundation.bean.register.BeanRegisterDistributor
-import org.reflections.Reflections
-import org.reflections.scanners.Scanners
-import org.reflections.util.ConfigurationBuilder
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Modifier
 import kotlin.reflect.full.memberProperties
 
 object ApplicationContext {
 
+    var currentClassLoader: ClassLoader = Thread.currentThread().contextClassLoader
     var launchEnvironment: LaunchEnvironment = LaunchEnvironment.CLI
     val beanPreRemoveHandler = BeanHandler.DefaultBeanHandler()
     val beanAfterRemoveHandler = BeanHandler.DefaultBeanHandler()
     val beanPreRegisterHandler = BeanHandler.DefaultBeanHandler()
     val beanPostRegisterHandler = BeanHandler.DefaultBeanHandler()
 
+
+    var isInitialized = false
+        private set
     private val beanContainers = HashMap<BeanScope, ArrayList<BeanContainer>>()
     private val beansAfterRegisterHandler = BeanHandler.DefaultBeanHandler()
     private val beanRegisterDistributors: ArrayList<BeanRegisterDistributor> = ArrayList()
+    private val beanContainerScanners: ArrayList<BeanContainerScanner> = ArrayList()
+    private val beanHandlerScanners: ArrayList<BeanHandlerScanner> = ArrayList()
     private val delayRemoveCache = ArrayList<Any>()
 
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun init() {
-        initBeanContainer()
-        initBeanHandler()
-        beanRegisterDistributors.forEach {
-            it.dispatch()
+        if (!isInitialized) {
+            initBeanContainer()
+            initBeanHandler()
+            beanRegisterDistributors.forEach {
+                it.dispatch()
+            }
+            beanContainerScanners.clear()
+            beanHandlerScanners.clear()
+            beanRegisterDistributors.clear()
+            beanPreRegisterHandler.removeHandlers()
+            invokeAfterBeansRegisterHandler()
+            beansAfterRegisterHandler.removeHandlers()
         }
-        beanPreRegisterHandler.removeHandlers()
-        invokeAfterBeansRegisterHandler()
-        beansAfterRegisterHandler.removeHandlers()
+        isInitialized = true
     }
 
     fun solveComponentEnv() {
@@ -58,12 +68,11 @@ object ApplicationContext {
     }
 
     private fun initBeanContainer() {
-        Reflections(
-            ConfigurationBuilder()
-                .forPackages("")
-                .setClassLoaders(arrayOf(Thread.currentThread().contextClassLoader))
-                .setScanners(Scanners.SubTypes)
-        ).getSubTypesOf(BeanContainer::class.java)?.forEach {
+        val beanContainerClasses = ArrayList<Class<out BeanContainer>>()
+        beanContainerScanners.forEach {
+            it.scanBeanContainers()?.let { s -> beanContainerClasses.addAll(s) }
+        }
+        beanContainerClasses.forEach {
             val scope = getBeanScope(it) ?: throw RuntimeException("Unknown container scope of ${it.simpleName}")
             val instance = it.kotlin.objectInstance!!
             beanContainers.getOrPut(scope) { arrayListOf() }
@@ -79,12 +88,11 @@ object ApplicationContext {
     }
 
     private fun initBeanHandler() {
-        Reflections(
-            ConfigurationBuilder()
-                .forPackages("")
-                .setClassLoaders(arrayOf(Thread.currentThread().contextClassLoader))
-                .setScanners(Scanners.SubTypes)
-        ).getSubTypesOf(BeanHandler::class.java)?.forEach {
+        val beanHandlerClasses = ArrayList<Class<out BeanHandler>>()
+        beanHandlerScanners.forEach {
+            it.scanBeanHandler()?.let { s -> beanHandlerClasses.addAll(s) }
+        }
+        beanHandlerClasses.forEach {
             if (Modifier.isAbstract(it.modifiers)) return@forEach
             when {
                 BeanPreRegisterHandler::class.java.isAssignableFrom(it) -> {
@@ -119,6 +127,14 @@ object ApplicationContext {
 
     fun addBeanRegisterDistributor(distributors: List<BeanRegisterDistributor>) {
         beanRegisterDistributors.addAll(distributors)
+    }
+
+    fun addBeanContainerScanner(containerScanner: List<BeanContainerScanner>) {
+        beanContainerScanners.addAll(containerScanner)
+    }
+
+    fun addBeanHandlerScanner(handlerScanner: List<BeanHandlerScanner>) {
+        beanHandlerScanners.addAll(handlerScanner)
     }
 
     fun visitContainers(visitor: (BeanScope, BeanContainer) -> Unit) {

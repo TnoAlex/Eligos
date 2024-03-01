@@ -2,6 +2,7 @@ package com.github.tnoalex
 
 import com.github.tnoalex.elements.FileElement
 import com.github.tnoalex.events.EntityRepoFinishedEvent
+import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventBus
 import com.github.tnoalex.issues.Issue
 import depends.deptypes.DependencyType
@@ -13,10 +14,10 @@ import depends.generator.StructureDependencyGenerator
 import depends.matrix.core.DependencyMatrix
 import multilang.depends.util.file.path.EmptyFilenameWritter
 import java.util.*
-import kotlin.collections.LinkedHashSet
 import kotlin.reflect.KClass
 
-class Context{
+@Component
+class Context {
     private lateinit var dependsRepo: EntityRepo
 
     private val dependsMatrices: EnumMap<AnalysisHierarchyEnum, DependencyMatrix> =

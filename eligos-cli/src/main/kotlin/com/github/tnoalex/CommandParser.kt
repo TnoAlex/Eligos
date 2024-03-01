@@ -72,6 +72,6 @@ class CommandParser : CliktCommand() {
             FormatterFactory.getFormatter(outFormat) ?: throw RuntimeException("Unsupported  formatter"),
             listOf(lang, crossLang),
             LaunchEnvironment.CLI
-        )
+        ).analyze()
     }
 }
