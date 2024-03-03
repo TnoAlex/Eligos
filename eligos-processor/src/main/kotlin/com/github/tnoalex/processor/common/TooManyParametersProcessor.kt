@@ -3,7 +3,9 @@ package com.github.tnoalex.processor.common
 import com.github.tnoalex.Context
 import com.github.tnoalex.config.WiredConfig
 import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
+import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ExcessiveParamsIssue
 import com.github.tnoalex.processor.PsiProcessor
@@ -14,6 +16,7 @@ import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
 import java.util.*
 
 @Component
+@Suitable(LaunchEnvironment.CLI)
 class TooManyParametersProcessor : PsiProcessor {
     private val issues = LinkedList<ExcessiveParamsIssue>()
 

@@ -1,5 +1,7 @@
 package com.github.tnoalex.processor.common
 
+import com.github.tnoalex.Context
+import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
@@ -10,6 +12,7 @@ import com.intellij.psi.*
 import com.intellij.psi.impl.compiled.ClsElementImpl
 import com.intellij.psi.impl.compiled.ClsFileImpl
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.isInImportDirective
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
@@ -31,14 +34,38 @@ class UnUsedImportProcessor : PsiProcessor {
                 findKotlinUseLessImport(psiFile)
             }
         }
+        ApplicationContext.getExactBean(Context::class.java)!!.reportIssues(issues)
+        issues.clear()
     }
 
     private fun findJavaUseLessImport(javaFile: PsiJavaFile) {
         val importList = PsiTreeUtil.getChildOfType(javaFile, PsiImportList::class.java) ?: return
+        val importRefs = HashSet<PsiElement>()
+        val importsMap = HashMap<PsiElement, String>()
+
         importList.importStatements.forEach {
-            val references = it.references
-            println()
+            it.importReference?.resolve()?.let { r ->
+                if (r is KtLightElement<*, *>) {
+                    importRefs.add(r.kotlinOrigin!!)
+                    importsMap[r.kotlinOrigin!!] = it.text.removePrefix("import").trim()
+                }
+                importRefs.add(r)
+                importsMap[r] = it.text.removePrefix("import").trim()
+            }
         }
+        javaFile.acceptChildren(object : JavaRecursiveElementVisitor() {
+            override fun visitReferenceElement(reference: PsiJavaCodeReferenceElement) {
+                if (PsiTreeUtil.getParentOfType(reference, PsiPackageStatement::class.java) != null) return
+                if (PsiTreeUtil.getParentOfType(reference, PsiImportStatement::class.java) != null) return
+                reference.resolve()?.let {
+                    if (it is KtLightElement<*, *>) {
+                        resolveImports(it.kotlinOrigin!!, importRefs)
+                    } else resolveImports(it, importRefs)
+                }
+            }
+        })
+
+        issues.add(UnusedImportIssue(hashSetOf(javaFile.virtualFile.path), importRefs.map { importsMap[it]!! }))
     }
 
     private fun findKotlinUseLessImport(ktFile: KtFile) {
@@ -75,21 +102,7 @@ class UnUsedImportProcessor : PsiProcessor {
                 expression.referenceExpression()?.run {
                     references.forEach {
                         it.resolve()?.let { r ->
-                            if (!importsRefs.contains(r)) { //import from cc.zz.*
-                                if (r is ClsElementImpl) { // lib import
-                                    val libFile =
-                                        PsiTreeUtil.getParentOfType(r, ClsFileImpl::class.java) ?: return@forEach
-                                    importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == libFile.packageName }
-                                } else { // src import
-                                    PsiTreeUtil.getParentOfType(r, KtFile::class.java)?.let {
-                                        importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == it.packageFqName.asString() }
-                                        return@forEach
-                                    }
-                                    PsiTreeUtil.getParentOfType(r,PsiJavaFile::class.java)?.let {
-                                        importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == it.packageName }
-                                    }
-                                }
-                            } else importsRefs.remove(r) //import from cc.zz.AA
+                            resolveImports(r, importsRefs)
                         }
                     }
                 }
@@ -97,5 +110,23 @@ class UnUsedImportProcessor : PsiProcessor {
         })
 
         issues.add(UnusedImportIssue(hashSetOf(ktFile.virtualFilePath), importsRefs.map { importsMap[it]!! }))
+    }
+
+    private fun resolveImports(element: PsiElement, importsRefs: HashSet<PsiElement>) {
+        if (!importsRefs.contains(element)) { //import from cc.zz.*
+            if (element is ClsElementImpl) { // lib import
+                val libFile =
+                    PsiTreeUtil.getParentOfType(element, ClsFileImpl::class.java) ?: return
+                importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == libFile.packageName }
+            } else { // src import
+                PsiTreeUtil.getParentOfType(element, KtFile::class.java)?.let {
+                    importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == it.packageFqName.asString() }
+                    return
+                }
+                PsiTreeUtil.getParentOfType(element, PsiJavaFile::class.java)?.let {
+                    importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == it.packageName }
+                }
+            }
+        } else importsRefs.remove(element) //import from cc.zz.AA
     }
 }

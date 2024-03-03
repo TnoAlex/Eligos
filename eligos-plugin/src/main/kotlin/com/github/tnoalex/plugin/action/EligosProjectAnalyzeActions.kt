@@ -1,9 +1,11 @@
 package com.github.tnoalex.plugin.action
 
 import com.github.tnoalex.Analyzer
+import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.json.JsonFormatter
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
+import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.plugin.bean.IdeBeanSupportStructureScanner
 import com.github.tnoalex.plugin.parser.IdePluginFileDistributor
 import com.intellij.ide.plugins.PluginManager
@@ -13,7 +15,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
-import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.project.Project
 
 
@@ -44,6 +45,8 @@ class EligosProjectAnalyzeActions : AnAction() {
         ApplicationContext.addBeanRegisterDistributor(listOf(ideBeanSupportStructureScanner))
         ApplicationContext.addBeanContainerScanner(listOf(ideBeanSupportStructureScanner))
         ApplicationContext.addBeanHandlerScanner(listOf(ideBeanSupportStructureScanner))
+        val configParser = ConfigParser()
+        ApplicationContext.addBean(configParser::class.java.simpleName, configParser, SimpleSingletonBeanContainer)
         ApplicationContext.currentClassLoader = classLoader
         ApplicationContext.init()
     }

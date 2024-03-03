@@ -6,9 +6,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":eligos-core"))
+    api(project(":eligos-core"))
     api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
-    runtimeOnly(project(":eligos-processor"))
+    implementation(project(":eligos-processor"))
     implementation("com.github.ajalt.clikt:clikt:4.2.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
