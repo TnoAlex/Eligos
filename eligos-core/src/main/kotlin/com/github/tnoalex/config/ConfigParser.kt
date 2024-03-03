@@ -1,11 +1,9 @@
 package com.github.tnoalex.config
 
 import com.github.tnoalex.foundation.ApplicationContext
-import com.github.tnoalex.foundation.bean.Component
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 
-@Component(order = Short.MAX_VALUE.toInt())
 class ConfigParser {
     val rules by lazy { parserRules() }
     var extendRules: File? = null

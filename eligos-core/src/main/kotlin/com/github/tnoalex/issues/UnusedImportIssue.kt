@@ -4,12 +4,8 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 
 class UnusedImportIssue(
     affectedFiles: HashSet<String>,
-    val useFile: String
+    val unusedImports: List<String>
 ) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles) {
-
-    val importedFiles: List<String>
-        get() = affectedFiles.filter { it != useFile }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -17,14 +13,12 @@ class UnusedImportIssue(
 
         other as UnusedImportIssue
 
-        return useFile == other.useFile
+        return unusedImports == other.unusedImports
     }
 
     override fun hashCode(): Int {
         var result = super.hashCode()
-        result = 31 * result + useFile.hashCode()
+        result = 31 * result + unusedImports.hashCode()
         return result
     }
-
-
 }

@@ -7,7 +7,6 @@ import com.github.tnoalex.foundation.bean.register.DefaultBeanRegisterDistributo
 import java.util.*
 
 fun main(args: Array<String>) {
-    initApplication()
     showBanner()
     CommandParser().main(args)
 }
@@ -24,10 +23,4 @@ private fun showBanner() {
     }
 }
 
-private fun initApplication() {
-    ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor()))
-    ApplicationContext.addBeanContainerScanner(listOf(DefaultBeanContainerScanner()))
-    ApplicationContext.addBeanHandlerScanner(listOf(DefaultBeanHandlerScanner()))
-    ApplicationContext.init()
-}
 

@@ -12,7 +12,10 @@ import com.github.tnoalex.formatter.FormatterFactory
 import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
+import com.github.tnoalex.foundation.bean.container.DefaultBeanContainerScanner
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
+import com.github.tnoalex.foundation.bean.handler.DefaultBeanHandlerScanner
+import com.github.tnoalex.foundation.bean.register.DefaultBeanRegisterDistributor
 import com.github.tnoalex.foundation.filetools.FileHelper
 import com.github.tnoalex.parser.CliCompilerEnvironmentContext
 import com.github.tnoalex.utils.StdOutErrWrapper
@@ -55,23 +58,39 @@ class CommandParser : CliktCommand() {
 
     override fun run() {
         StdOutErrWrapper.init()
-        ApplicationContext.getExactBean(FileHelper::class.java)?.setFileInfo(
-            srcPath.toFile(),
-            outPath?.toFile(),
-            outputPrefix
-        )
-        val cliCompilerEnvironmentContext = CliCompilerEnvironmentContext()
-        cliCompilerEnvironmentContext.initCompilerEnv(srcPath)
-        ApplicationContext.getExactBean(ConfigParser::class.java)?.extendRules = extendRules
-        ApplicationContext.addBean(
-            cliCompilerEnvironmentContext.javaClass.simpleName,
-            cliCompilerEnvironmentContext,
-            SimpleSingletonBeanContainer
-        )
+        initApplication()
         Analyzer(
             FormatterFactory.getFormatter(outFormat) ?: throw RuntimeException("Unsupported  formatter"),
             listOf(lang, crossLang),
             LaunchEnvironment.CLI
         ).analyze()
+    }
+
+    private fun initApplication() {
+        val fileHelper = FileHelper()
+        fileHelper.setFileInfo(
+            srcPath.toFile(),
+            outPath?.toFile(),
+            outputPrefix
+        )
+
+        val cliCompilerEnvironmentContext = CliCompilerEnvironmentContext()
+        cliCompilerEnvironmentContext.initCompilerEnv(srcPath)
+
+        val configParser = ConfigParser()
+        configParser.extendRules = extendRules
+
+        ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor()))
+        ApplicationContext.addBeanContainerScanner(listOf(DefaultBeanContainerScanner()))
+        ApplicationContext.addBeanHandlerScanner(listOf(DefaultBeanHandlerScanner()))
+
+        ApplicationContext.addBean(fileHelper.javaClass.simpleName, fileHelper, SimpleSingletonBeanContainer)
+        ApplicationContext.addBean(configParser.javaClass.simpleName, configParser, SimpleSingletonBeanContainer)
+        ApplicationContext.addBean(
+            cliCompilerEnvironmentContext.javaClass.simpleName,
+            cliCompilerEnvironmentContext,
+            SimpleSingletonBeanContainer
+        )
+        ApplicationContext.init()
     }
 }

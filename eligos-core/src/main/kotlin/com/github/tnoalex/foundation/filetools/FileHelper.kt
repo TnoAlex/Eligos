@@ -1,6 +1,5 @@
 package com.github.tnoalex.foundation.filetools
 
-import com.github.tnoalex.foundation.bean.Component
 import java.io.File
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -8,7 +7,6 @@ import java.nio.file.Path
 import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 
-@Component(order = Int.MAX_VALUE)
 class FileHelper {
     lateinit var sourceFilePath: File
         private set
