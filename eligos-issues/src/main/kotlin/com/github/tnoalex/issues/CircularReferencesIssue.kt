@@ -1,11 +1,13 @@
 package com.github.tnoalex.issues
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import org.jgrapht.Graph
+import org.jgrapht.graph.DefaultEdge
 
 
 class CircularReferencesIssue(
     affectedFiles: HashSet<String>,
-    private val refGraph: List<String>,
+    private val refGraph: Graph<String, DefaultEdge>,
 ) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

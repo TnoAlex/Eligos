@@ -1,5 +1,6 @@
 package com.github.tnoalex.parser
 
+import com.github.tnoalex.events.AllFileParsedEvent
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
@@ -38,6 +39,7 @@ class CliFileDistributor : FileDistributor {
                 }
             }
         }
+        EventBus.post(AllFileParsedEvent)
     }
 
     override fun virtualFileConvert(virtualFile: Any): PsiFile {

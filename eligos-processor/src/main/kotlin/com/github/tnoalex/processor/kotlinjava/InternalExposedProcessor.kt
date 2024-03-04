@@ -6,10 +6,7 @@ import com.github.tnoalex.elements.jvm.java.JavaElement
 import com.github.tnoalex.events.EntityRepoFinishedEvent
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.ImproperInternalExposedIssue
 import com.github.tnoalex.processor.PsiProcessorWithContext
-import com.github.tnoalex.utils.getJavaClassElementByQualifiedName
-import com.github.tnoalex.utils.getKotlinClassElementByQualifiedName
 import depends.deptypes.DependencyType
 import depends.entity.KotlinTypeEntity
 import depends.entity.TypeEntity

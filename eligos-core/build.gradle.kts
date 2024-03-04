@@ -4,6 +4,7 @@ dependencies {
     implementation("cn.emergentdesign.se:depends-core:0.9.8-SNAPSHOT")
     implementation("cn.emergentdesign.se:depends-java:0.9.8-SNAPSHOT")
     implementation("cn.emergentdesign.se:utils:0.1.1")
+    api("org.jgrapht:jgrapht-core:1.5.2")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.22")
     implementation("org.slf4j:slf4j-api:2.0.12")
     implementation("com.google.code.gson:gson:2.10.1")

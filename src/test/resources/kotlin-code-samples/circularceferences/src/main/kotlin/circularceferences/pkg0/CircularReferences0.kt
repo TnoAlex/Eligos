@@ -1,6 +1,6 @@
 package circularceferences.pkg0
 
-internal class CircularReferences0 {
+class CircularReferences0 {
 
     fun funC0(){
         val c1 = CircularReferences1()

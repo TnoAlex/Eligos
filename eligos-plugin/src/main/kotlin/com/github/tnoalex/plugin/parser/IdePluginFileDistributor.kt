@@ -1,5 +1,6 @@
 package com.github.tnoalex.plugin.parser
 
+import com.github.tnoalex.events.AllFileParsedEvent
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventBus
@@ -40,6 +41,7 @@ class IdePluginFileDistributor : FileDistributor {
                 return true
             }
         })
+        EventBus.post(AllFileParsedEvent)
     }
 
     override fun virtualFileConvert(virtualFile: Any): Any {
