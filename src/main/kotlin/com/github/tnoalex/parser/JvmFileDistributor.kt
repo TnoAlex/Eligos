@@ -24,12 +24,17 @@ class JvmFileDistributor : FileDistributor {
     }
 
     override fun dispatch() {
-        val baseDir = ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)?.baseDir
-            ?: throw RuntimeException("Can not find the project of ${this::class.java.typeName}")
+        val environment = ApplicationContext.getExactBean(JvmCompilerEnvironmentContext::class.java)!!
+        environment.environment.getSourceFiles().forEach {
+            EventBus.post(it)
+        }
+        val baseDir = environment.baseDir
         baseDir.refresh(false, true)
         visitVirtualFile(baseDir) {
-            psiManager.findFile(it)?.let { psi ->
-                EventBus.post(psi)
+            if (it.extension == "java") {
+                psiManager.findFile(it)?.let { psi ->
+                    EventBus.post(psi)
+                }
             }
         }
     }

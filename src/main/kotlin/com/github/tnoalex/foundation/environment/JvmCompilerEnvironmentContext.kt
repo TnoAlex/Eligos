@@ -23,10 +23,12 @@ import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.idea.references.KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.idea.references.ReadWriteAccessChecker
 import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.references.fe10.base.DummyKtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.references.fe10.base.KtFe10KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.references.fe10.base.KtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import java.io.File
 import java.io.PrintStream
 import java.nio.file.Path
@@ -48,6 +50,9 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
     lateinit var bindingContext: BindingContext
         private set
 
+    lateinit var environment: KotlinCoreEnvironment
+        private set
+
     override fun initCompilerEnv(filePath: Path) {
         val jdkHome = File(System.getProperty("java.home")).toPath()
         val compilerEnvironmentContext = createCompilerConfiguration(
@@ -55,10 +60,17 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
             listOf(filePath.absolutePathString()),
             jdkHome = jdkHome
         )
-        val kotlinCoreEnvironment = createKotlinCoreEnvironment(compilerEnvironmentContext)
+        environment = createKotlinCoreEnvironment(compilerEnvironmentContext)
         baseDir = CoreLocalVirtualFile(fileSystem, filePath.toFile(), filePath.isDirectory())
-        val analysisResult = KotlinToJVMBytecodeCompiler.analyze(kotlinCoreEnvironment)
-        bindingContext = analysisResult!!.bindingContext
+        bindingContext = generateBindingContext(
+            environment,
+            environment.getSourceFiles()
+        )
+        val application = ApplicationManager.getApplication()
+        (application as MockApplication).registerService(
+            KtFe10ReferenceResolutionHelper::class.java,
+            DummyKtFe10ReferenceResolutionHelper(bindingContext)
+        )
         /*bindingContext = generateBindingContext(
             kotlinCoreEnvironment,
             listOf(filePath.absolutePathString()),
@@ -96,8 +108,7 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
 
         project.registerService(KotlinReferenceProvidersService::class.java, HLApiReferenceProviderService(project))
         project.registerService(ReadWriteAccessChecker::class.java, ReadWriteAccessCheckerDescriptorsImpl())
-        val application = ApplicationManager.getApplication()
-        (application as MockApplication).registerService(KtFe10ReferenceResolutionHelper::class.java, DummyKtFe10ReferenceResolutionHelper)
+
         return environment
     }
 
@@ -141,6 +152,40 @@ class JvmCompilerEnvironmentContext : CompilerEnvironmentContext {
             jdkHome?.let { put(JVMConfigurationKeys.JDK_HOME, it.toFile()) }
             configureJdkClasspathRoots()
         }
+    }
+
+    class MyMessageCollector : MessageCollector by MessageCollector.NONE {
+        override fun report(
+            severity: CompilerMessageSeverity,
+            message: String,
+            location: CompilerMessageSourceLocation?
+        ) {
+            print(message)
+        }
+    }
+
+    internal fun generateBindingContext(
+        environment: KotlinCoreEnvironment,
+        files: List<KtFile>
+    ): BindingContext {
+
+        val analyzer = AnalyzerWithCompilerReport(
+            MyMessageCollector(),
+            environment.configuration.languageVersionSettings,
+            false,
+        )
+        analyzer.analyzeAndReport(files) {
+            TopDownAnalyzerFacadeForJVM.analyzeFilesWithJavaIntegration(
+                environment.project,
+                files,
+                NoScopeRecordCliBindingTrace(),
+                environment.configuration,
+                environment::createPackagePartProvider,
+                ::FileBasedDeclarationProviderFactory
+            )
+        }
+
+        return analyzer.analysisResult.bindingContext
     }
 
     private fun kotlinStdLibPath(): File {
