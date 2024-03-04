@@ -10,10 +10,7 @@ import com.github.tnoalex.issues.ImproperInternalExposedIssue
 import com.github.tnoalex.processor.PsiProcessorWithContext
 import com.github.tnoalex.utils.getJavaClassElementByQualifiedName
 import com.github.tnoalex.utils.getKotlinClassElementByQualifiedName
-import com.github.tnoalex.utils.getTargetTypeParent
 import depends.deptypes.DependencyType
-import depends.entity.Entity
-import depends.entity.FileEntity
 import depends.entity.KotlinTypeEntity
 import depends.entity.TypeEntity
 
@@ -24,37 +21,34 @@ class InternalExposedProcessor : PsiProcessorWithContext() {
 
     @EventListener
     private fun process(event: EntityRepoFinishedEvent) {
-        val issues = getInternalConcretization()
-        context.reportIssues(issues)
+
     }
 
-    private fun getInternalConcretization(): ArrayList<ImproperInternalExposedIssue> {
-        val relations = getDependencyPairs()
-
-        val issues = ArrayList<ImproperInternalExposedIssue>()
-        relations.forEach { (k, v) ->
-            val javaFile = getParentFileEntity(k.first)
-            val kotlinFile = getParentFileEntity(k.second)
-
-            val javaClassElement =
-                getJavaClassElementByQualifiedName(context.getFileElement(javaFile), k.first.qualifiedName)
-                    ?: throw RuntimeException("Can not found java element called ${k.first.qualifiedName} in file $javaFile")
-            if (!isExpandVisibility(javaClassElement)) return@forEach
-            val kotlinClassElement =
-                getKotlinClassElementByQualifiedName(context.getFileElement(kotlinFile), k.second.qualifiedName)
-                    ?: throw RuntimeException("Can not found java element called ${k.second.qualifiedName} in file $kotlinFile")
-
-            if (kotlinClassElement.isInternal()) {
-                issues.add(
-                    ImproperInternalExposedIssue(
-                        hashSetOf(javaFile, kotlinFile),
-                        javaClassElement, kotlinClassElement, v
-                    )
-                )
-            }
-        }
-        return issues
-    }
+//    private fun getInternalConcretization(): ArrayList<ImproperInternalExposedIssue> {
+//        val relations = getDependencyPairs()
+//
+//        val issues = ArrayList<ImproperInternalExposedIssue>()
+//        relations.forEach { (k, v) ->
+//
+//            val javaClassElement =
+//                getJavaClassElementByQualifiedName(context.getFileElement(javaFile), k.first.qualifiedName)
+//                    ?: throw RuntimeException("Can not found java element called ${k.first.qualifiedName} in file $javaFile")
+//            if (!isExpandVisibility(javaClassElement)) return@forEach
+//            val kotlinClassElement =
+//                getKotlinClassElementByQualifiedName(context.getFileElement(kotlinFile), k.second.qualifiedName)
+//                    ?: throw RuntimeException("Can not found java element called ${k.second.qualifiedName} in file $kotlinFile")
+//
+//            if (kotlinClassElement.isInternal()) {
+//                issues.add(
+//                    ImproperInternalExposedIssue(
+//                        hashSetOf(javaFile, kotlinFile),
+//                        javaClassElement, kotlinClassElement, v
+//                    )
+//                )
+//            }
+//        }
+//        return issues
+//    }
 
     private fun getDependencyPairs(): HashMap<Pair<TypeEntity, KotlinTypeEntity>, String> {
         val repoIterator = context.getRepo().entityIterator()
@@ -83,10 +77,4 @@ class InternalExposedProcessor : PsiProcessorWithContext() {
         return element.isPublicVisibility()
     }
 
-    private fun getParentFileEntity(entity: Entity): String {
-        val fileEntity = entity.getTargetTypeParent(FileEntity::class.java)
-            ?: throw RuntimeException("Unexpected entity structures")
-
-        return fileEntity.qualifiedName
-    }
 }

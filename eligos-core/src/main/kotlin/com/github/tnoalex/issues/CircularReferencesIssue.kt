@@ -1,11 +1,11 @@
 package com.github.tnoalex.issues
 
 import com.github.tnoalex.AnalysisHierarchyEnum
-import com.github.tnoalex.foundation.algorithm.AdjacencyList
+
 
 class CircularReferencesIssue(
     affectedFiles: HashSet<String>,
-    private val refGraph: AdjacencyList<Int>,
+    private val refGraph: List<String>,
 ) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
