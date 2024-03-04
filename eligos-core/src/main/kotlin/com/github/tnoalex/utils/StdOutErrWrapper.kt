@@ -14,9 +14,7 @@ object StdOutErrWrapper {
     fun init() {
         logger.warn("All stdOut and StdErr will be redirect to here")
         val printStreamForOut = createLoggingWrapper(System.out, false)
-        val printStreamForErr = createLoggingWrapper(System.out, true)
         System.setOut(printStreamForOut)
-        System.setErr(printStreamForErr)
     }
 
     private fun getCallerLogger(): Logger {

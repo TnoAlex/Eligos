@@ -7,8 +7,14 @@ plugins {
 
 dependencies {
     api(project(":eligos-core"))
-    api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
     runtimeOnly(project(":eligos-processor"))
+    api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
+    implementation(project(":kt-references-analysis:analysis-api"))
+    implementation(project(":kt-references-analysis:analysis-api-fe10"))
+    implementation(project(":kt-references-analysis:analysis-api-impl-base"))
+    implementation(project(":kt-references-analysis:analysis-internal-utils"))
+    implementation(project(":kt-references-analysis:kt-references-fe10"))
+    implementation(project(":kt-references-analysis:project-structure"))
     implementation("com.github.ajalt.clikt:clikt:4.2.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }

@@ -19,7 +19,7 @@ import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import java.util.*
 
 @Component
-@Suitable(LaunchEnvironment.IDE_PLUGIN)
+@Suitable(LaunchEnvironment.CLI)
 class UnUsedImportProcessor : PsiProcessor {
     private val issues = LinkedList<UnusedImportIssue>()
 
