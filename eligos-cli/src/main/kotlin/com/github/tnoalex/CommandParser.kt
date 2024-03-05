@@ -86,6 +86,7 @@ class CommandParser : CliktCommand() {
 
         ApplicationContext.addBean(fileHelper.javaClass.simpleName, fileHelper, SimpleSingletonBeanContainer)
         ApplicationContext.addBean(configParser.javaClass.simpleName, configParser, SimpleSingletonBeanContainer)
+
         ApplicationContext.addBean(
             cliCompilerEnvironmentContext.javaClass.simpleName,
             cliCompilerEnvironmentContext,

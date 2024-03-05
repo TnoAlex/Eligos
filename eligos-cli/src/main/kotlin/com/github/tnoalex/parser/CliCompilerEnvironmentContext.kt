@@ -1,6 +1,8 @@
 package com.github.tnoalex.parser
 
 
+import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.application.ApplicationManager
@@ -14,7 +16,10 @@ import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.config.addKotlinSourceRoots
 import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
 import org.jetbrains.kotlin.cli.common.messages.*
-import org.jetbrains.kotlin.cli.jvm.compiler.*
+import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
+import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
+import org.jetbrains.kotlin.cli.jvm.compiler.NoScopeRecordCliBindingTrace
+import org.jetbrains.kotlin.cli.jvm.compiler.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoot
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
@@ -35,7 +40,7 @@ import java.nio.file.Path
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.isDirectory
 
-class CliCompilerEnvironmentContext  {
+class CliCompilerEnvironmentContext {
     private val disposer = Disposer.newDisposable()
 
     private val fileSystem: CoreLocalFileSystem = CoreLocalFileSystem()
@@ -63,9 +68,15 @@ class CliCompilerEnvironmentContext  {
             environment.getSourceFiles()
         )
         val application = ApplicationManager.getApplication()
+        val resolutionHelper = DummyKtFe10ReferenceResolutionHelper(bindingContext)
         (application as MockApplication).registerService(
             KtFe10ReferenceResolutionHelper::class.java,
-            DummyKtFe10ReferenceResolutionHelper(bindingContext)
+            resolutionHelper
+        )
+        ApplicationContext.addBean(
+            resolutionHelper.javaClass.simpleName,
+            resolutionHelper,
+            SimpleSingletonBeanContainer
         )
     }
 

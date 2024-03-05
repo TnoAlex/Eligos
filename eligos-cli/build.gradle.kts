@@ -19,11 +19,18 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
+tasks.getByName("compileJava"){
+    dependsOn(":eligos-processor:compileJava")
+}
+
 tasks.withType(ShadowJar::class.java) {
+    minimize()
     manifest {
         attributes["Main-Class"] = "com.github.tnoalex.MainKt"
     }
+    isZip64 = true
 }
+
 
 application {
     mainClass.set("com.github.tnoalex.MainKt")

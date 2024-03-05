@@ -32,10 +32,13 @@ class EligosProjectAnalyzeActions : AnAction() {
     }
 
     private fun startEligosTask(project: Project) {
-        initEligosApplication()
-        val idePluginFileDistributor = ApplicationContext.getExactBean(IdePluginFileDistributor::class.java) ?: return
-        idePluginFileDistributor.initPsiManager(project)
-        Analyzer(JsonFormatter(), listOf("java", "kotlin"), LaunchEnvironment.IDE_PLUGIN).analyze()
+        if (!ApplicationContext.isInitialized) {
+            initEligosApplication()
+            val idePluginFileDistributor =
+                ApplicationContext.getExactBean(IdePluginFileDistributor::class.java) ?: return
+            idePluginFileDistributor.initPsiManager(project)
+        }
+        ApplicationContext.getExactBean(Analyzer::class.java)!!.analyze()
     }
 
     private fun initEligosApplication() {
@@ -47,7 +50,10 @@ class EligosProjectAnalyzeActions : AnAction() {
         ApplicationContext.addBeanHandlerScanner(listOf(ideBeanSupportStructureScanner))
         val configParser = ConfigParser()
         ApplicationContext.addBean(configParser::class.java.simpleName, configParser, SimpleSingletonBeanContainer)
+
         ApplicationContext.currentClassLoader = classLoader
         ApplicationContext.init()
+        val analyzer = Analyzer(JsonFormatter(), listOf("java", "kotlin"), LaunchEnvironment.IDE_PLUGIN)
+        ApplicationContext.addBean(analyzer::class.java.simpleName, analyzer, SimpleSingletonBeanContainer)
     }
 }

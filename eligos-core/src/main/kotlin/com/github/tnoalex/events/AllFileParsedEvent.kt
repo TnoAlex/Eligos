@@ -1,3 +1,3 @@
 package com.github.tnoalex.events
 
-class AllFileParsedEvent : Event(null)
+object AllFileParsedEvent : Event(Any())

@@ -3,53 +3,68 @@ package com.github.tnoalex.processor.kotlin
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.OptimizedTailRecursionIssue
-import com.github.tnoalex.processor.PsiProcessorWithContext
-import com.github.tnoalex.utils.*
-import depends.extractor.kotlin.KotlinParser.*
-import depends.extractor.kotlin.KotlinParserBaseVisitor
+import com.github.tnoalex.processor.PsiProcessor
+import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
+import org.jetbrains.kotlin.psi.psiUtil.startOffset
+
 
 @Component
-class TailRecursionProcessor : PsiProcessorWithContext() {
+class TailRecursionProcessor : PsiProcessor {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
 
-    @EventListener("!com.github.tnoalex.utils.KotlinAstUtilKt.isClosure(#{ctx})", "enter")
-    fun process(ctx: FunctionDeclarationContext) {
-        if (ctx.modifiers()?.functionModifier() == "tailrec") return
-        var isTailRec = false
-        ctx.functionBody()?.let { isTailRec = findRecursion(it, ctx.simpleIdentifier().text, ctx.paramsNum()) }
-        if (isTailRec) {
-            val issue = OptimizedTailRecursionIssue(
-                context.getLastElement().elementName!!,
-                ctx.signature()
-            )
-            context.reportIssue(issue)
-        }
-    }
-
-    private fun findRecursion(ctx: FunctionBodyContext, functionName: String, paramsNum: Int): Boolean {
-        var independentFlag = true
-        var isRecursion = false
-        ctx.accept(object : KotlinParserBaseVisitor<Unit>() {
-            override fun visitJumpExpression(ctx: JumpExpressionContext) {
-                if (ctx.RETURN() == null) return
-                if (!independentFlag) return
-                val callSuffixContext = ctx.expression()?.nearestCallSuffixExpression() ?: return
-                val postfixUnaryExpressionContext = (callSuffixContext.parent.parent as PostfixUnaryExpressionContext)
-
-                callSuffixContext.valueArguments() ?: return
-                val invokeParams = callSuffixContext.valueArguments().valueArgument().size
-                val invokeName = postfixUnaryExpressionContext.postfixUnaryExpression().text
-
-                if (invokeName == functionName && invokeParams == paramsNum) {
-                    isRecursion = true
-                    if (!postfixUnaryExpressionContext.independent()) {
-                        independentFlag = false
-                    }
+    @EventListener
+    fun process(ktFile: KtFile) {
+        ktFile.accept(object : KtTreeVisitorVoid() {
+            override fun visitNamedFunction(function: KtNamedFunction) {
+                if (function.hasModifier(KtTokens.TAILREC_KEYWORD)) return
+                val isTailRecursion = findRecursion(function)
+                if (isTailRecursion) {
+                    context.reportIssue(
+                        OptimizedTailRecursionIssue(
+                            ktFile.virtualFilePath,
+                            function.fqName?.asString() ?: "unknown func",
+                            function.valueParameters.map { it.name ?: "" },
+                            function.startOffset
+                        )
+                    )
                 }
-                super.visitJumpExpression(ctx)
+                super.visitNamedFunction(function)
             }
         })
-        return independentFlag && isRecursion
+    }
+
+    private fun findRecursion(function: KtNamedFunction): Boolean {
+        var isNotTailRecursion = false
+        function.acceptChildren(object : KtTreeVisitorVoid() {
+            override fun visitReturnExpression(expression: KtReturnExpression) {
+                if (isNotTailRecursion) return
+                val callExpressions = ArrayList<KtCallExpression>()
+                expression.acceptChildren(object : KtTreeVisitorVoid() {
+                    override fun visitCallExpression(expression: KtCallExpression) {
+                        callExpressions.add(expression)
+                    }
+                })
+                if (callExpressions.isNotEmpty()) {
+                    callExpressions.forEach {
+                        it.referenceExpression()?.run {
+                            references.forEach { r ->
+                                r.resolve() ?: return@run
+                                if (r.isReferenceTo(function)) {
+                                    PsiTreeUtil.getParentOfType(it, KtOperationExpression::class.java)?.let {
+                                        isNotTailRecursion = true
+                                        return
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        return !isNotTailRecursion
     }
 }

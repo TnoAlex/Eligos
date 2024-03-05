@@ -4,12 +4,12 @@ plugins {
     kotlin("jvm") version "1.9.22"
 }
 
-repositories{
+repositories {
     mavenLocal()
     mavenCentral()
 }
 
-allprojects{
+allprojects {
     group = "com.github.tnoalex"
     version = "1.0-SNAPSHOT"
 }
@@ -17,7 +17,7 @@ allprojects{
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
-    kotlin{
+    kotlin {
         jvmToolchain(17)
     }
 
@@ -33,15 +33,11 @@ subprojects {
         it.exclude(group = "org.slf4j", module = "slf4j-reload4j")
     }
 
+    tasks.withType<Jar> {
+        isZip64 = true
+    }
+
     repositories {
-        maven {
-            url = uri("http://47.115.213.131:8080/repository/alex-snapshots/")
-            isAllowInsecureProtocol = true
-        }
-        maven {
-            url = uri("http://47.115.213.131:8080/repository/alex-release/")
-            isAllowInsecureProtocol = true
-        }
         mavenLocal()
         maven {
             url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies/")

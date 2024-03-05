@@ -9,9 +9,9 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.UnusedImportIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.intellij.psi.*
-import com.intellij.psi.impl.compiled.ClsElementImpl
 import com.intellij.psi.impl.compiled.ClsFileImpl
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.analysis.decompiler.psi.file.KtDecompiledFile
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.isInImportDirective
@@ -22,6 +22,8 @@ import java.util.*
 @Suitable(LaunchEnvironment.CLI)
 class UnUsedImportProcessor : PsiProcessor {
     private val issues = LinkedList<UnusedImportIssue>()
+    override val supportLanguage: List<String>
+        get() = listOf("java","kotlin")
 
     @EventListener
     fun process(psiFile: PsiFile) {
@@ -34,7 +36,7 @@ class UnUsedImportProcessor : PsiProcessor {
                 findKotlinUseLessImport(psiFile)
             }
         }
-        ApplicationContext.getExactBean(Context::class.java)!!.reportIssues(issues)
+        context.reportIssues(issues)
         issues.clear()
     }
 
@@ -62,6 +64,7 @@ class UnUsedImportProcessor : PsiProcessor {
                         resolveImports(it.kotlinOrigin!!, importRefs)
                     } else resolveImports(it, importRefs)
                 }
+                super.visitReferenceElement(reference)
             }
         })
 
@@ -106,6 +109,7 @@ class UnUsedImportProcessor : PsiProcessor {
                         }
                     }
                 }
+                super.visitReferenceExpression(expression)
             }
         })
 
@@ -114,10 +118,16 @@ class UnUsedImportProcessor : PsiProcessor {
 
     private fun resolveImports(element: PsiElement, importsRefs: HashSet<PsiElement>) {
         if (!importsRefs.contains(element)) { //import from cc.zz.*
-            if (element is ClsElementImpl) { // lib import
-                val libFile =
-                    PsiTreeUtil.getParentOfType(element, ClsFileImpl::class.java) ?: return
-                importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == libFile.packageName }
+            if (element is PsiCompiledElement) { // lib import
+                PsiTreeUtil.getParentOfType(element, ClsFileImpl::class.java)?.let {
+                    importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == it.packageName }
+                    return
+                }
+                PsiTreeUtil.getParentOfType(element, KtDecompiledFile::class.java)?.let {
+                    importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == it.packageFqName.asString() }
+                    return
+                }
+
             } else { // src import
                 PsiTreeUtil.getParentOfType(element, KtFile::class.java)?.let {
                     importsRefs.removeIf { rf -> rf is PsiPackage && rf.qualifiedName == it.packageFqName.asString() }
