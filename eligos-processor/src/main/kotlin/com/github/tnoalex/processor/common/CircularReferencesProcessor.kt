@@ -3,7 +3,9 @@ package com.github.tnoalex.processor.common
 import com.github.tnoalex.Context
 import com.github.tnoalex.events.AllFileParsedEvent
 import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
+import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.CircularReferencesIssue
 import com.github.tnoalex.processor.PsiProcessor
@@ -23,8 +25,11 @@ import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.builder.GraphTypeBuilder
 
 @Component
+@Suitable(LaunchEnvironment.CLI)
 class CircularReferencesProcessor : PsiProcessor {
     private var dependencyGraph = newEmptyGraph()
+    override val supportLanguage: List<String>
+        get() = listOf("java","kotlin")
 
     @EventListener
     fun process(psiFile: PsiFile) {
@@ -42,8 +47,7 @@ class CircularReferencesProcessor : PsiProcessor {
             val subGraph = newEmptyGraph()
             it.vertexSet().forEach { v -> subGraph.addVertex(v) }
             it.edgeSet().forEach { e -> subGraph.addEdge(it.getEdgeSource(e), it.getEdgeTarget(e)) }
-            ApplicationContext.getExactBean(Context::class.java)!!
-                .reportIssue(CircularReferencesIssue(it.vertexSet().toHashSet(), subGraph))
+            context.reportIssue(CircularReferencesIssue(it.vertexSet().toHashSet(), subGraph))
         }
         dependencyGraph = newEmptyGraph()
     }
@@ -60,6 +64,7 @@ class CircularReferencesProcessor : PsiProcessor {
                         it.resolve()?.let { r -> resolveRef(r, fileName) }
                     }
                 }
+                super.visitReferenceExpression(expression)
             }
         })
     }
@@ -74,6 +79,7 @@ class CircularReferencesProcessor : PsiProcessor {
                 reference.resolve()?.let {
                     resolveRef(it, fileName)
                 }
+                super.visitReferenceElement(reference)
             }
         })
     }
@@ -91,7 +97,6 @@ class CircularReferencesProcessor : PsiProcessor {
             addDependency(it.virtualFilePath, consumeFile)
             return
         }
-        throw RuntimeException("Can not find parent file of element with context : ${providerElement.text}")
     }
 
     private fun addDependency(providerFile: String, consumeFile: String) {

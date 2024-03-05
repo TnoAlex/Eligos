@@ -22,6 +22,8 @@ import java.util.*
 @Suitable(LaunchEnvironment.CLI)
 class UnUsedImportProcessor : PsiProcessor {
     private val issues = LinkedList<UnusedImportIssue>()
+    override val supportLanguage: List<String>
+        get() = listOf("java","kotlin")
 
     @EventListener
     fun process(psiFile: PsiFile) {
@@ -34,7 +36,7 @@ class UnUsedImportProcessor : PsiProcessor {
                 findKotlinUseLessImport(psiFile)
             }
         }
-        ApplicationContext.getExactBean(Context::class.java)!!.reportIssues(issues)
+        context.reportIssues(issues)
         issues.clear()
     }
 
@@ -62,6 +64,7 @@ class UnUsedImportProcessor : PsiProcessor {
                         resolveImports(it.kotlinOrigin!!, importRefs)
                     } else resolveImports(it, importRefs)
                 }
+                super.visitReferenceElement(reference)
             }
         })
 
@@ -106,6 +109,7 @@ class UnUsedImportProcessor : PsiProcessor {
                         }
                     }
                 }
+                super.visitReferenceExpression(expression)
             }
         })
 

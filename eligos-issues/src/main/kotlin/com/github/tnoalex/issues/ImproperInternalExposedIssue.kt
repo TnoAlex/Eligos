@@ -1,13 +1,12 @@
 package com.github.tnoalex.issues
 
 import com.github.tnoalex.AnalysisHierarchyEnum
-import com.github.tnoalex.elements.jvm.java.JavaClassElement
-import com.github.tnoalex.elements.jvm.kotlin.KotlinClassElement
+
 
 class ImproperInternalExposedIssue(
     affectedFiles: HashSet<String>,
-    val javaClassElement: JavaClassElement,
-    val kotlinClassElement: KotlinClassElement,
+    val javaClassElement: String,
+    val kotlinClassElement: String,
     val relation: String
 ) : Issue(AnalysisHierarchyEnum.CLASS, affectedFiles) {
     override fun equals(other: Any?): Boolean {

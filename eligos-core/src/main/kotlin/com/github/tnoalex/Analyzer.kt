@@ -21,6 +21,7 @@ class Analyzer(
             ApplicationContext.solveComponentEnv()
             registerProcessorEvent()
         }
+        context.resetContext()
         dispatchFiles()
         analyzerInitialized = true
     }
@@ -55,19 +56,16 @@ class Analyzer(
 
         ApplicationContext.getBean(PsiProcessor::class.java).forEach {
             if (it.supportLanguage.contains("any")) {
-                it.registerListener(context)
+                it.registerListener()
                 psiProcessors.add(it)
             } else {
                 languages.forEach { l ->
                     if (it.supportLanguage.contains(l)) {
-                        it.registerListener(context)
+                        it.registerListener()
                         psiProcessors.add(it)
                     }
                 }
             }
-        }
-        psiProcessors.forEach {
-            it.unregisterListener()
         }
     }
 

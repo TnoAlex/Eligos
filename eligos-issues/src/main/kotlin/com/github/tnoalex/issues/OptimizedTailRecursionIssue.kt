@@ -4,22 +4,7 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 
 class OptimizedTailRecursionIssue(
     affectedFile: String,
-    val functionSignature: String
-) :
-    Issue(AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile)) {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-        if (!super.equals(other)) return false
-
-        other as OptimizedTailRecursionIssue
-
-        return functionSignature == other.functionSignature
-    }
-
-    override fun hashCode(): Int {
-        var result = super.hashCode()
-        result = 31 * result + functionSignature.hashCode()
-        return result
-    }
-}
+    functionFqName: String,
+    valueParamList: List<String>,
+    startLine: Int
+) : FunctionTypeIssue(AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile), functionFqName, valueParamList, startLine)
