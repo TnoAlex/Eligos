@@ -1,6 +1,8 @@
 package com.github.tnoalex.processor.kotlin
 
+import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
+import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.OptimizedTailRecursionIssue
 import com.github.tnoalex.processor.PsiProcessor
@@ -12,6 +14,7 @@ import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 
 @Component
+@Suitable(LaunchEnvironment.CLI)
 class TailRecursionProcessor : PsiProcessor {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
