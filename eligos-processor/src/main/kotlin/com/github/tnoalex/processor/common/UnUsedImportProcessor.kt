@@ -1,7 +1,5 @@
 package com.github.tnoalex.processor.common
 
-import com.github.tnoalex.Context
-import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
@@ -112,8 +110,9 @@ class UnUsedImportProcessor : PsiProcessor {
                 super.visitReferenceExpression(expression)
             }
         })
-
-        issues.add(UnusedImportIssue(hashSetOf(ktFile.virtualFilePath), importsRefs.map { importsMap[it]!! }))
+        if (importsRefs.isNotEmpty()){
+            issues.add(UnusedImportIssue(hashSetOf(ktFile.virtualFilePath), importsRefs.map { importsMap[it]!! }))
+        }
     }
 
     private fun resolveImports(element: PsiElement, importsRefs: HashSet<PsiElement>) {

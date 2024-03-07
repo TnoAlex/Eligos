@@ -7,6 +7,7 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ImplicitSingleExprFunctionIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
+import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
@@ -32,7 +33,7 @@ class ImplicitSingleExprFunctionProcessor : PsiProcessor {
                         ktFile.virtualFilePath,
                         function.fqName?.asString() ?: "unknown func",
                         function.valueParameters.map { it.name ?: "" },
-                        function.startOffset
+                        function.startLine
                     )
                 )
                 super.visitNamedFunction(function)

@@ -1,15 +1,19 @@
 package com.github.tnoalex.processor.kotlin
 
 import com.github.tnoalex.config.WiredConfig
+import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
+import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ComplexFunctionIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.startLine
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 @Component
+@Suitable(LaunchEnvironment.CLI)
 class KotlinMccabeComplexityProcessor : PsiProcessor {
     @WiredConfig("function.maxCyclomaticComplexity")
     private var maxCyclomaticComplexity = 0
@@ -26,7 +30,7 @@ class KotlinMccabeComplexityProcessor : PsiProcessor {
                             ktFile.virtualFilePath,
                             function.fqName?.asString() ?: "unknown func",
                             function.valueParameters.map { it.name ?: "" },
-                            function.startOffset,
+                            function.startLine,
                             currentComplexity
                         )
                     )

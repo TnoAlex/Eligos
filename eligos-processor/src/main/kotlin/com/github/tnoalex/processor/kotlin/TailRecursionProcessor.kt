@@ -1,17 +1,20 @@
 package com.github.tnoalex.processor.kotlin
 
+import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
+import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.OptimizedTailRecursionIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
-import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 
 @Component
+@Suitable(LaunchEnvironment.CLI)
 class TailRecursionProcessor : PsiProcessor {
     override val supportLanguage: List<String>
         get() = listOf("kotlin")
@@ -28,7 +31,7 @@ class TailRecursionProcessor : PsiProcessor {
                             ktFile.virtualFilePath,
                             function.fqName?.asString() ?: "unknown func",
                             function.valueParameters.map { it.name ?: "" },
-                            function.startOffset
+                            function.startLine
                         )
                     )
                 }
@@ -39,9 +42,11 @@ class TailRecursionProcessor : PsiProcessor {
 
     private fun findRecursion(function: KtNamedFunction): Boolean {
         var isNotTailRecursion = false
+        var foundReturnExpression = false
         function.acceptChildren(object : KtTreeVisitorVoid() {
             override fun visitReturnExpression(expression: KtReturnExpression) {
                 if (isNotTailRecursion) return
+                foundReturnExpression = true
                 val callExpressions = ArrayList<KtCallExpression>()
                 expression.acceptChildren(object : KtTreeVisitorVoid() {
                     override fun visitCallExpression(expression: KtCallExpression) {
@@ -65,6 +70,6 @@ class TailRecursionProcessor : PsiProcessor {
                 }
             }
         })
-        return !isNotTailRecursion
+        return !isNotTailRecursion && foundReturnExpression
     }
 }

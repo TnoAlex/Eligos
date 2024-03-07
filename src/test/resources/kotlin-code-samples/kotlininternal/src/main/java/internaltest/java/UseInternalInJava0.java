@@ -5,7 +5,10 @@ import internaltest.kotlin.InternalOpenClassInKotlin;
 
 public class UseInternalInJava0 extends InternalOpenClassInKotlin{
 
-    class UseInternalInterfaceInJava implements InternalInterfaceInKotlin{
+     class UseInternalInterfaceInJava implements InternalInterfaceInKotlin{
 
+        public class InJavaUseInternal extends InternalOpenClassInKotlin{
+
+        }
     }
 }

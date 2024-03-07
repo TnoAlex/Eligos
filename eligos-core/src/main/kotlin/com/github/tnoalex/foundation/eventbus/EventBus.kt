@@ -40,12 +40,13 @@ object EventBus {
     private fun getEventReceiver(event: Any): ArrayList<ListenerMethod> {
         val methods = ArrayList<ListenerMethod>()
         listenerMap.keys.forEach {
-            if (it.java.isAssignableFrom(event.javaClass)){
+            if (it.java.isAssignableFrom(event.javaClass)) {
                 listenerMap[it]?.let { it1 -> methods.addAll(it1) }
             }
         }
         return methods
     }
+
     private fun postEvent(wrapper: ListenerMethod, event: Any, prefix: String) {
         if (wrapper.filterEl.isBlank() || evaluateBooleanElExpression(wrapper.filterEl, wrapper.listener, event)) {
             if (prefix.isBlank() || wrapper.eventPrefix.isBlank() || wrapper.eventPrefix == prefix) {
@@ -80,8 +81,10 @@ object EventBus {
     }
 
     private fun sortEvent() {
-        listenerMap.forEach { (_, v) ->
-            v.sortByDescending { it.order }
+        for (key in listenerMap.keys) {
+            val distinct = ArrayList(listenerMap[key]!!.distinct())
+            distinct.sortByDescending { it.order }
+            listenerMap[key] = distinct
         }
     }
 
