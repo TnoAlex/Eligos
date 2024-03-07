@@ -7,6 +7,7 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.ExcessiveParamsIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.JavaRecursiveElementVisitor
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
@@ -51,7 +52,7 @@ class TooManyParametersProcessor : PsiProcessor {
                             ExcessiveParamsIssue(
                                 containingFile.virtualFile.path, name,
                                 method.parameters.map { it.toString() },
-                                method.startOffset,
+                                method.startLine,
                                 parameters.size
                             )
                         )
@@ -72,7 +73,7 @@ class TooManyParametersProcessor : PsiProcessor {
                                 containingFile.virtualFile.path,
                                 fqName?.asString() ?: "unknown func",
                                 function.valueParameters.map { it.name ?: "" },
-                                function.startOffset,
+                                function.startLine,
                                 valueParameters.size
                             )
                         )

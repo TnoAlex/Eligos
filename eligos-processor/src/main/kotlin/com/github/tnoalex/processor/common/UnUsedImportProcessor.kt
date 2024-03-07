@@ -110,8 +110,9 @@ class UnUsedImportProcessor : PsiProcessor {
                 super.visitReferenceExpression(expression)
             }
         })
-
-        issues.add(UnusedImportIssue(hashSetOf(ktFile.virtualFilePath), importsRefs.map { importsMap[it]!! }))
+        if (importsRefs.isNotEmpty()){
+            issues.add(UnusedImportIssue(hashSetOf(ktFile.virtualFilePath), importsRefs.map { importsMap[it]!! }))
+        }
     }
 
     private fun resolveImports(element: PsiElement, importsRefs: HashSet<PsiElement>) {

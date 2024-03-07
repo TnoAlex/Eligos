@@ -21,7 +21,7 @@ class InternalExposedProcessor : PsiProcessor {
         get() = listOf("kotlin", "java")
 
     @EventListener
-    private fun process(psiFile: PsiJavaFile) {
+    fun process(psiFile: PsiJavaFile) {
         psiFile.accept(javaClassVisitor)
     }
 
