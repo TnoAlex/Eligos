@@ -15,7 +15,7 @@ import com.intellij.psi.PsiMethod
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
-import org.jetbrains.kotlin.psi.psiUtil.startOffset
+import org.slf4j.LoggerFactory
 import java.util.*
 
 @Component
@@ -71,8 +71,17 @@ class TooManyParametersProcessor : PsiProcessor {
                         issues.add(
                             ExcessiveParamsIssue(
                                 containingFile.virtualFile.path,
-                                fqName?.asString() ?: "unknown func",
-                                function.valueParameters.map { it.name ?: "" },
+                                fqName?.asString() ?: let {
+                                    logger.warn("Unknown function name in ${function.containingFile.name} at line ${function.startLine}")
+                                    "unknown func"
+                                },
+                                function.valueParameters.map {
+                                    it.name ?: let {
+                                        logger.warn("Unknown parameter name in ${function.name} of file ${function.containingFile.name} " +
+                                                "at line ${function.startLine} ")
+                                        ""
+                                    }
+                                },
                                 function.startLine,
                                 valueParameters.size
                             )
@@ -82,5 +91,10 @@ class TooManyParametersProcessor : PsiProcessor {
                 super.visitNamedFunction(function)
             }
         }
+    }
+
+    companion object {
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(this::class.java)
     }
 }

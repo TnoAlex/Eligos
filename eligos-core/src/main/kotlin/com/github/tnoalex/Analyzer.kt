@@ -1,25 +1,22 @@
 package com.github.tnoalex
 
-import com.github.tnoalex.formatter.IFormatter
 import com.github.tnoalex.foundation.ApplicationContext
-import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.parser.FileDistributor
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.specs.AnalyzerSpec
 import org.slf4j.LoggerFactory
+import kotlin.system.exitProcess
 
-class Analyzer(
-    private val formatter: IFormatter,
-    private val languages: List<String?>,
-    private val launchEnvironment: LaunchEnvironment
-) {
+class Analyzer(private val analyzerSpec: AnalyzerSpec) {
     val context: Context = ApplicationContext.getExactBean(Context::class.java)!!
     private var analyzerInitialized = false
 
     fun analyze() {
         if (!analyzerInitialized) {
-            ApplicationContext.launchEnvironment = launchEnvironment
+            ApplicationContext.launchEnvironment = analyzerSpec.launchEnvironment
             ApplicationContext.solveComponentEnv()
             registerProcessorEvent()
+            setTopExceptionHandle()
         }
         context.resetContext()
         dispatchFiles()
@@ -28,7 +25,7 @@ class Analyzer(
 
     private fun dispatchFiles() {
         val fileDistributor = ApplicationContext.getBean(FileDistributor::class.java)
-            .filter { it.launchEnvironment == launchEnvironment }.toMutableList()
+            .filter { it.launchEnvironment == analyzerSpec.launchEnvironment }.toMutableList()
         val enableAllProcessors = enableAllProcessor()
         val it = fileDistributor.iterator()
         while (it.hasNext()) {
@@ -36,7 +33,7 @@ class Analyzer(
             if (enableAllProcessors) {
                 distributor.init()
             } else {
-                languages.filterNotNull().forEach { l ->
+                listOfNotNull(analyzerSpec.majorLang, analyzerSpec.withLang).forEach { l ->
                     if (distributor.supportLanguage.contains(l)) {
                         distributor.init()
                     } else {
@@ -59,7 +56,7 @@ class Analyzer(
                 it.registerListener()
                 psiProcessors.add(it)
             } else {
-                languages.forEach { l ->
+                listOfNotNull(analyzerSpec.majorLang, analyzerSpec.withLang).forEach { l ->
                     if (it.supportLanguage.contains(l)) {
                         it.registerListener()
                         psiProcessors.add(it)
@@ -70,7 +67,18 @@ class Analyzer(
     }
 
     private fun enableAllProcessor(): Boolean {
-        return languages.contains("any")
+        return listOfNotNull(analyzerSpec.majorLang, analyzerSpec.withLang).contains("any")
+    }
+
+    private fun setTopExceptionHandle() {
+        Thread.setDefaultUncaughtExceptionHandler { _, e ->
+            if (analyzerSpec.enabledDebug) {
+                throw e
+            } else {
+                logger.error("Something went wrong..... Turn on debug to see the details or contact us on github")
+                exitProcess(-1)
+            }
+        }
     }
 
     companion object {

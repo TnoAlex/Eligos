@@ -1,9 +1,7 @@
 package com.github.tnoalex
 
-
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.issues.Issue
-import java.util.*
 import kotlin.reflect.KClass
 
 @Component
@@ -22,7 +20,7 @@ class Context {
         }
     }
 
-    fun resetContext(){
+    fun resetContext() {
         issues.clear()
     }
 
