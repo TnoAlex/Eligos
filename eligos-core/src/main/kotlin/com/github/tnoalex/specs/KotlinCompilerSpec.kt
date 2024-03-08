@@ -1,6 +1,5 @@
 package com.github.tnoalex.specs
 
-import java.io.File
 import java.nio.file.Path
 
 data class KotlinCompilerSpec(

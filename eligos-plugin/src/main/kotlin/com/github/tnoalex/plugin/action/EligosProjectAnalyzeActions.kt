@@ -53,10 +53,10 @@ class EligosProjectAnalyzeActions : AnAction() {
         ApplicationContext.addBeanHandlerScanner(listOf(ideBeanSupportStructureScanner))
         val configParser = ConfigParser()
         ApplicationContext.addBean(configParser::class.java.simpleName, configParser, SimpleSingletonBeanContainer)
-        val analyzer = createAnalyzer(project)
 
         ApplicationContext.currentClassLoader = classLoader
         ApplicationContext.init()
+        val analyzer = createAnalyzer(project)
         ApplicationContext.addBean(analyzer::class.java.simpleName, analyzer, SimpleSingletonBeanContainer)
     }
 
