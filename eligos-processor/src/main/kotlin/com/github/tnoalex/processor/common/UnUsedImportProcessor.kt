@@ -10,7 +10,6 @@ import com.intellij.psi.*
 import com.intellij.psi.impl.compiled.ClsFileImpl
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.analysis.decompiler.psi.file.KtDecompiledFile
-import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.isInImportDirective
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
@@ -21,7 +20,7 @@ import java.util.*
 class UnUsedImportProcessor : PsiProcessor {
     private val issues = LinkedList<UnusedImportIssue>()
     override val supportLanguage: List<String>
-        get() = listOf("java","kotlin")
+        get() = listOf("java", "kotlin")
 
     @EventListener
     fun process(psiFile: PsiFile) {
@@ -45,10 +44,6 @@ class UnUsedImportProcessor : PsiProcessor {
 
         importList.importStatements.forEach {
             it.importReference?.resolve()?.let { r ->
-                if (r is KtLightElement<*, *>) {
-                    importRefs.add(r.kotlinOrigin!!)
-                    importsMap[r.kotlinOrigin!!] = it.text.removePrefix("import").trim()
-                }
                 importRefs.add(r)
                 importsMap[r] = it.text.removePrefix("import").trim()
             }
@@ -58,15 +53,14 @@ class UnUsedImportProcessor : PsiProcessor {
                 if (PsiTreeUtil.getParentOfType(reference, PsiPackageStatement::class.java) != null) return
                 if (PsiTreeUtil.getParentOfType(reference, PsiImportStatement::class.java) != null) return
                 reference.resolve()?.let {
-                    if (it is KtLightElement<*, *>) {
-                        resolveImports(it.kotlinOrigin!!, importRefs)
-                    } else resolveImports(it, importRefs)
+                    resolveImports(it, importRefs)
                 }
                 super.visitReferenceElement(reference)
             }
         })
-
-        issues.add(UnusedImportIssue(hashSetOf(javaFile.virtualFile.path), importRefs.map { importsMap[it]!! }))
+        if (importRefs.isNotEmpty()) {
+            issues.add(UnusedImportIssue(hashSetOf(javaFile.virtualFile.path), importRefs.map { importsMap[it]!! }))
+        }
     }
 
     private fun findKotlinUseLessImport(ktFile: KtFile) {
@@ -110,7 +104,7 @@ class UnUsedImportProcessor : PsiProcessor {
                 super.visitReferenceExpression(expression)
             }
         })
-        if (importsRefs.isNotEmpty()){
+        if (importsRefs.isNotEmpty()) {
             issues.add(UnusedImportIssue(hashSetOf(ktFile.virtualFilePath), importsRefs.map { importsMap[it]!! }))
         }
     }

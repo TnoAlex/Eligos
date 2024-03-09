@@ -10,5 +10,6 @@ data class AnalyzerSpec(
     val enabledDebug: Boolean = false,
     val kotlinCompilerSpec: KotlinCompilerSpec?,
     val formatterSpec: FormatterSpec,
-    val launchEnvironment: LaunchEnvironment
+    val launchEnvironment: LaunchEnvironment,
+    val exceptionHandler: ((Thread, Throwable) -> Unit)? = null
 )

@@ -9,12 +9,12 @@ import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
 val PsiElement.startLine
     get() = lazy {
-        fileDocumentManager.getDocument(this.containingFile.virtualFile)?.getLineNumber(this.startOffset)?.and(1) ?: -1
+        fileDocumentManager.getDocument(this.containingFile.virtualFile)?.getLineNumber(this.startOffset) ?: -1
     }.value
 
 val PsiElement.endLine
     get() = lazy {
-        fileDocumentManager.getDocument(this.containingFile.virtualFile)?.getLineNumber(this.endOffset)?.and(1) ?: -1
+        fileDocumentManager.getDocument(this.containingFile.virtualFile)?.getLineNumber(this.endOffset) ?: -1
     }.value
 
 val KtFile.lineCount

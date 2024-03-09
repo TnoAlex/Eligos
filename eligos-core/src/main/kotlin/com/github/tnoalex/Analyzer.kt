@@ -71,12 +71,16 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
     }
 
     private fun setTopExceptionHandle() {
-        Thread.setDefaultUncaughtExceptionHandler { _, e ->
+        Thread.setDefaultUncaughtExceptionHandler { t, e ->
             if (analyzerSpec.enabledDebug) {
                 throw e
             } else {
-                logger.error("Something went wrong..... Turn on debug to see the details or contact us on github")
-                exitProcess(-1)
+                if (analyzerSpec.exceptionHandler == null) {
+                    logger.error("Something went wrong..... Turn on debug to see the details or contact us on github")
+                    exitProcess(-1)
+                } else {
+                    analyzerSpec.exceptionHandler.invoke(t, e)
+                }
             }
         }
     }
