@@ -8,6 +8,7 @@ plugins {
 dependencies {
     api(project(":eligos-core"))
     runtimeOnly(project(":eligos-processor"))
+    runtimeOnly(project(":eligos-formatter"))
     api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
     implementation(project(":kt-references-analysis:analysis-api"))
     implementation(project(":kt-references-analysis:analysis-api-fe10"))

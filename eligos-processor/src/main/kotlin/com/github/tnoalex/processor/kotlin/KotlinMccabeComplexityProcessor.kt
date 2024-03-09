@@ -10,7 +10,7 @@ import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.startLine
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.startOffset
+import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
@@ -28,8 +28,19 @@ class KotlinMccabeComplexityProcessor : PsiProcessor {
                     context.reportIssue(
                         ComplexFunctionIssue(
                             ktFile.virtualFilePath,
-                            function.fqName?.asString() ?: "unknown func",
-                            function.valueParameters.map { it.name ?: "" },
+                            function.fqName?.asString() ?: let {
+                                logger.warn("Unknown function name in file ${function.containingFile.name} at line ${function.startLine}")
+                                "unknown func"
+                            },
+                            function.valueParameters.map {
+                                it.name ?: let {
+                                    logger.warn(
+                                        "Unknown parameter in function ${function.name} of file ${function.containingFile.name} " +
+                                                "at line ${function.startLine}"
+                                    )
+                                    ""
+                                }
+                            },
                             function.startLine,
                             currentComplexity
                         )
@@ -89,5 +100,10 @@ class KotlinMccabeComplexityProcessor : PsiProcessor {
             super.visitDoWhileExpression(expression)
         }
 
+    }
+
+    companion object {
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(this::class.java)
     }
 }

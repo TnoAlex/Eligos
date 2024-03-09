@@ -2,12 +2,14 @@ package com.github.tnoalex.plugin.action
 
 import com.github.tnoalex.Analyzer
 import com.github.tnoalex.config.ConfigParser
-import com.github.tnoalex.formatter.json.JsonFormatter
+import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.plugin.bean.IdeBeanSupportStructureScanner
 import com.github.tnoalex.plugin.parser.IdePluginFileDistributor
+import com.github.tnoalex.specs.AnalyzerSpec
+import com.github.tnoalex.specs.FormatterSpec
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -16,6 +18,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import java.io.File
 
 
 class EligosProjectAnalyzeActions : AnAction() {
@@ -33,7 +36,7 @@ class EligosProjectAnalyzeActions : AnAction() {
 
     private fun startEligosTask(project: Project) {
         if (!ApplicationContext.isInitialized) {
-            initEligosApplication()
+            initEligosApplication(project)
             val idePluginFileDistributor =
                 ApplicationContext.getExactBean(IdePluginFileDistributor::class.java) ?: return
             idePluginFileDistributor.initPsiManager(project)
@@ -41,7 +44,7 @@ class EligosProjectAnalyzeActions : AnAction() {
         ApplicationContext.getExactBean(Analyzer::class.java)!!.analyze()
     }
 
-    private fun initEligosApplication() {
+    private fun initEligosApplication(project: Project) {
         val classLoader = PluginManager.getPlugins().first { it.name == "Eligos" }.pluginClassLoader
             ?: throw RuntimeException("Can not find plugin clas loader")
         val ideBeanSupportStructureScanner = IdeBeanSupportStructureScanner(classLoader)
@@ -53,7 +56,24 @@ class EligosProjectAnalyzeActions : AnAction() {
 
         ApplicationContext.currentClassLoader = classLoader
         ApplicationContext.init()
-        val analyzer = Analyzer(JsonFormatter(), listOf("java", "kotlin"), LaunchEnvironment.IDE_PLUGIN)
+        val analyzer = createAnalyzer(project)
         ApplicationContext.addBean(analyzer::class.java.simpleName, analyzer, SimpleSingletonBeanContainer)
+    }
+
+    private fun createAnalyzer(project: Project): Analyzer {
+        return Analyzer(
+            AnalyzerSpec(
+                "kotlin",
+                "java",
+                extendRulePath = project.basePath?.let { File(it) },
+                kotlinCompilerSpec = null,
+                formatterSpec = FormatterSpec(
+                    project.basePath?.let { File(it).toPath() } ?: File(".").toPath(),
+                    project.name,
+                    FormatterTypeEnum.HTML,
+                ),
+                launchEnvironment = LaunchEnvironment.IDE_PLUGIN
+            )
+        )
     }
 }

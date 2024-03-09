@@ -13,6 +13,7 @@ import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.lexer.KtTokens
+import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
@@ -33,7 +34,10 @@ class InternalExposedProcessor : PsiProcessor {
                 .filter { it.kotlinOrigin != null && it.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD) }
             if (superClass !is KtLightClass && interfaces.isEmpty()) return
             if (superClass is KtLightClass) {
-                superClass.kotlinOrigin ?: return
+                superClass.kotlinOrigin ?: let {
+                    logger.warn("Unknown kotlin source file during visit ${aClass.containingFile.name}")
+                    return
+                }
                 if (!superClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)) return
             }
             if (!aClass.hasModifier(JvmModifier.PUBLIC)) return
@@ -49,11 +53,19 @@ class InternalExposedProcessor : PsiProcessor {
             context.reportIssue(
                 InternalExposedIssue(
                     (filePaths + interfaces.map {
-                        it.kotlinOrigin?.fqName?.asString() ?: "unknown kotlin interface"
+                        it.kotlinOrigin?.containingFile?.name ?: let {
+                            logger.warn("Unknown kotlin source file during visit ${aClass.containingFile.name}")
+                            "unknown kotlin file"
+                        }
                     }).toHashSet(),
-                    aClass.qualifiedName ?: "unknown java class",
+                    aClass.qualifiedName ?: let{
+                        logger.warn("Unknown java class name during visit ${aClass.containingFile.name}")
+                        "unknown java class"},
                     superClassName,
-                    interfaces.map { it.kotlinOrigin?.fqName?.asString() ?: "unknown kotlin interface" }
+                    interfaces.map { it.kotlinOrigin?.fqName?.asString() ?: let{
+                        logger.warn("Unknown kotlin interface name during visit ${aClass.containingFile.name}")
+                        "unknown kotlin interface"}
+                    }
                 )
             )
             super.visitClass(aClass)
@@ -66,5 +78,10 @@ class InternalExposedProcessor : PsiProcessor {
         else {
             parent.hasModifier(JvmModifier.PUBLIC) && isAllPublic(parent)
         }
+    }
+
+    companion object {
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(this::class.java)
     }
 }

@@ -1,9 +1,7 @@
 package com.github.tnoalex
 
-import com.github.tnoalex.foundation.ApplicationContext
-import com.github.tnoalex.foundation.bean.container.DefaultBeanContainerScanner
-import com.github.tnoalex.foundation.bean.handler.DefaultBeanHandlerScanner
-import com.github.tnoalex.foundation.bean.register.DefaultBeanRegisterDistributor
+
+import com.github.tnoalex.utils.StdOutErrWrapper
 import java.util.*
 
 fun main(args: Array<String>) {

@@ -11,6 +11,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
+import org.slf4j.LoggerFactory
 
 
 @Component
@@ -29,8 +30,17 @@ class TailRecursionProcessor : PsiProcessor {
                     context.reportIssue(
                         OptimizedTailRecursionIssue(
                             ktFile.virtualFilePath,
-                            function.fqName?.asString() ?: "unknown func",
-                            function.valueParameters.map { it.name ?: "" },
+                            function.fqName?.asString() ?: let {
+                                logger.warn("Unknown function name in ${ktFile.name} at line ${function.startLine}")
+                                "unknown func"
+                            },
+                            function.valueParameters.map {
+                                it.name ?: let {
+                                    logger.warn("Unknown parameter name in ${function.name} of file ${function.containingFile.name}" +
+                                            " at line ${function.startLine}")
+                                    ""
+                                }
+                            },
                             function.startLine
                         )
                     )
@@ -71,5 +81,10 @@ class TailRecursionProcessor : PsiProcessor {
             }
         })
         return !isNotTailRecursion && foundReturnExpression
+    }
+
+    companion object {
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(this::class.java)
     }
 }
