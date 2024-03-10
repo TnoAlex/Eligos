@@ -1,6 +1,7 @@
 package com.github.tnoalex.issues
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.specs.FormatterSpec
 
 
 class InternalExposedIssue(
@@ -8,7 +9,7 @@ class InternalExposedIssue(
     val javaClassFqName: String,
     val kotlinClassFqName: String?,
     val kotlinInterfacesFqNames: List<String>?
-) : Issue(AnalysisHierarchyEnum.CLASS, affectedFiles) {
+) : Issue(AnalysisHierarchyEnum.CLASS, affectedFiles,"Internal Exposed") {
     val isExtend: Boolean
         get() = kotlinClassFqName != null
 
@@ -35,5 +36,14 @@ class InternalExposedIssue(
         result = 31 * result + (kotlinClassFqName?.hashCode() ?: 0)
         result = 31 * result + (kotlinInterfacesFqNames?.hashCode() ?: 0)
         return result
+    }
+
+    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
+        val rawMap = super.unwrap(spec)
+        rawMap["javaClassFqName"] = javaClassFqName
+        kotlinClassFqName?.let { rawMap["kotlinClassFqName"] = it }
+        kotlinInterfacesFqNames?.let { rawMap["kotlinInterfacesFqNames"] = it }
+        rawMap["exposeType"] = if (isExtend) "extend" else "implement"
+        return rawMap
     }
 }

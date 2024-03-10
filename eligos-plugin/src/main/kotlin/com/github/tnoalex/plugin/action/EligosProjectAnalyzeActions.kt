@@ -68,6 +68,7 @@ class EligosProjectAnalyzeActions : AnAction() {
                 extendRulePath = project.basePath?.let { File(it) },
                 kotlinCompilerSpec = null,
                 formatterSpec = FormatterSpec(
+                    project.basePath ?: "",
                     project.basePath?.let { File(it).toPath() } ?: File(".").toPath(),
                     project.name,
                     FormatterTypeEnum.HTML,

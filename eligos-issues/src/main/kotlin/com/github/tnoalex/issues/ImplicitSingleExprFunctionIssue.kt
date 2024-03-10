@@ -7,4 +7,4 @@ class ImplicitSingleExprFunctionIssue(
     functionFqName: String,
     valueParamList: List<String>,
     startLine: Int
-) : FunctionTypeIssue(AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile), functionFqName, valueParamList, startLine)
+) : FunctionTypeIssue(AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile), functionFqName, valueParamList, startLine,"Implicit Single Expression Function")

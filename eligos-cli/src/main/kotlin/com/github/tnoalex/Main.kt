@@ -1,7 +1,5 @@
 package com.github.tnoalex
 
-
-import com.github.tnoalex.utils.StdOutErrWrapper
 import java.util.*
 
 fun main(args: Array<String>) {

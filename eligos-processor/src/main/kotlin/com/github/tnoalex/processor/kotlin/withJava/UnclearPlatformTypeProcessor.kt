@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.UnclearPlatformType
+import com.github.tnoalex.issues.UnclearPlatformTypeIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
@@ -36,7 +36,7 @@ class UnclearPlatformTypeProcessor : PsiProcessor {
             if (propertyType.lowerIfFlexible() != propertyType.upperIfFlexible()) {
                 //found platform type
                 context.reportIssue(
-                    UnclearPlatformType(
+                    UnclearPlatformTypeIssue(
                         property.containingFile.virtualFile.path,
                         property.name ?: let {
                             logger.warn("unknown property name in file ${property.containingFile.name} at line ${property.startLine}")
@@ -57,6 +57,6 @@ class UnclearPlatformTypeProcessor : PsiProcessor {
 
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(this::class.java)
+        private val logger = LoggerFactory.getLogger(UnclearPlatformTypeProcessor::class.java)
     }
 }

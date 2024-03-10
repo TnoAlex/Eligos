@@ -1,13 +1,14 @@
 package com.github.tnoalex.issues
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.specs.FormatterSpec
 
 class ProvideImmutableCollectionIssue(
     affectedFiles: HashSet<String>,
     val providerKtFunFqName: String,
     val startLine: Int,
     val useJavaClassFqName: String
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, affectedFiles) {
+) : Issue(AnalysisHierarchyEnum.EXPRESSION, affectedFiles,"Provide Immutable Collection") {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -28,5 +29,13 @@ class ProvideImmutableCollectionIssue(
         result = 31 * result + startLine
         result = 31 * result + useJavaClassFqName.hashCode()
         return result
+    }
+
+    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
+        val rawMap = super.unwrap(spec)
+        rawMap["useJavaClassFqName"] = useJavaClassFqName
+        rawMap["providerKtFunFqName"] = providerKtFunFqName
+        rawMap["startLine"] = startLine
+        return  rawMap
     }
 }

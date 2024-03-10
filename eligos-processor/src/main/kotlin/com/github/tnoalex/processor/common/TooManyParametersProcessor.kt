@@ -95,6 +95,6 @@ class TooManyParametersProcessor : PsiProcessor {
 
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(this::class.java)
+        private val logger = LoggerFactory.getLogger(TooManyParametersProcessor::class.java)
     }
 }

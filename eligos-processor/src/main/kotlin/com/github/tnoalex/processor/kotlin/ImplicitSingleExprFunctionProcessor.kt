@@ -56,6 +56,6 @@ class ImplicitSingleExprFunctionProcessor : PsiProcessor {
 
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(this::class.java)
+        private val logger = LoggerFactory.getLogger(ImplicitSingleExprFunctionProcessor::class.java)
     }
 }

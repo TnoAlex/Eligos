@@ -60,7 +60,7 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
 
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(this::class.java)
+        private val logger = LoggerFactory.getLogger(ProvideImmutableCollectionProcessor::class.java)
 
         private val KOTLIN_IMMUTABLE_FQNAME =
             listOf("kotlin.collections.List", "kotlin.collections.Set", "kotlin.collections.Map")
