@@ -39,7 +39,7 @@ class Reporter(private val formatterSpec: FormatterSpec) {
     }
 
     private fun fileSuffix(): String {
-        return BigInteger.valueOf(System.currentTimeMillis()/1000).toString(16)
+        return BigInteger.valueOf(System.currentTimeMillis() / 1000).toString(16)
     }
 
     private fun summary(): HashMap<String, out Any> {
@@ -68,7 +68,7 @@ class Reporter(private val formatterSpec: FormatterSpec) {
         fun getFormatter(type: FormatterTypeEnum): IFormatter {
             return when (type) {
                 FormatterTypeEnum.JSON -> JsonFormatter()
-                FormatterTypeEnum.XML -> TODO()
+                FormatterTypeEnum.XML -> XmlFormatter()
                 FormatterTypeEnum.HTML -> HtmlFormatter()
                 FormatterTypeEnum.TEXT -> TextFormatter()
                 else -> throw RuntimeException("Can not found formatter with type $type")
