@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.OptimizedTailRecursionIssue
+import com.github.tnoalex.issues.kotlin.OptimizedTailRecursionIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.util.PsiTreeUtil

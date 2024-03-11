@@ -1,3 +1,4 @@
+import java.time.ZonedDateTime
 
 dependencies {
     api("org.jgrapht:jgrapht-core:1.5.2")
@@ -9,5 +10,24 @@ dependencies {
     implementation("org.reflections:reflections:0.10.2")
 }
 
+tasks.register("writeProperties") {
+    doLast {
+        val properties = mapOf(
+            "EligosVersion" to project.version,
+            "EligosBuildTime" to ZonedDateTime.now()
+        )
 
+        val content = properties.entries.joinToString("\n") { (key, value) ->
+            "$key=$value"
+        }
 
+        val resourceDir =  sourceSets.main.get().resources.srcDirs.first()
+        val propertyFile = File(resourceDir, "eligos-meta.properties")
+
+        propertyFile.writeText(content)
+    }
+}
+
+tasks.getByName("compileJava") {
+    dependsOn("writeProperties")
+}

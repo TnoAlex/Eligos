@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.InternalExposedIssue
+import com.github.tnoalex.issues.kotlin.withJava.InternalExposedIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.intellij.lang.jvm.JvmModifier
 import com.intellij.psi.JavaRecursiveElementVisitor

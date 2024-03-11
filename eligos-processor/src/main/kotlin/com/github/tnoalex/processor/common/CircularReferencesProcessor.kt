@@ -1,13 +1,11 @@
 package com.github.tnoalex.processor.common
 
-import com.github.tnoalex.Context
 import com.github.tnoalex.events.AllFileParsedEvent
-import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.CircularReferencesIssue
+import com.github.tnoalex.issues.common.CircularReferencesIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil

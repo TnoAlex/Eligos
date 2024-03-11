@@ -1,6 +1,7 @@
-package com.github.tnoalex.issues
+package com.github.tnoalex.issues.common
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 import com.github.tnoalex.utils.relativePath
 import com.github.tnoalex.utils.toAdjacencyMatrices

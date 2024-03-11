@@ -1,6 +1,7 @@
-package com.github.tnoalex.issues
+package com.github.tnoalex.issues.kotlin
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.FunctionTypeIssue
 
 class ImplicitSingleExprFunctionIssue(
     affectedFile: String,

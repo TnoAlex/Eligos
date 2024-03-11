@@ -1,6 +1,7 @@
-package com.github.tnoalex.issues
+package com.github.tnoalex.issues.kotlin.withJava
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 
 class UnclearPlatformTypeIssue(

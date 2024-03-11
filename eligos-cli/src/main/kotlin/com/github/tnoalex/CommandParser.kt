@@ -7,7 +7,6 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
@@ -117,11 +116,14 @@ class CommandParser : CliktCommand() {
 
     private val debug by option("-D", "--debug", help = "Out put exception stack").flag(default = false)
 
+    private val noReport by option("-Nr", "--no-report", help = "Disable reporter (debug flag)").flag(default = false)
+
     override fun run() {
         val analyzerSpec = buildSpec()
         initApplication(analyzerSpec)
         StdOutErrWrapper.init()
         Analyzer(analyzerSpec).analyze()
+        if (debug && noReport) return
         Reporter(analyzerSpec.formatterSpec).report()
     }
 

@@ -6,7 +6,10 @@ import com.github.tnoalex.specs.FormatterSpec
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileOutputStream
+import java.io.InputStream
 import java.math.BigInteger
+import java.time.ZonedDateTime
+import java.util.*
 
 class Reporter(private val formatterSpec: FormatterSpec) {
 
@@ -46,7 +49,8 @@ class Reporter(private val formatterSpec: FormatterSpec) {
         logger.info("Build summary")
         val context = ApplicationContext.getExactBean(Context::class.java)!!
         val summary = LinkedHashMap<String, Any>()
-        val statistics = HashMap<String, HashMap<String, out Any>>()
+        summary["MetaInfo"] = getMetaInfo()
+        val statistics = LinkedHashMap<String, HashMap<String, out Any>>()
         context.stats.forEach {
             statistics[it::class.simpleName.toString()] = it.unwrap(formatterSpec)
         }
@@ -62,6 +66,20 @@ class Reporter(private val formatterSpec: FormatterSpec) {
         summary["Statistics"] = statistics
         summary["Issues"] = issues
         return summary
+    }
+
+    private fun getMetaInfo(): LinkedHashMap<String, Any> {
+        val stream = ApplicationContext.currentClassLoader.getResourceAsStream("eligos-meta.properties") ?: InputStream.nullInputStream()
+        val properties = Properties()
+        properties.load(stream)
+        val metaInfo = LinkedHashMap<String, Any>()
+        properties.toMap().forEach { (k, v) ->
+            metaInfo[k.toString()] = v
+        }
+        metaInfo["Create Time"] = ZonedDateTime.now().toString()
+        metaInfo["Source Base Path"] = formatterSpec.srcPathPrefix
+        stream.close()
+        return metaInfo
     }
 
     companion object {
