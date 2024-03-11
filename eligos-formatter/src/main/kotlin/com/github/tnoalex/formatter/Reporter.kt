@@ -7,8 +7,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileOutputStream
 import java.math.BigInteger
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 
 class Reporter(private val formatterSpec: FormatterSpec) {
 
@@ -27,28 +25,21 @@ class Reporter(private val formatterSpec: FormatterSpec) {
 
     private fun write(formatted: String) {
         logger.info("Writing")
-        val fileName = formatterSpec.resultOutPrefix.ifBlank { "result" } + "_" + fileSuffix(formatted)
+        val fileName = formatterSpec.resultOutPrefix.ifBlank { "result" } + "_" + fileSuffix()
         val file =
             File(formatterSpec.resultOutPath.toFile().path + File.separatorChar + fileName + "." + currentFormatter.fileExtension)
         if (!file.exists()) {
             if (!file.createNewFile())
                 throw RuntimeException("Can not create report")
         }
+        logger.info("Result will be wrote in ${file.absolutePath}")
         val fileOutputStream = FileOutputStream(file)
-        fileOutputStream.write(formatted.toByteArray())
+        fileOutputStream.write(formatted.toByteArray(Charsets.UTF_8))
         fileOutputStream.close()
     }
 
-    private fun fileSuffix(file: String): String {
-        var suffix = ""
-        try {
-            val md5 = MessageDigest.getInstance("MD5")
-            md5.update(file.toByteArray())
-            suffix = BigInteger(1, md5.digest()).toString(16).substring(0..7)
-        } catch (e: NoSuchAlgorithmException) {
-            logger.warn("Can not compute report suffix")
-        }
-        return suffix
+    private fun fileSuffix(): String {
+        return BigInteger.valueOf(System.currentTimeMillis()/1000).toString(16)
     }
 
     private fun summary(): HashMap<String, out Any> {
@@ -75,10 +66,13 @@ class Reporter(private val formatterSpec: FormatterSpec) {
 
     companion object {
         fun getFormatter(type: FormatterTypeEnum): IFormatter {
-            if (type == FormatterTypeEnum.JSON) {
-                return JsonFormatter()
+            return when (type) {
+                FormatterTypeEnum.JSON -> JsonFormatter()
+                FormatterTypeEnum.XML -> TODO()
+                FormatterTypeEnum.HTML -> HtmlFormatter()
+                FormatterTypeEnum.TEXT -> TextFormatter()
+                else -> throw RuntimeException("Can not found formatter with type $type")
             }
-            throw RuntimeException("Can not found formatter with type $type")
         }
 
         @JvmStatic

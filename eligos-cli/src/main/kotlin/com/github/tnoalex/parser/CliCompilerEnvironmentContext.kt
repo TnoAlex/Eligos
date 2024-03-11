@@ -40,6 +40,7 @@ import org.jetbrains.kotlin.references.fe10.base.KtFe10KotlinReferenceProviderCo
 import org.jetbrains.kotlin.references.fe10.base.KtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
+import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.PrintStream
 import kotlin.io.path.isDirectory
@@ -82,6 +83,7 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         configuration: CompilerConfiguration = CompilerConfiguration(),
         printStream: PrintStream = System.err,
     ): KotlinCoreEnvironment {
+        logger.info("Create kotlin core environment")
         setIdeaIoUseFallback()
         configuration.put(
             CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY,
@@ -112,6 +114,7 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
     }
 
     private fun createCompilerConfiguration(): CompilerConfiguration {
+        logger.info("Create compiler environment")
         val javaFiles = with(compilerSpec.srcPath) {
             toFile().walk()
                 .filter { it.isFile && it.extension.equals("java", true) }
@@ -168,7 +171,7 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         environment: KotlinCoreEnvironment,
         files: List<KtFile>
     ): BindingContext {
-
+        logger.info("Analyzing... Please waiting")
         val analyzer = AnalyzerWithCompilerReport(
             MyMessageCollector(),
             environment.configuration.languageVersionSettings,
@@ -186,5 +189,9 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         }
 
         return analyzer.analysisResult.bindingContext
+    }
+
+    companion object{
+        private val logger = LoggerFactory.getLogger(CliCompilerEnvironmentContext::class.java)
     }
 }
