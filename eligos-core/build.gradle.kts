@@ -22,10 +22,7 @@ tasks.register("writeProperties") {
             "$key=$value"
         }
 
-        val resourceDir =  File(sourceSets.main.get().output.resourcesDir!!.path.removeSuffix("main"))
-        if (!resourceDir.exists()){
-            resourceDir.createDirectory()
-        }
+        val resourceDir =  sourceSets.main.get().resources.srcDirs.first()
         val propertyFile = File(resourceDir, "eligos-meta.properties")
         if(!propertyFile.exists()){
             propertyFile.createNewFile()

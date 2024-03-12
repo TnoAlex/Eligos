@@ -4,10 +4,7 @@ import com.github.tnoalex.Context
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.specs.FormatterSpec
 import org.slf4j.LoggerFactory
-import java.io.File
-import java.io.FileOutputStream
 import java.io.InputStream
-import java.math.BigInteger
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -17,32 +14,13 @@ class Reporter(private val formatterSpec: FormatterSpec) {
     fun report() {
         val summary = summary()
         val formatted = format(summary)
-        write(formatted)
+        currentFormatter.write(formatted, formatterSpec)
         logger.info("All done")
     }
 
     private fun format(report: Any): String {
         logger.info("Formatting")
         return currentFormatter.format(report)
-    }
-
-    private fun write(formatted: String) {
-        logger.info("Writing")
-        val fileName = formatterSpec.resultOutPrefix.ifBlank { "result" } + "_" + fileSuffix()
-        val file =
-            File(formatterSpec.resultOutPath.toFile().path + File.separatorChar + fileName + "." + currentFormatter.fileExtension)
-        if (!file.exists()) {
-            if (!file.createNewFile())
-                throw RuntimeException("Can not create report")
-        }
-        logger.info("Result will be wrote in ${file.absolutePath}")
-        val fileOutputStream = FileOutputStream(file)
-        fileOutputStream.write(formatted.toByteArray(Charsets.UTF_8))
-        fileOutputStream.close()
-    }
-
-    private fun fileSuffix(): String {
-        return BigInteger.valueOf(System.currentTimeMillis() / 1000).toString(16)
     }
 
     private fun summary(): HashMap<String, out Any> {
@@ -69,7 +47,8 @@ class Reporter(private val formatterSpec: FormatterSpec) {
     }
 
     private fun getMetaInfo(): LinkedHashMap<String, Any> {
-        val stream = ApplicationContext.currentClassLoader.getResourceAsStream("eligos-meta.properties") ?: InputStream.nullInputStream()
+        val stream = ApplicationContext.currentClassLoader.getResourceAsStream("eligos-meta.properties")
+            ?: InputStream.nullInputStream()
         val properties = Properties()
         properties.load(stream)
         val metaInfo = LinkedHashMap<String, Any>()

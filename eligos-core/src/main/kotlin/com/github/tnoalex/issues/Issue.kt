@@ -30,7 +30,7 @@ abstract class Issue(
 
     override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
         val rawMap = LinkedHashMap<String, Any>()
-        rawMap["issue"] = issueName
+        rawMap["issueName"] = issueName
         rawMap["affectedFiles"] = affectedFiles.map { relativePath(spec.srcPathPrefix, it) }
         rawMap["layer"] = layer.name
         return rawMap

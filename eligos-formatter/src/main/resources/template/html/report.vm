@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Draco is free PSD &amp; HTML template by @afnizarnur">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="css/kube.min.css"/>
+    <link rel="stylesheet" href="css/custom.min.css"/>
+    <link rel="shortcut icon" href="img/favicon.png"/>
+    <link href='https://fonts.googleapis.com/css?family=Playfair+Display+SC:700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Lato:400,700' rel='stylesheet' type='text/css'>
+    <style>
+        .intro h1:before {
+            content: 'ELIGOS';
+        }
+    </style>
+</head>
+<body>
+<!-- Introduction -->
+<div class="intro section" id="about">
+    <div class="container">
+        <!--		<p>Hi, I’m Draco the Dragon</p>-->
+        <div class="units-row units-split wrap">
+            <div class="unit-20">
+            </div>
+            <div class="unit-80">
+                <h1>Report<br><span id="typed"></span></h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="work section second" id="metainfo">
+    <div class="container">
+        <h1>Meta Info</h1>
+        <table style="color: #8c8c8c;font-size: medium;">
+            #foreach($key in $MetaInfo.keySet())
+                <tr>
+                    <td>$key</td>
+                    <td>$MetaInfo.get($key)</td>
+                </tr>
+            #end
+        </table>
+    </div>
+</div>
+
+
+<div class="work section second" id="statistics">
+    <div class="container">
+        <h1>Statistics</h1>
+        #foreach($key in $Statistics.keySet())
+            <ul class="work-list">
+                <li style="font-size: large">$key</li>
+                <li>
+                    <table style="color: #8c8c8c;font-size: medium;">
+                        #set($StatsInfo = $Statistics.get($key))
+                        #foreach($sk in $StatsInfo.keySet())
+                        <tr>
+                            <td>$sk</td>
+                            <td>$StatsInfo.get($sk)</td>
+                        </tr>
+                        #end
+                    </table>
+                </li>
+            </ul>
+        #end
+    </div>
+</div>
+
+<div class="work section second" id="issues">
+    <div class="container">
+        <h1>Issues</h1>
+        #foreach($key in $Issues.keySet())
+        <ul class="work-list">
+            <li style="font-size: large;color: #0f0f0f">$key</li>
+            #set($IssueList = $Issues.get($key))
+            #foreach($ik in $IssueList)
+            <li>
+                <table style="color: #8c8c8c;font-size: medium;margin-top: 3px">
+                    #foreach($sk in $ik.keySet())
+                        <tr>
+                            <td>$sk</td>
+                            <td>$ik.get($sk)</td>
+                        </tr>
+                    #end
+                </table>
+            </li>
+            #end
+        </ul>
+        #end
+    </div>
+</div>
+
+<!-- Quote -->
+<div class="quote">
+    <div class="container text-centered">
+        <h1>Try to do better.</h1>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+        <div class="units-row">
+            <div class="unit-50">
+                <p>Copyright &copy; 2024.All rights reserved.</p>
+            </div>
+
+        </div>
+    </div>
+</footer>
+</body>
+</html>
