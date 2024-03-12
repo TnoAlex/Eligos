@@ -4,6 +4,7 @@ import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.specs.FormatterSpec
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
+import org.slf4j.LoggerFactory
 import java.io.*
 
 class HtmlFormatter : IFormatter {
@@ -27,8 +28,10 @@ class HtmlFormatter : IFormatter {
     override fun write(formatted: String, spec: FormatterSpec) {
         val dirName = spec.resultOutPrefix.ifBlank { "result" } + "_" + fileSuffix()
         val filePath = spec.resultOutPath.toFile().path + File.separatorChar + dirName
+        logger.info("Write report resources")
         writeCss(filePath)
         writeImg(filePath)
+        logger.info("Report will be wrote in $dirName ")
         val fileOutputStream = FileOutputStream(File(dirName + File.separatorChar + "report." + fileExtension))
         fileOutputStream.write(formatted.toByteArray(Charsets.UTF_8))
         fileOutputStream.close()
@@ -74,5 +77,6 @@ class HtmlFormatter : IFormatter {
         private const val TEMPLATE_PATH = "template/html"
         private const val CSS_PREFIX = "/css"
         private const val IMG_PREFIX = "/img"
+        private val logger = LoggerFactory.getLogger(HtmlFormatter::class.java)
     }
 }

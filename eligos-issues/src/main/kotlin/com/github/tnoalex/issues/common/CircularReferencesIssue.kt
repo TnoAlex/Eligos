@@ -33,10 +33,12 @@ class CircularReferencesIssue(
         val rawMap = super.unwrap(spec)
         val (node, matrix) = refGraph.toAdjacencyMatrices()
         val nodeMap = HashMap<Int, String>()
+        val sb = StringBuilder()
+        sb.append("Node Map").append("\n")
         node.forEach { (k, v) ->
             nodeMap[v] = relativePath(spec.srcPathPrefix, k)
         }
-        rawMap["refGraph"] = mapOf("nodeMap" to nodeMap, "graph" to matrix)
+        rawMap["refGraph"] = mapOf("nodeMap" to nodeMap, "matrix" to matrix)
         return rawMap
     }
 }
