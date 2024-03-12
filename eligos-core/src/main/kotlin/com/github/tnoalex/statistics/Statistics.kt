@@ -1,7 +1,8 @@
 package com.github.tnoalex.statistics
 
-interface Statistics {
+import com.github.tnoalex.formatter.Formatable
+
+interface Statistics : Formatable {
     var fileNumber: Int
     var lineNumber: Int
-    fun unwrap(): Map<String, String>
 }

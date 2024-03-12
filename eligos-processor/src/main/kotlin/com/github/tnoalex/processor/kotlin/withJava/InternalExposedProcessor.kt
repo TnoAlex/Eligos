@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.InternalExposedIssue
+import com.github.tnoalex.issues.kotlin.withJava.InternalExposedIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.intellij.lang.jvm.JvmModifier
 import com.intellij.psi.JavaRecursiveElementVisitor
@@ -53,7 +53,7 @@ class InternalExposedProcessor : PsiProcessor {
             context.reportIssue(
                 InternalExposedIssue(
                     (filePaths + interfaces.map {
-                        it.kotlinOrigin?.containingFile?.name ?: let {
+                        it.kotlinOrigin?.containingFile?.virtualFile?.path ?: let {
                             logger.warn("Unknown kotlin source file during visit ${aClass.containingFile.name}")
                             "unknown kotlin file"
                         }
@@ -82,6 +82,6 @@ class InternalExposedProcessor : PsiProcessor {
 
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(this::class.java)
+        private val logger = LoggerFactory.getLogger(InternalExposedProcessor::class.java)
     }
 }

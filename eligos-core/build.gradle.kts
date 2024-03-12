@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.incremental.createDirectory
+import java.time.ZonedDateTime
 
 dependencies {
     api("org.jgrapht:jgrapht-core:1.5.2")
@@ -9,5 +11,30 @@ dependencies {
     implementation("org.reflections:reflections:0.10.2")
 }
 
+tasks.register("writeProperties") {
+    doLast {
+        val properties = mapOf(
+            "EligosVersion" to project.version,
+            "EligosBuildTime" to ZonedDateTime.now()
+        )
 
+        val content = properties.entries.joinToString("\n") { (key, value) ->
+            "$key=$value"
+        }
 
+        val resourceDir =  File(sourceSets.main.get().output.resourcesDir!!.path.removeSuffix("main"))
+        if (!resourceDir.exists()){
+            resourceDir.createDirectory()
+        }
+        val propertyFile = File(resourceDir, "eligos-meta.properties")
+        if(!propertyFile.exists()){
+            propertyFile.createNewFile()
+        }
+
+        propertyFile.writeText(content)
+    }
+}
+
+tasks.getByName("compileJava") {
+    dependsOn("writeProperties")
+}

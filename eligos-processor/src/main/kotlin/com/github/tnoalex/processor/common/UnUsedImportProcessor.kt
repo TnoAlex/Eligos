@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.UnusedImportIssue
+import com.github.tnoalex.issues.common.UnusedImportIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.intellij.psi.*
 import com.intellij.psi.impl.compiled.ClsFileImpl

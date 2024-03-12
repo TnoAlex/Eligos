@@ -12,6 +12,7 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
     private var analyzerInitialized = false
 
     fun analyze() {
+        logger.info("Start analyzing")
         if (!analyzerInitialized) {
             ApplicationContext.launchEnvironment = analyzerSpec.launchEnvironment
             ApplicationContext.solveComponentEnv()
@@ -21,9 +22,11 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
         context.resetContext()
         dispatchFiles()
         analyzerInitialized = true
+        logger.info("Analyzing done")
     }
 
     private fun dispatchFiles() {
+        logger.info("Start dispatch files")
         val fileDistributor = ApplicationContext.getBean(FileDistributor::class.java)
             .filter { it.launchEnvironment == analyzerSpec.launchEnvironment }.toMutableList()
         val enableAllProcessors = enableAllProcessor()
@@ -49,6 +52,7 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
     }
 
     private fun registerProcessorEvent() {
+        logger.info("Init processors")
         val psiProcessors = ArrayList<PsiProcessor>()
 
         ApplicationContext.getBean(PsiProcessor::class.java).forEach {
@@ -73,7 +77,7 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
     private fun setTopExceptionHandle() {
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
             if (analyzerSpec.enabledDebug) {
-                throw e
+                e.printStackTrace()
             } else {
                 if (analyzerSpec.exceptionHandler == null) {
                     logger.error("Something went wrong..... Turn on debug to see the details or contact us on github")

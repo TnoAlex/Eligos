@@ -16,4 +16,8 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="AnalyzeMenu"/>
         </action>
     </actions>
+    <extensions defaultExtensionNs="com.intellij">
+        <notificationGroup displayType="BALLOON" id="Eligos Error"/>
+        <notificationGroup displayType="BALLOON" id="Eligos Done"/>
+    </extensions>
 </idea-plugin>

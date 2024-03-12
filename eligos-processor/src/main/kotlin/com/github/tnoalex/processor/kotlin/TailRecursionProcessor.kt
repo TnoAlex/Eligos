@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.OptimizedTailRecursionIssue
+import com.github.tnoalex.issues.kotlin.OptimizedTailRecursionIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.util.PsiTreeUtil
@@ -36,8 +36,10 @@ class TailRecursionProcessor : PsiProcessor {
                             },
                             function.valueParameters.map {
                                 it.name ?: let {
-                                    logger.warn("Unknown parameter name in ${function.name} of file ${function.containingFile.name}" +
-                                            " at line ${function.startLine}")
+                                    logger.warn(
+                                        "Unknown parameter name in ${function.name} of file ${function.containingFile.name}" +
+                                                " at line ${function.startLine}"
+                                    )
                                     ""
                                 }
                             },
@@ -51,11 +53,11 @@ class TailRecursionProcessor : PsiProcessor {
     }
 
     private fun findRecursion(function: KtNamedFunction): Boolean {
-        var isNotTailRecursion = false
+        var isTailRecursion = false
         var foundReturnExpression = false
         function.acceptChildren(object : KtTreeVisitorVoid() {
             override fun visitReturnExpression(expression: KtReturnExpression) {
-                if (isNotTailRecursion) return
+                if (isTailRecursion) return
                 foundReturnExpression = true
                 val callExpressions = ArrayList<KtCallExpression>()
                 expression.acceptChildren(object : KtTreeVisitorVoid() {
@@ -64,27 +66,33 @@ class TailRecursionProcessor : PsiProcessor {
                     }
                 })
                 if (callExpressions.isNotEmpty()) {
-                    callExpressions.forEach {
+                    var containsOtherCall = false
+                    callExpressions.forEach loop@{
                         it.referenceExpression()?.run {
                             references.forEach { r ->
-                                r.resolve() ?: return@run
-                                if (r.isReferenceTo(function)) {
+                                val resolve = r.resolve() ?: let {
+                                    containsOtherCall = true
+                                    return@forEach
+                                }
+                                if (resolve == function) {
                                     PsiTreeUtil.getParentOfType(it, KtOperationExpression::class.java)?.let {
-                                        isNotTailRecursion = true
                                         return
                                     }
-                                }
+                                    isTailRecursion = true
+                                    return
+                                } else containsOtherCall = true
                             }
                         }
                     }
+                    if (!containsOtherCall) isTailRecursion = true
                 }
             }
         })
-        return !isNotTailRecursion && foundReturnExpression
+        return isTailRecursion && foundReturnExpression
     }
 
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(this::class.java)
+        private val logger = LoggerFactory.getLogger(TailRecursionProcessor::class.java)
     }
 }

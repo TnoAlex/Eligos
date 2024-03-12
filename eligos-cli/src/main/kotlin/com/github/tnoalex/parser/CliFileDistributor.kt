@@ -8,6 +8,7 @@ import com.github.tnoalex.foundation.eventbus.EventBus
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import org.slf4j.LoggerFactory
 
 
 @Component(order = Short.MAX_VALUE.toInt())
@@ -28,6 +29,7 @@ class CliFileDistributor : FileDistributor {
     override fun dispatch() {
         val environment = ApplicationContext.getExactBean(CliCompilerEnvironmentContext::class.java)!!
         environment.environment.getSourceFiles().forEach {
+            logger.info("Dispatching ${it.virtualFile.path}")
             EventBus.post(it)
         }
         val baseDir = environment.baseDir
@@ -35,6 +37,7 @@ class CliFileDistributor : FileDistributor {
         visitVirtualFile(baseDir) {
             if (it.extension == "java") {
                 psiManager.findFile(it)?.let { psi ->
+                    logger.info("Dispatching ${psi.virtualFile.path}")
                     EventBus.post(psi)
                 }
             }
@@ -56,6 +59,10 @@ class CliFileDistributor : FileDistributor {
         } else {
             visitor(virtualFile)
         }
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(CliFileDistributor::class.java)
     }
 
 }

@@ -4,14 +4,15 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.default
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.formatter.Reporter
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.container.DefaultBeanContainerScanner
@@ -25,6 +26,7 @@ import com.github.tnoalex.specs.KotlinCompilerSpec
 import com.github.tnoalex.utils.StdOutErrWrapper
 import java.io.File
 import kotlin.io.path.Path
+import kotlin.io.path.pathString
 
 private val defaultJdkHome = File(System.getProperty("java.home")).toPath()
 private val defaultKotlinLib = File(CharRange::class.java.protectionDomain.codeSource.location.path).toPath()
@@ -73,7 +75,11 @@ class CommandParser : CliktCommand() {
         canBeDir = true
     ).default(defaultJdkHome)
 
-    private val kotlinVersion by option("-kv", "--kotlin-v", help = "The version of kotlin in the project").default("1.9")
+    private val kotlinVersion by option(
+        "-kv",
+        "--kotlin-v",
+        help = "The version of kotlin in the project"
+    ).default("1.9")
 
     private val jvmTarget by option("-jt", "--jvm-target", help = "The target of project's bytecode").default("1.8")
 
@@ -102,25 +108,23 @@ class CommandParser : CliktCommand() {
         help = "The Presentation of results"
     ).enum<FormatterTypeEnum> { it.name }.default(FormatterTypeEnum.JSON)
 
-    private val panicOutPath by option("-pp", "--panic-path", help = "The path of panic logs").path(
-        canBeDir = true,
-        canBeFile = false,
-        mustExist = true,
-        mustBeWritable = true
-    )
 
     private val extendRules by option("-r", "--rules", help = "Specify the rules to use").file(
         mustExist = true,
         mustBeReadable = true
     )
 
-    private val debug by option("-D", "--debug", help = "Out put exception stack").boolean().default(false)
+    private val debug by option("-D", "--debug", help = "Out put exception stack").flag(default = false)
+
+    private val noReport by option("-Nr", "--no-report", help = "Disable reporter (debug flag)").flag(default = false)
 
     override fun run() {
         val analyzerSpec = buildSpec()
         initApplication(analyzerSpec)
         StdOutErrWrapper.init()
         Analyzer(analyzerSpec).analyze()
+        if (debug && noReport) return
+        Reporter(analyzerSpec.formatterSpec).report()
     }
 
     private fun buildSpec(): AnalyzerSpec {
@@ -133,6 +137,7 @@ class CommandParser : CliktCommand() {
             kotlinStdLibPath
         )
         val formatterSpec = FormatterSpec(
+            srcPath.pathString,
             resultOutPath,
             resultPrefix,
             resultFormat
@@ -166,7 +171,7 @@ class CommandParser : CliktCommand() {
             cliCompilerEnvironmentContext,
             SimpleSingletonBeanContainer
         )
-        let {  }
+        let { }
         ApplicationContext.init()
     }
 }

@@ -5,7 +5,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.ComplexFunctionIssue
+import com.github.tnoalex.issues.kotlin.ComplexKotlinFunctionIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.startLine
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -26,7 +26,7 @@ class KotlinMccabeComplexityProcessor : PsiProcessor {
                 function.accept(ktCComplexityVisitor)
                 if (currentComplexity >= maxCyclomaticComplexity) {
                     context.reportIssue(
-                        ComplexFunctionIssue(
+                        ComplexKotlinFunctionIssue(
                             ktFile.virtualFilePath,
                             function.fqName?.asString() ?: let {
                                 logger.warn("Unknown function name in file ${function.containingFile.name} at line ${function.startLine}")
@@ -104,6 +104,6 @@ class KotlinMccabeComplexityProcessor : PsiProcessor {
 
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(this::class.java)
+        private val logger = LoggerFactory.getLogger(KotlinMccabeComplexityProcessor::class.java)
     }
 }

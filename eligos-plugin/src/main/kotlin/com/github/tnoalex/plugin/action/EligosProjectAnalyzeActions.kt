@@ -11,6 +11,8 @@ import com.github.tnoalex.plugin.parser.IdePluginFileDistributor
 import com.github.tnoalex.specs.AnalyzerSpec
 import com.github.tnoalex.specs.FormatterSpec
 import com.intellij.ide.plugins.PluginManager
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
@@ -41,7 +43,12 @@ class EligosProjectAnalyzeActions : AnAction() {
                 ApplicationContext.getExactBean(IdePluginFileDistributor::class.java) ?: return
             idePluginFileDistributor.initPsiManager(project)
         }
-        ApplicationContext.getExactBean(Analyzer::class.java)!!.analyze()
+        try {
+            ApplicationContext.getExactBean(Analyzer::class.java)!!.analyze()
+            displayDoneBalloon(project)
+        } catch (e: Exception) {
+            displayErrorBalloon(project)
+        }
     }
 
     private fun initEligosApplication(project: Project) {
@@ -68,6 +75,7 @@ class EligosProjectAnalyzeActions : AnAction() {
                 extendRulePath = project.basePath?.let { File(it) },
                 kotlinCompilerSpec = null,
                 formatterSpec = FormatterSpec(
+                    project.basePath ?: "",
                     project.basePath?.let { File(it).toPath() } ?: File(".").toPath(),
                     project.name,
                     FormatterTypeEnum.HTML,
@@ -75,5 +83,21 @@ class EligosProjectAnalyzeActions : AnAction() {
                 launchEnvironment = LaunchEnvironment.IDE_PLUGIN
             )
         )
+    }
+
+    private fun displayErrorBalloon(project: Project) {
+        NotificationGroupManager.getInstance().getNotificationGroup("Eligos Error")
+            .createNotification(
+                "Eligos error",
+                "An error has occurred ... please contact us on github",
+                NotificationType.ERROR
+            )
+            .notify(project)
+    }
+
+    private fun displayDoneBalloon(project: Project) {
+        NotificationGroupManager.getInstance().getNotificationGroup("Eligos Done")
+            .createNotification("Eligos done!", NotificationType.INFORMATION)
+            .notify(project)
     }
 }

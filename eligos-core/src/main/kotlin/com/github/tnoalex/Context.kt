@@ -7,10 +7,9 @@ import kotlin.reflect.KClass
 
 @Component
 class Context {
-    private val issues = LinkedHashSet<Issue>()
-    private val stats = ArrayList<Statistics>()
+    val issues = HashSet<Issue>()
+    val stats = ArrayList<Statistics>()
 
-    fun getIssues() = issues
     fun reportIssue(issue: Issue) {
         issues.add(issue)
     }

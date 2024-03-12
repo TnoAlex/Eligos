@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.ProvideImmutableCollectionIssue
+import com.github.tnoalex.issues.kotlin.withJava.ProvideImmutableCollectionIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
@@ -60,7 +60,7 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
 
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(this::class.java)
+        private val logger = LoggerFactory.getLogger(ProvideImmutableCollectionProcessor::class.java)
 
         private val KOTLIN_IMMUTABLE_FQNAME =
             listOf("kotlin.collections.List", "kotlin.collections.Set", "kotlin.collections.Map")
