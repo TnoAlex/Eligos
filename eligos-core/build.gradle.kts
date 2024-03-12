@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.incremental.createDirectory
 import java.time.ZonedDateTime
 
 dependencies {
@@ -21,8 +22,14 @@ tasks.register("writeProperties") {
             "$key=$value"
         }
 
-        val resourceDir =  sourceSets.main.get().resources.srcDirs.first()
+        val resourceDir =  File(sourceSets.main.get().output.resourcesDir!!.path.removeSuffix("main"))
+        if (!resourceDir.exists()){
+            resourceDir.createDirectory()
+        }
         val propertyFile = File(resourceDir, "eligos-meta.properties")
+        if(!propertyFile.exists()){
+            propertyFile.createNewFile()
+        }
 
         propertyFile.writeText(content)
     }
