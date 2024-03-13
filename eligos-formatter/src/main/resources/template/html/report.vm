@@ -76,10 +76,11 @@
     #end
     #macro(mapPrint $Map)
         #foreach($key in $Map.keySet())
-            #if($Map.get($key).getClass().getSimpleName() == "ArrayList")
+            #if($Map.get($key).getClass().getSimpleName().indexOf("List")!=-1)
                     <p style="color: #8c8c8c;margin-bottom: 5px">$key : </p>
                     #listPrint($Map.get($key))
-                #elseif($Map.get($key).getClass().getSimpleName() == "LinkedHashMap")
+                #elseif($Map.get($key).getClass().getSimpleName().indexOf("Map")!=-1)
+                <p style="color: #8c8c8c;margin-bottom: 5px">$key : </p>
                     #mapPrint($Map.get($key))
                 #else
                 <p style="color: #8c8c8c;margin-bottom: 5px">$key : $Map.get($key)</p>
@@ -94,6 +95,8 @@
                 <li style="font-size: large;color: #0f0f0f">$key</li>
                 #set($IssueList = $Issues.get($key))
                 #foreach($ik in $IssueList)
+                    #set($i=$foreach.index+1)
+                    <li style="font-size: 23px;margin-left: -40px;padding-top: 10px;margin-bottom: -50px;color: #4d4d4d">$i.</li>
                     <li>
                         <table style="color: #8c8c8c;font-size: medium;margin-top: 3px">
                             #foreach($sk in $ik.keySet())
@@ -101,9 +104,9 @@
                                     #set($issueKey = $ik.get($sk))
                                     <td>$sk</td>
                                     <td>
-                                        #if($issueKey.getClass().getSimpleName() == "ArrayList")
+                                        #if($issueKey.getClass().getSimpleName().indexOf("List")!=-1)
                                             #listPrint($issueKey)
-                                        #elseif($issueKey.getClass().getSimpleName() == "LinkedHashMap")
+                                        #elseif($issueKey.getClass().getSimpleName().indexOf("Map")!=-1)
                                             #mapPrint($issueKey)
                                         #else
                                             $issueKey
