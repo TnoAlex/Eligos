@@ -1,6 +1,7 @@
 package com.github.tnoalex.issues.common
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 import com.github.tnoalex.utils.relativePath
@@ -12,7 +13,7 @@ import org.jgrapht.graph.DefaultEdge
 class CircularReferencesIssue(
     affectedFiles: HashSet<String>,
     private val refGraph: Graph<String, DefaultEdge>,
-) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles, "Circular References") {
+) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles, "Circular References", null) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -33,12 +34,21 @@ class CircularReferencesIssue(
         val rawMap = super.unwrap(spec)
         val (node, matrix) = refGraph.toAdjacencyMatrices()
         val nodeMap = HashMap<Int, String>()
-        val sb = StringBuilder()
-        sb.append("Node Map").append("\n")
         node.forEach { (k, v) ->
             nodeMap[v] = relativePath(spec.srcPathPrefix, k)
         }
-        rawMap["refGraph"] = mapOf("nodeMap" to nodeMap, "matrix" to matrix)
+        if (spec.resultFormat == FormatterTypeEnum.JSON || spec.resultFormat == FormatterTypeEnum.HTML) {
+            rawMap["refGraph"] = mapOf("nodeMap" to nodeMap, "matrix" to matrix)
+        } else {
+            val sb = StringBuilder()
+            matrix.forEach {
+                it.forEach { v ->
+                    sb.append(v).append(" ")
+                }
+                sb.append("\n")
+            }
+            rawMap["refGraph"] = mapOf("nodeMap" to nodeMap, "matrix" to sb.toString())
+        }
         return rawMap
     }
 }

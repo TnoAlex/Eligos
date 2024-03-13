@@ -51,6 +51,7 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
                         "unknown func name"
                     },
                     expression.startLine,
+                    expression.text,
                     className
                 )
             )

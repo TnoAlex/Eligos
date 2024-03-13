@@ -11,7 +11,13 @@ class ComplexKotlinFunctionIssue(
     startLine: Int,
     val circleComplexity: Int
 ) : FunctionTypeIssue(
-    AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile), functionFqName, valueParamList, startLine, "Complex Kotlin Function"
+    AnalysisHierarchyEnum.METHOD,
+    hashSetOf(affectedFile),
+    null,
+    functionFqName,
+    valueParamList,
+    startLine,
+    "Complex Kotlin Function"
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

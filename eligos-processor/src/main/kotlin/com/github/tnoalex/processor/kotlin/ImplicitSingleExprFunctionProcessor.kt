@@ -35,14 +35,17 @@ class ImplicitSingleExprFunctionProcessor : PsiProcessor {
                 context.reportIssue(
                     ImplicitSingleExprFunctionIssue(
                         ktFile.virtualFilePath,
+                        function.text,
                         function.fqName?.asString() ?: let {
                             logger.warn("Unknown function name in file ${function.containingFile.name} at line ${function.startLine}")
                             "unknown func"
                         },
                         function.valueParameters.map {
                             it.name ?: let {
-                                logger.warn("Unknown parameter in function ${function.name} of file ${function.containingFile.name} " +
-                                        "at line ${function.startLine}")
+                                logger.warn(
+                                    "Unknown parameter in function ${function.name} of file ${function.containingFile.name} " +
+                                            "at line ${function.startLine}"
+                                )
                                 ""
                             }
                         },

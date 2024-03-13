@@ -6,9 +6,10 @@ import com.github.tnoalex.specs.FormatterSpec
 
 class WhenInsteadOfCascadeIfIssue(
     affectedFile: String,
+    content: String,
     val cascadeDepth: Int,
     val startLine: Int
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile), "When Instead Of Cascade If") {
+) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile), "When Instead Of Cascade If", content) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

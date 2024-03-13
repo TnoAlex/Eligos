@@ -8,8 +8,9 @@ class ProvideImmutableCollectionIssue(
     affectedFiles: HashSet<String>,
     val providerKtFunFqName: String,
     val startLine: Int,
+    content: String,
     val useJavaClassFqName: String
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, affectedFiles,"Provide Immutable Collection") {
+) : Issue(AnalysisHierarchyEnum.EXPRESSION, affectedFiles, "Provide Immutable Collection", content) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -37,6 +38,6 @@ class ProvideImmutableCollectionIssue(
         rawMap["useJavaClassFqName"] = useJavaClassFqName
         rawMap["providerKtFunFqName"] = providerKtFunFqName
         rawMap["startLine"] = startLine
-        return  rawMap
+        return rawMap
     }
 }

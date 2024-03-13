@@ -8,4 +8,12 @@ class OptimizedTailRecursionIssue(
     functionFqName: String,
     valueParamList: List<String>,
     startLine: Int
-) : FunctionTypeIssue(AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile), functionFqName, valueParamList, startLine,"Optimized Tail Recursion")
+) : FunctionTypeIssue(
+    AnalysisHierarchyEnum.METHOD,
+    hashSetOf(affectedFile),
+    null,
+    functionFqName,
+    valueParamList,
+    startLine,
+    "Optimized Tail Recursion"
+)

@@ -34,6 +34,7 @@ class WhenInsteadOfCascadeIfProcessor : PsiProcessor {
                 context.reportIssue(
                     WhenInsteadOfCascadeIfIssue(
                         expression.containingKtFile.virtualFilePath,
+                        expression.text,
                         cascadeDepth,
                         expression.startLine
                     )

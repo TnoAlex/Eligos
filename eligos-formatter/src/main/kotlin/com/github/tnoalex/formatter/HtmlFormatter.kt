@@ -1,8 +1,8 @@
 package com.github.tnoalex.formatter
 
+import com.github.tnoalex.formatter.utils.encodeHtml
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.specs.FormatterSpec
-import org.apache.commons.text.StringEscapeUtils
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
 import org.slf4j.LoggerFactory
@@ -20,43 +20,11 @@ class HtmlFormatter : IFormatter {
         val templateStream = ApplicationContext.currentClassLoader.getResourceAsStream("${TEMPLATE_PATH}/report.vm")
             ?: InputStream.nullInputStream()
         val stringWriter = StringWriter()
-        val encodeObj = encodeObj(obj)
+        val encodeObj = encodeHtml(obj)
         val velocityContext = VelocityContext(encodeObj as Map<String, Any>)
         velocityEngine.evaluate(velocityContext, stringWriter, "", BufferedReader(InputStreamReader(templateStream)))
         val res = stringWriter.toString()
         return res
-    }
-
-    private fun encodeObj(obj: Any): Any {
-        return when (obj) {
-            is Number -> {
-                obj
-            }
-
-            is String -> {
-                StringEscapeUtils.escapeHtml4(obj)
-            }
-
-            is List<*> -> {
-                val encodeList = ArrayList<Any>()
-                obj.forEach {
-                    encodeList.add(encodeObj(it!!))
-                }
-                encodeList
-            }
-
-            is Map<*, *> -> {
-                val encodeMap = LinkedHashMap<Any, Any>()
-                obj.forEach { (k, v) ->
-                    encodeMap[encodeObj(k!!)] = encodeObj(v!!)
-                }
-                encodeMap
-            }
-
-            else -> {
-                throw RuntimeException("Can not encode object with type ${obj::class.simpleName}")
-            }
-        }
     }
 
     override fun write(formatted: String, spec: FormatterSpec) {

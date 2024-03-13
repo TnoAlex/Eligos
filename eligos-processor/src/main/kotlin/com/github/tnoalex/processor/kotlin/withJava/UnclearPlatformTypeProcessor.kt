@@ -42,6 +42,7 @@ class UnclearPlatformTypeProcessor : PsiProcessor {
                             logger.warn("unknown property name in file ${property.containingFile.name} at line ${property.startLine}")
                             "unknown property name"
                         },
+                        property.text,
                         property.startLine,
                         propertyType.upperIfFlexible().toString(),
                         propertyType.lowerIfFlexible().toString(),
