@@ -6,6 +6,7 @@ import com.github.tnoalex.specs.FormatterSpec
 
 class UnclearPlatformTypeIssue(
     affectedFile: String,
+    content: String,
     val propertyName: String,
     val startLine: Int,
     val upperBound: String,
@@ -13,7 +14,7 @@ class UnclearPlatformTypeIssue(
     val isLocal: Boolean = false,
     val isTop: Boolean = false,
     val isMember: Boolean = false
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile),"Unclear Platform Type") {
+) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile), "Unclear Platform Type", content) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

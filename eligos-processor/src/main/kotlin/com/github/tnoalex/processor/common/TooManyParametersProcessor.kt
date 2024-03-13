@@ -8,10 +8,7 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.common.ExcessiveParamsIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.startLine
-import com.intellij.psi.JavaRecursiveElementVisitor
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.PsiMethod
+import com.intellij.psi.*
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
@@ -51,7 +48,7 @@ class TooManyParametersProcessor : PsiProcessor {
                         issues.add(
                             ExcessiveParamsIssue(
                                 containingFile.virtualFile.path, name,
-                                method.parameters.map { it.toString() },
+                                method.parameters.map { (it as PsiParameter).text},
                                 method.startLine,
                                 parameters.size
                             )

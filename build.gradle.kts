@@ -14,6 +14,10 @@ allprojects {
     version = "1.0-SNAPSHOT"
 }
 
+tasks.jar {
+    enabled = false
+}
+
 subprojects {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 

@@ -5,7 +5,7 @@ import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 
 class ObjectExtendsThrowableIssue(affectedFile: String, val objectFqName: String) :
-    Issue(AnalysisHierarchyEnum.CLASS, hashSetOf(affectedFile), "Object Extends Throwable") {
+    Issue(AnalysisHierarchyEnum.CLASS, hashSetOf(affectedFile), "Object Extends Throwable",null) {
 
     override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
         val rawMap = super.unwrap(spec)

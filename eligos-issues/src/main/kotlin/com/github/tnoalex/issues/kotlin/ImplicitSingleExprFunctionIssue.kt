@@ -5,7 +5,16 @@ import com.github.tnoalex.issues.FunctionTypeIssue
 
 class ImplicitSingleExprFunctionIssue(
     affectedFile: String,
+    content: String,
     functionFqName: String,
     valueParamList: List<String>,
     startLine: Int
-) : FunctionTypeIssue(AnalysisHierarchyEnum.METHOD, hashSetOf(affectedFile), functionFqName, valueParamList, startLine,"Implicit Single Expression Function")
+) : FunctionTypeIssue(
+    AnalysisHierarchyEnum.METHOD,
+    hashSetOf(affectedFile),
+    content,
+    functionFqName,
+    valueParamList,
+    startLine,
+    "Implicit Single Expression Function"
+)

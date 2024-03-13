@@ -6,11 +6,12 @@ import com.github.tnoalex.specs.FormatterSpec
 abstract class FunctionTypeIssue(
     layer: AnalysisHierarchyEnum,
     affectedFiles: HashSet<String>,
+    content: String?,
     val functionFqName: String,
     val valueParamList: List<String>,
     val startLine: Int,
     issueName: String
-) : Issue(layer, affectedFiles, issueName) {
+) : Issue(layer, affectedFiles, issueName, content) {
     val functionSignature: String by lazy { buildSignature() }
 
     private fun buildSignature(): String {
