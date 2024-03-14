@@ -3,6 +3,7 @@ package com.github.tnoalex.plugin.action
 import com.github.tnoalex.Analyzer
 import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.formatter.Reporter
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
@@ -26,17 +27,33 @@ import java.io.File
 class EligosProjectAnalyzeActions : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val backgroundTask = object : Task.Backgroundable(project, "Eligos analyzing", true, ALWAYS_BACKGROUND) {
+        val analysisBackgroundTask =
+            object : Task.Backgroundable(project, "Eligos analyzing", true, ALWAYS_BACKGROUND) {
+                override fun run(indicator: ProgressIndicator) {
+                    indicator.text = "Running Eligos analysis task..."
+                    indicator.isIndeterminate = true
+                    ApplicationManager.getApplication().runReadAction { startEligosAnalyzerTask(project) }
+                }
+            }
+        val reportBackgroundTask = object : Task.Backgroundable(project, "Eligos reporting", false, ALWAYS_BACKGROUND) {
             override fun run(indicator: ProgressIndicator) {
-                indicator.text = "Running Eligos tasks..."
+                indicator.text = "Eligos reporting..."
                 indicator.isIndeterminate = true
-                ApplicationManager.getApplication().runReadAction { startEligosTask(project) }
+                ApplicationManager.getApplication().runWriteAction { startEligosReportTask(project) }
             }
         }
-        ProgressManager.getInstance().run(backgroundTask)
+        ProgressManager.getInstance().run(analysisBackgroundTask)
     }
 
-    private fun startEligosTask(project: Project) {
+    private fun startEligosReportTask(project: Project) {
+        val formatterSpec = ApplicationContext.getExactBean(Analyzer::class.java)!!.analyzerSpec.formatterSpec
+        Reporter(formatterSpec).report()
+        ApplicationManager.getApplication().invokeLater {
+            displayDoneBalloon(project)
+        }
+    }
+
+    private fun startEligosAnalyzerTask(project: Project) {
         if (!ApplicationContext.isInitialized) {
             initEligosApplication(project)
             val idePluginFileDistributor =
@@ -45,9 +62,10 @@ class EligosProjectAnalyzeActions : AnAction() {
         }
         try {
             ApplicationContext.getExactBean(Analyzer::class.java)!!.analyze()
-            displayDoneBalloon(project)
+            startEligosReportTask(project)
         } catch (e: Exception) {
             displayErrorBalloon(project)
+            throw e
         }
     }
 
@@ -78,7 +96,7 @@ class EligosProjectAnalyzeActions : AnAction() {
                     project.basePath ?: "",
                     project.basePath?.let { File(it).toPath() } ?: File(".").toPath(),
                     project.name,
-                    FormatterTypeEnum.HTML,
+                    FormatterTypeEnum.JSON,
                 ),
                 launchEnvironment = LaunchEnvironment.IDE_PLUGIN
             )

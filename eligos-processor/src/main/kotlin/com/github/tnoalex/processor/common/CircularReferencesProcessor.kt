@@ -88,10 +88,12 @@ class CircularReferencesProcessor : PsiProcessor {
         val srcElement =
             if (providerElement is KtLightElement<*, *>) providerElement.kotlinOrigin!! else providerElement
         PsiTreeUtil.getParentOfType(srcElement, PsiJavaFile::class.java)?.let {
+            it.virtualFile?:return
             addDependency(it.virtualFile.path, consumeFile)
             return
         }
         PsiTreeUtil.getParentOfType(srcElement, KtFile::class.java)?.let {
+            it.virtualFile?:return
             addDependency(it.virtualFilePath, consumeFile)
             return
         }

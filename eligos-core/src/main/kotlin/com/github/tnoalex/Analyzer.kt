@@ -7,7 +7,7 @@ import com.github.tnoalex.specs.AnalyzerSpec
 import org.slf4j.LoggerFactory
 import kotlin.system.exitProcess
 
-class Analyzer(private val analyzerSpec: AnalyzerSpec) {
+class Analyzer(val analyzerSpec: AnalyzerSpec) {
     val context: Context = ApplicationContext.getExactBean(Context::class.java)!!
     private var analyzerInitialized = false
 
