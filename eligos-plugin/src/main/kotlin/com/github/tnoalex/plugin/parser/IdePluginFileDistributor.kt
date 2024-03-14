@@ -9,6 +9,7 @@ import com.github.tnoalex.foundation.eventbus.EventBus
 import com.github.tnoalex.parser.FileDistributor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -26,12 +27,14 @@ class IdePluginFileDistributor : FileDistributor {
 
     private lateinit var psiManager: PsiManager
     private var projectFiles: VirtualFile? = null
+    private var fileIndex: ProjectFileIndex? = null
 
     override fun init() {}
 
     fun initPsiManager(project: Project) {
         psiManager = project.getService(PsiManager::class.java)
         projectFiles = VirtualFileManager.getInstance().findFileByNioPath(Path(project.basePath ?: return))
+        fileIndex = ProjectFileIndex.getInstance(project)
         val resolutionHelper =
             ApplicationManager.getApplication().getService(KtFe10ReferenceResolutionHelper::class.java)
         ApplicationContext.addBean(
@@ -45,6 +48,7 @@ class IdePluginFileDistributor : FileDistributor {
         projectFiles?.refresh(true, true)
         VfsUtilCore.visitChildrenRecursively(projectFiles ?: return, object : VirtualFileVisitor<Unit>() {
             override fun visitFile(file: VirtualFile): Boolean {
+                if (fileIndex!!.isExcluded(file)) return false
                 if (!file.isDirectory && (file.extension == "java" || file.extension == "kt")) {
                     val psiFile = psiManager.findFile(file) ?: return true
                     EventBus.post(psiFile)
