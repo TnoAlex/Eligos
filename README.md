@@ -14,47 +14,47 @@ In the current version, we can detect the following 11 code smell:
         <td><b>Description</b></td>
     </tr>
     <tr bgcolor="#FCF3CF"  align="center">
-        <td>Circular References</td>
+        <td>Circular References 🟨 </td>
         <td>Two or more classes or files have interdependencies that form a closed loop</td>
     </tr>
     <tr bgcolor="#FCF3CF"  align="center">
-        <td>Excessive Parameters</td>
+        <td>Excessive Parameters 🟨</td>
         <td>A method has too many arguments</td>
     </tr>
     <tr bgcolor="#FCF3CF"  align="center">
-        <td>Unused Import</td>
+        <td>Unused Import 🟨</td>
         <td>Classes, attributes, methods, or packages that have been imported into a file, but have never been used</td>
     </tr>
     <tr bgcolor="#FCF3CF"  align="center">
-        <td>Complex Method</td>
+        <td>Complex Method 🟨</td>
         <td>The complexity of the loop is too large</td>
     </tr>
     <tr bgcolor="#D5F5E3"  align="center">
-        <td>Provide Immutable Collection</td>
+        <td>Provide Immutable Collection 🟩</td>
         <td>Kotlin provides immutable collection types when java calling Kotlin&#39;s API</td>
     </tr>
     <tr  bgcolor="#D5F5E3"  align="center">
-        <td>Internal Exposed</td>
+        <td>Internal Exposed 🟩</td>
         <td>Java inherits or implements an abstract class or interface for Internal in kotlin and extends its access to public</td>
     </tr>
     <tr  bgcolor="#D5F5E3"  align="center">
-        <td>Unclear Platform Type</td>
+        <td>Unclear Platform Type 🟩</td>
         <td>Kotlin calls the Java return value non-null-safe API and does not specify the nullability of the return value</td>
     </tr>
     <tr bgcolor="#D2B4DE"  align="center">
-        <td>When Instead Of Cascade If</td>
+        <td>When Instead Of Cascade If 🟪</td>
         <td>If statements with too many cascades should be replaced with when statements</td>
     </tr>
     <tr bgcolor="#D2B4DE"  align="center">
-        <td>Implicit Single Expression Function</td>
+        <td>Implicit Single Expression Function 🟪</td>
         <td>kotlin&#39;s one-expression method returns a value of type other than Unit, but does not specify the return type</td>
     </tr>
     <tr bgcolor="#D2B4DE"  align="center">
-        <td>Object Extends Throwable</td>
+        <td>Object Extends Throwable 🟪</td>
         <td>The class decorated with kotlin object inherits from Throwable</td>
     </tr>
     <tr bgcolor="#D2B4DE"  align="center">
-        <td>Optimized Tail Recursion</td>
+        <td>Optimized Tail Recursion 🟪</td>
         <td>The tail recursion function in Kotlin does not indicate that it is tail recursive</td>
     </tr>
 </table>
