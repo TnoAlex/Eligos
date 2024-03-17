@@ -215,44 +215,6 @@ public interface KtScriptDependencyModule : KtModule {
 }
 
 /**
- * A module for a dangling file. Such files are usually temporary and are stored in-memory.
- * Dangling files may be created for various purposes, such as: a code fragment for the evaluator, a sandbox for testing code modification
- * applicability, etc.
- */
-public interface KtDanglingFileModule : KtModule {
-    /**
-     * A temporary file PSI.
-     */
-    public val file: KtFile
-
-    /**
-     * The module against which the [file] is analyzed.
-     */
-    public val contextModule: KtModule
-
-    /**
-     * A way of resolving references to non-local declarations in the dangling file.
-     */
-    public val resolutionMode: DanglingFileResolutionMode
-
-    /**
-     * True if the [file] is a code fragment.
-     * Useful to recognize code fragments when their PSI was collected.
-     */
-    public val isCodeFragment: Boolean
-
-    override val moduleDescription: String
-        get() = "Temporary file"
-}
-
-/**
- * True if the dangling file module supports partial invalidation on PSI modifications.
- * Sessions for such modules can be cached for longer time.
- */
-public val KtDanglingFileModule.isStable: Boolean
-    get() = file.isPhysical && file.viewProvider.isEventSystemEnabled
-
-/**
  * A set of sources which live outside the project content root. E.g, testdata files or source files of some other project.
  */
 public interface KtNotUnderContentRootModule : KtModule {

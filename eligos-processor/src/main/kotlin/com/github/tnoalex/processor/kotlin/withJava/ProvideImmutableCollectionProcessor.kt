@@ -33,12 +33,22 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
 
     private val javaFileVisitorVoid = object : JavaRecursiveElementVisitor() {
         override fun visitMethodCallExpression(expression: PsiMethodCallExpression) {
-            val targetFunc = expression.methodExpression.resolve() ?: let {
-                logger.warn("Can not resolve call expression in file ${expression.containingFile.name} at line ${expression.startLine}")
-                return
+            val targetFunc = try {
+                expression.methodExpression.resolve() ?: let {
+                    logger.warn("Can not resolve call expression in file ${expression.containingFile.name} at line ${expression.startLine}")
+                    return
+                }
+            } catch (e: IllegalArgumentException) {
+                logger.warn("Can not resolve reference in file ${expression.containingFile.virtualFile.path},line ${expression.startLine}")
             }
             if (targetFunc !is KtLightElement<*, *>) return
-            val ktOrigin = targetFunc.kotlinOrigin ?: throw RuntimeException("Can not resolve origin kotlin file")
+            val ktOrigin = targetFunc.kotlinOrigin ?: let {// maybe kotlin enum
+                logger.warn(
+                    "Can not resolve origin kotlin file in expression ${expression.text} " +
+                            "at file ${expression.containingFile.virtualFile.path},line ${expression.startLine}"
+                )
+                return
+            }
             val returnType: KotlinType? = when (ktOrigin) {
                 is KtNamedFunction -> {
                     ktOrigin.resolveToDescriptorIfAny()?.returnType
@@ -54,8 +64,9 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
             }
             if (returnType == null) {
                 logger.warn("Unknown return type of element in ${ktOrigin.containingFile.name} at line ${ktOrigin.startLine}")
+                return
             }
-            if (returnType!!.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQNAME) return
+            if (returnType.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQNAME) return
             val className = PsiTreeUtil.getParentOfType(expression, PsiClass::class.java)?.qualifiedName
                 ?: throw RuntimeException("Can not find parent class of expression ${expression.text}")
             context.reportIssue(

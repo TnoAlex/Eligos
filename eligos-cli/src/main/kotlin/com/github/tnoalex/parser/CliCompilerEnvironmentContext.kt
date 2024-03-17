@@ -7,15 +7,21 @@ import com.github.tnoalex.specs.KotlinCompilerSpec
 import com.intellij.mock.MockApplication
 import com.intellij.mock.MockProject
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.extensions.ExtensionPoint
-import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.util.Disposer
-import com.intellij.openapi.util.registry.Registry
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.local.CoreLocalFileSystem
 import com.intellij.openapi.vfs.local.CoreLocalVirtualFile
+import org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals
+import org.jetbrains.kotlin.analysis.api.descriptors.CliFe10AnalysisFacade
+import org.jetbrains.kotlin.analysis.api.descriptors.Fe10AnalysisFacade
+import org.jetbrains.kotlin.analysis.api.descriptors.KtFe10AnalysisSessionProvider
 import org.jetbrains.kotlin.analysis.api.descriptors.references.ReadWriteAccessCheckerDescriptorsImpl
 import org.jetbrains.kotlin.analysis.api.impl.base.references.HLApiReferenceProviderService
+import org.jetbrains.kotlin.analysis.api.lifetime.KtLifetimeTokenProvider
+import org.jetbrains.kotlin.analysis.api.lifetime.KtReadActionConfinementLifetimeTokenProvider
+import org.jetbrains.kotlin.analysis.api.session.KtAnalysisSessionProvider
+import org.jetbrains.kotlin.analysis.providers.KotlinModificationTrackerFactory
+import org.jetbrains.kotlin.analysis.providers.impl.KotlinStaticModificationTrackerFactory
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.config.addKotlinSourceRoots
 import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
@@ -31,10 +37,8 @@ import org.jetbrains.kotlin.cli.jvm.config.configureJdkClasspathRoots
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.idea.references.KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.idea.references.ReadWriteAccessChecker
-import org.jetbrains.kotlin.plugin.references.SimpleNameReferenceExtension
 import org.jetbrains.kotlin.psi.KotlinReferenceProvidersService
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.references.fe10.KtFe10SimpleNameReference
 import org.jetbrains.kotlin.references.fe10.base.DummyKtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.references.fe10.base.KtFe10KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.references.fe10.base.KtFe10ReferenceResolutionHelper
@@ -79,6 +83,7 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         )
     }
 
+    @OptIn(KtAnalysisApiInternals::class)
     private fun createKotlinCoreEnvironment(
         configuration: CompilerConfiguration = CompilerConfiguration(),
         printStream: PrintStream = System.err,
@@ -110,6 +115,10 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
 
         project.registerService(KotlinReferenceProvidersService::class.java, HLApiReferenceProviderService(project))
         project.registerService(ReadWriteAccessChecker::class.java, ReadWriteAccessCheckerDescriptorsImpl())
+        project.registerService(Fe10AnalysisFacade::class.java, CliFe10AnalysisFacade())
+        project.registerService(KotlinModificationTrackerFactory::class.java, KotlinStaticModificationTrackerFactory())
+        project.registerService(KtLifetimeTokenProvider::class.java, KtReadActionConfinementLifetimeTokenProvider())
+        project.registerService(KtAnalysisSessionProvider::class.java, KtFe10AnalysisSessionProvider(project))
         return environment
     }
 
@@ -191,7 +200,7 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         return analyzer.analysisResult.bindingContext
     }
 
-    companion object{
+    companion object {
         private val logger = LoggerFactory.getLogger(CliCompilerEnvironmentContext::class.java)
     }
 }

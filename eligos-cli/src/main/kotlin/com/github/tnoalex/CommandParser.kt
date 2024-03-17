@@ -25,9 +25,9 @@ import com.github.tnoalex.specs.FormatterSpec
 import com.github.tnoalex.specs.KotlinCompilerSpec
 import com.github.tnoalex.utils.StdOutErrWrapper
 import java.io.File
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 import kotlin.io.path.Path
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.pathString
 
 private val defaultJdkHome = File(System.getProperty("java.home")).toPath()
 private val defaultKotlinLib = File(CharRange::class.java.protectionDomain.codeSource.location.path).toPath()
@@ -155,24 +155,34 @@ class CommandParser : CliktCommand(name = "eligos-cli") {
     }
 
     private fun initApplication(analyzerSpec: AnalyzerSpec) {
-        val cliCompilerEnvironmentContext = CliCompilerEnvironmentContext(analyzerSpec.kotlinCompilerSpec!!)
-        cliCompilerEnvironmentContext.initCompilerEnv()
+        val executorPool = Executors.newFixedThreadPool(2)
+        val compilerThread = Callable {
+            Thread.currentThread().name = "compilerThread"
+            val cliCompilerEnvironmentContext = CliCompilerEnvironmentContext(analyzerSpec.kotlinCompilerSpec!!)
+            cliCompilerEnvironmentContext.initCompilerEnv()
+            cliCompilerEnvironmentContext
+        }
+        val containerThread = Runnable {
+            Thread.currentThread().name = "containerThread"
+            val configParser = ConfigParser()
+            configParser.extendRules = extendRules
 
-        val configParser = ConfigParser()
-        configParser.extendRules = extendRules
+            ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor()))
+            ApplicationContext.addBeanContainerScanner(listOf(DefaultBeanContainerScanner()))
+            ApplicationContext.addBeanHandlerScanner(listOf(DefaultBeanHandlerScanner()))
 
-        ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor()))
-        ApplicationContext.addBeanContainerScanner(listOf(DefaultBeanContainerScanner()))
-        ApplicationContext.addBeanHandlerScanner(listOf(DefaultBeanHandlerScanner()))
+            ApplicationContext.addBean(configParser.javaClass.simpleName, configParser, SimpleSingletonBeanContainer)
 
-        ApplicationContext.addBean(configParser.javaClass.simpleName, configParser, SimpleSingletonBeanContainer)
-
+            ApplicationContext.init()
+        }
+        val future = executorPool.submit(compilerThread)
+        executorPool.submit(containerThread)
+        val cliCompilerEnvironmentContext = future.get()
+        executorPool.shutdown()
         ApplicationContext.addBean(
             cliCompilerEnvironmentContext.javaClass.simpleName,
             cliCompilerEnvironmentContext,
             SimpleSingletonBeanContainer
         )
-        let { }
-        ApplicationContext.init()
     }
 }

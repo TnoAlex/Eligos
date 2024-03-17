@@ -7,6 +7,7 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.common.CircularReferencesIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.analysis.decompiler.psi.file.KtDecompiledFile
@@ -21,13 +22,14 @@ import org.jgrapht.Graph
 import org.jgrapht.alg.connectivity.GabowStrongConnectivityInspector
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.builder.GraphTypeBuilder
+import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class CircularReferencesProcessor : PsiProcessor {
     private var dependencyGraph = newEmptyGraph()
     override val supportLanguage: List<String>
-        get() = listOf("java","kotlin")
+        get() = listOf("java", "kotlin")
 
     @EventListener
     fun process(psiFile: PsiFile) {
@@ -58,8 +60,13 @@ class CircularReferencesProcessor : PsiProcessor {
                 if (expression.isInImportDirective()) return
                 if (PsiTreeUtil.getParentOfType(expression, KtPackageDirective::class.java) != null) return
                 expression.referenceExpression()?.run {
-                    references.forEach {
-                        it.resolve()?.let { r -> resolveRef(r, fileName) }
+                    try {
+                        references.forEach {
+                            it.resolve()?.let { r -> resolveRef(r, fileName) }
+                        }
+                    } catch (e: NullPointerException) {
+                        logger.warn("Can not resolve reference in file ${expression.containingFile.virtualFile.path}," +
+                                "line ${expression.startLine}")
                     }
                 }
                 super.visitReferenceExpression(expression)
@@ -74,8 +81,12 @@ class CircularReferencesProcessor : PsiProcessor {
             override fun visitReferenceElement(reference: PsiJavaCodeReferenceElement) {
                 if (PsiTreeUtil.getParentOfType(reference, PsiPackageStatement::class.java) != null) return
                 if (PsiTreeUtil.getParentOfType(reference, PsiImportStatement::class.java) != null) return
-                reference.resolve()?.let {
-                    resolveRef(it, fileName)
+                try {
+                    reference.resolve()?.let {
+                        resolveRef(it, fileName)
+                    }
+                } catch (e: IllegalArgumentException) {
+                    logger.warn("Can not resolve reference in file ${reference.containingFile.virtualFile.path},line ${reference.startLine}")
                 }
                 super.visitReferenceElement(reference)
             }
@@ -88,12 +99,12 @@ class CircularReferencesProcessor : PsiProcessor {
         val srcElement =
             if (providerElement is KtLightElement<*, *>) providerElement.kotlinOrigin!! else providerElement
         PsiTreeUtil.getParentOfType(srcElement, PsiJavaFile::class.java)?.let {
-            it.virtualFile?:return
+            it.virtualFile ?: return
             addDependency(it.virtualFile.path, consumeFile)
             return
         }
         PsiTreeUtil.getParentOfType(srcElement, KtFile::class.java)?.let {
-            it.virtualFile?:return
+            it.virtualFile ?: return
             addDependency(it.virtualFilePath, consumeFile)
             return
         }
@@ -108,5 +119,9 @@ class CircularReferencesProcessor : PsiProcessor {
     private fun newEmptyGraph(): Graph<String, DefaultEdge> {
         return GraphTypeBuilder.directed<String, DefaultEdge>().allowingMultipleEdges(false)
             .allowingSelfLoops(false).edgeClass(DefaultEdge::class.java).weighted(false).buildGraph()
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(CircularReferencesProcessor::class.java)
     }
 }
