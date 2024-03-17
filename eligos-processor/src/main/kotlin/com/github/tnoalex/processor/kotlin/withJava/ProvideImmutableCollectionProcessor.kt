@@ -14,8 +14,12 @@ import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.PsiMethodCallExpression
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
+import org.jetbrains.kotlin.psi.KtCallableDeclaration
 import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtParameter
+import org.jetbrains.kotlin.types.KotlinType
 import org.slf4j.LoggerFactory
 
 @Component
@@ -35,21 +39,34 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
             }
             if (targetFunc !is KtLightElement<*, *>) return
             val ktOrigin = targetFunc.kotlinOrigin ?: throw RuntimeException("Can not resolve origin kotlin file")
-            require(ktOrigin is KtNamedFunction) { "Java method call target is not function" }
-            val returnType = ktOrigin.resolveToDescriptorIfAny()?.returnType ?: let {
-                logger.warn("Unknown return type of function in ${ktOrigin.containingFile.name} at line ${ktOrigin.startLine}")
-                return
+            val returnType: KotlinType? = when (ktOrigin) {
+                is KtNamedFunction -> {
+                    ktOrigin.resolveToDescriptorIfAny()?.returnType
+                }
+
+                is KtParameter -> {
+                    (ktOrigin.resolveToDescriptorIfAny() as PropertyDescriptor).returnType
+                }
+
+                else -> {
+                    null
+                }
             }
-            if (returnType.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQNAME) return
+            if (returnType == null) {
+                logger.warn("Unknown return type of element in ${ktOrigin.containingFile.name} at line ${ktOrigin.startLine}")
+            }
+            if (returnType!!.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQNAME) return
             val className = PsiTreeUtil.getParentOfType(expression, PsiClass::class.java)?.qualifiedName
                 ?: throw RuntimeException("Can not find parent class of expression ${expression.text}")
             context.reportIssue(
                 ProvideImmutableCollectionIssue(
                     hashSetOf(expression.containingFile.virtualFile.path, ktOrigin.containingFile.virtualFile.path),
-                    ktOrigin.fqName?.asString() ?: let {
+                    (ktOrigin as KtCallableDeclaration).fqName?.asString() ?: let {
                         logger.warn("Unknown function name in file ${ktOrigin.containingFile.name} at line ${ktOrigin.startLine}")
                         "unknown func name"
                     },
+                    ktOrigin is KtNamedFunction,
+                    ktOrigin is KtParameter,
                     expression.startLine,
                     expression.text,
                     className

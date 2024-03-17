@@ -2,4 +2,4 @@
 
 
 
-![Architecture](./imgs/architecture.png)
+![Architecture](./imgs/Architecture.png)

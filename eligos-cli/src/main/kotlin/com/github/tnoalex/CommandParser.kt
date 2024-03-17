@@ -26,12 +26,13 @@ import com.github.tnoalex.specs.KotlinCompilerSpec
 import com.github.tnoalex.utils.StdOutErrWrapper
 import java.io.File
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.pathString
 
 private val defaultJdkHome = File(System.getProperty("java.home")).toPath()
 private val defaultKotlinLib = File(CharRange::class.java.protectionDomain.codeSource.location.path).toPath()
 
-class CommandParser : CliktCommand() {
+class CommandParser : CliktCommand(name = "eligos-cli") {
     private val majorLang: String by argument(
         name = "major language",
         help = "The major language to be analyzed"
@@ -119,9 +120,9 @@ class CommandParser : CliktCommand() {
     private val noReport by option("-Nr", "--no-report", help = "Disable reporter (debug flag)").flag(default = false)
 
     override fun run() {
+        StdOutErrWrapper.init()
         val analyzerSpec = buildSpec()
         initApplication(analyzerSpec)
-        StdOutErrWrapper.init()
         Analyzer(analyzerSpec).analyze()
         if (debug && noReport) return
         Reporter(analyzerSpec.formatterSpec).report()
@@ -137,7 +138,7 @@ class CommandParser : CliktCommand() {
             kotlinStdLibPath
         )
         val formatterSpec = FormatterSpec(
-            srcPath.pathString,
+            srcPath.toFile().canonicalPath,
             resultOutPath,
             resultPrefix,
             resultFormat

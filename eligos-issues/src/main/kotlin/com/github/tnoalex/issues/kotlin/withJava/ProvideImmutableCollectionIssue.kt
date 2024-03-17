@@ -6,7 +6,9 @@ import com.github.tnoalex.specs.FormatterSpec
 
 class ProvideImmutableCollectionIssue(
     affectedFiles: HashSet<String>,
-    val providerKtFunFqName: String,
+    val providerKtElementFqName: String,
+    val isFunction: Boolean,
+    val isProperty: Boolean,
     val startLine: Int,
     content: String,
     val useJavaClassFqName: String
@@ -18,7 +20,7 @@ class ProvideImmutableCollectionIssue(
 
         other as ProvideImmutableCollectionIssue
 
-        if (providerKtFunFqName != other.providerKtFunFqName) return false
+        if (providerKtElementFqName != other.providerKtElementFqName) return false
         if (startLine != other.startLine) return false
         if (useJavaClassFqName != other.useJavaClassFqName) return false
 
@@ -27,7 +29,7 @@ class ProvideImmutableCollectionIssue(
 
     override fun hashCode(): Int {
         var result = super.hashCode()
-        result = 31 * result + providerKtFunFqName.hashCode()
+        result = 31 * result + providerKtElementFqName.hashCode()
         result = 31 * result + startLine
         result = 31 * result + useJavaClassFqName.hashCode()
         return result
@@ -36,7 +38,8 @@ class ProvideImmutableCollectionIssue(
     override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
         val rawMap = super.unwrap(spec)
         rawMap["useJavaClassFqName"] = useJavaClassFqName
-        rawMap["providerKtFunFqName"] = providerKtFunFqName
+        rawMap["providerKtElementFqName"] = providerKtElementFqName
+        if (isFunction) rawMap["isFunction"] = true else rawMap["isProperty"] = true
         rawMap["startLine"] = startLine
         return rawMap
     }
