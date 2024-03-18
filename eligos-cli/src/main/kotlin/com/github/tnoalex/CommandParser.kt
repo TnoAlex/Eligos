@@ -176,7 +176,7 @@ class CommandParser : CliktCommand(name = "eligos-cli") {
             ApplicationContext.init()
         }
         val future = executorPool.submit(compilerThread)
-        executorPool.submit(containerThread)
+        executorPool.submit(containerThread).get()
         val cliCompilerEnvironmentContext = future.get()
         executorPool.shutdown()
         ApplicationContext.addBean(

@@ -68,7 +68,7 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
             }
             if (returnType.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQNAME) return
             val className = PsiTreeUtil.getParentOfType(expression, PsiClass::class.java)?.qualifiedName
-                ?: throw RuntimeException("Can not find parent class of expression ${expression.text}")
+                ?: "AnonymousInnerClass"
             context.reportIssue(
                 ProvideImmutableCollectionIssue(
                     hashSetOf(expression.containingFile.virtualFile.path, ktOrigin.containingFile.virtualFile.path),
