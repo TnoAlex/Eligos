@@ -8,11 +8,11 @@ import com.github.tnoalex.issues.kotlin.withJava.UnclearPlatformTypeIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
+import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
-import org.jetbrains.kotlin.types.lowerIfFlexible
-import org.jetbrains.kotlin.types.upperIfFlexible
+import org.jetbrains.kotlin.types.*
 import org.slf4j.LoggerFactory
 
 @Component
@@ -33,16 +33,17 @@ class UnclearPlatformTypeProcessor : PsiProcessor {
                 return
             }
             val propertyType = descriptor.type
-            if (propertyType.lowerIfFlexible() != propertyType.upperIfFlexible()) {
+            if (propertyType.isDynamic()) return // dynamic type can not be resolved
+            if (propertyType.isFlexible() || propertyType.isFlexibleRecursive()) {
                 //found platform type
                 context.reportIssue(
                     UnclearPlatformTypeIssue(
                         property.containingFile.virtualFile.path,
+                        property.text,
                         property.name ?: let {
                             logger.warn("unknown property name in file ${property.containingFile.name} at line ${property.startLine}")
                             "unknown property name"
                         },
-                        property.text,
                         property.startLine,
                         propertyType.upperIfFlexible().toString(),
                         propertyType.lowerIfFlexible().toString(),
@@ -59,5 +60,10 @@ class UnclearPlatformTypeProcessor : PsiProcessor {
     companion object {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(UnclearPlatformTypeProcessor::class.java)
+    }
+
+    private fun KotlinType.isFlexibleRecursive(): Boolean {
+        if (isFlexible()) return true
+        return arguments.any { !it.isStarProjection && it.type.isFlexibleRecursive() }
     }
 }

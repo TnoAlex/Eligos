@@ -1,5 +1,8 @@
 package unclearPlatformType.java;
 
+import unclearPlatformType.kotlin.InterfaceA;
+import unclearPlatformType.kotlin.InterfaceB;
+
 import java.util.Random;
 
 public class JavaLibSample0 {
@@ -11,4 +14,20 @@ public class JavaLibSample0 {
             return null;
         }
     }
+
+    public static InterfaceA intAInJava(){
+        return  new AInJava();
+    }
+
+    public static InterfaceB intBInJava(){
+        return new BInJava();
+    }
+}
+
+class AInJava implements InterfaceA, InterfaceB{
+
+}
+
+class BInJava implements InterfaceA,InterfaceB{
+
 }
