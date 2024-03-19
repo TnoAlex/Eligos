@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class ProvideImmutableCollectionProcessor : PsiProcessor {
+    override val supportLanguage: List<String>
+        get() = listOf("java", "kotlin")
 
     @EventListener
     fun process(javaFile: PsiJavaFile) {

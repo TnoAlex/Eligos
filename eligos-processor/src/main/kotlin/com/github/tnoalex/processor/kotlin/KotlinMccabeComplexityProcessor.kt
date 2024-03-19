@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class KotlinMccabeComplexityProcessor : PsiProcessor {
+    override val supportLanguage: List<String>
+        get() = listOf("kotlin")
+
     @WiredConfig("function.maxCyclomaticComplexity")
     private var maxCyclomaticComplexity = 0
     private var currentComplexity = 1

@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class ObjectExtendsThrowableProcessor : PsiProcessor {
+    override val supportLanguage: List<String>
+        get() = listOf("kotlin")
+
     @EventListener
     fun process(ktFile: KtFile) {
         ktFile.accept(objectVisitor)

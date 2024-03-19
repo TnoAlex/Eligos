@@ -17,6 +17,8 @@ import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class WhenInsteadOfCascadeIfProcessor : PsiProcessor {
+    override val supportLanguage: List<String>
+        get() = listOf("kotlin")
 
     @WiredConfig("expression.ifCascadeDepth")
     private var maxCascadeIfDepth = 0
