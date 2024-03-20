@@ -38,17 +38,24 @@ class CommandParser : CliktCommand(name = "eligos-cli") {
         help = "The major language to be analyzed"
     )
 
-    private val withLang by option(
-        "-w",
-        "--with",
-        help = "Secondary languages that are analyzed in collaboration with the primary language"
-    )
-
     private val srcPath by argument(name = "source path", help = "The path of source files").path(
         mustExist = true,
         canBeDir = true,
         canBeFile = true,
         mustBeReadable = true
+    )
+
+    private val resultOutPath by argument("result output path", help = "The path to out put result").path(
+        canBeDir = true,
+        canBeFile = false,
+        mustExist = true,
+        mustBeWritable = true
+    ).default(Path("."))
+
+    private val withLang by option(
+        "-w",
+        "--with",
+        help = "Secondary languages that are analyzed in collaboration with the primary language"
     )
 
     private val classPath by option(
@@ -94,13 +101,6 @@ class CommandParser : CliktCommand(name = "eligos-cli") {
         canBeFile = true
     ).default(defaultKotlinLib)
 
-    private val resultOutPath by argument("result output path", help = "The path to out put result").path(
-        canBeDir = true,
-        canBeFile = false,
-        mustExist = true,
-        mustBeWritable = true
-    ).default(Path("."))
-
     private val resultPrefix by option("-p", "--prefix", help = "The result file name prefix").default("")
 
     private val resultFormat by option(
@@ -114,6 +114,9 @@ class CommandParser : CliktCommand(name = "eligos-cli") {
         mustExist = true,
         mustBeReadable = true
     )
+
+    private val disableCompilerLog by option("-DC", "--disable-compiler-log", help = "Disable compiler log")
+        .flag(default = true)
 
     private val debug by option("-D", "--debug", help = "Out put exception stack").flag(default = false)
 
@@ -135,7 +138,8 @@ class CommandParser : CliktCommand(name = "eligos-cli") {
             jdkHome,
             kotlinVersion,
             jvmTarget,
-            kotlinStdLibPath
+            kotlinStdLibPath,
+            disableCompilerLog
         )
         val formatterSpec = FormatterSpec(
             srcPath.toFile().canonicalPath,

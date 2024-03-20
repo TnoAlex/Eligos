@@ -166,13 +166,15 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         }
     }
 
-    class MyMessageCollector : MessageCollector by MessageCollector.NONE {
+    class MyMessageCollector(private val isDisableLog: Boolean) : MessageCollector by MessageCollector.NONE {
         override fun report(
             severity: CompilerMessageSeverity,
             message: String,
             location: CompilerMessageSourceLocation?
         ) {
-            print(message)
+            if (!isDisableLog) {
+                print(message)
+            }
         }
     }
 
@@ -182,7 +184,7 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
     ): BindingContext {
         logger.info("Analyzing... Please waiting")
         val analyzer = AnalyzerWithCompilerReport(
-            MyMessageCollector(),
+            MyMessageCollector(compilerSpec.disableCompilerLog),
             environment.configuration.languageVersionSettings,
             false,
         )

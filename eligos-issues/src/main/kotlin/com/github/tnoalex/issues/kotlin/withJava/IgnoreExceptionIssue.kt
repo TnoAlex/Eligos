@@ -7,7 +7,7 @@ import com.github.tnoalex.specs.FormatterSpec
 class IgnoreExceptionIssue(
     affectedFile: String,
     content: String?,
-    val ignoredExceptions: List<String>,
+    val ignoredExceptions: String,
     val startLine: Int
 ) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile), "Ignore Exception", content) {
     override fun equals(other: Any?): Boolean {

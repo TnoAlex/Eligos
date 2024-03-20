@@ -1,6 +1,7 @@
 package com.github.tnoalex.processor.utils
 
 import com.github.tnoalex.foundation.ApplicationContext
+import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
@@ -22,6 +23,10 @@ fun KtNamedFunction.resolveToDescriptorIfAny(): FunctionDescriptor? {
 
 fun KtProperty.resolveToDescriptorIfAny(): VariableDescriptor? {
     return (this as KtDeclaration).resolveToDescriptorIfAny() as? VariableDescriptor
+}
+
+fun KtConstructor<*>.resolveToDescriptorIfAny(): ConstructorDescriptor? {
+    return (this as KtDeclaration).resolveToDescriptorIfAny() as? ConstructorDescriptor
 }
 
 fun KtDeclaration.resolveToDescriptorIfAny(): DeclarationDescriptor? {
