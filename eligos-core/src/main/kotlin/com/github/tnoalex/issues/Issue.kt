@@ -10,7 +10,7 @@ abstract class Issue(
     val layer: AnalysisHierarchyEnum,
     val affectedFiles: HashSet<String>,
     val issueName: String,
-    val content: String?
+    val content: String? = null
 ) : Formatable {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

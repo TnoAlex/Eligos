@@ -1,9 +1,5 @@
 package com.github.tnoalex.foundation.bean
 
-import org.reflections.Reflections
-import org.reflections.scanners.Scanners
-import org.reflections.util.ConfigurationBuilder
-
 
 object BeanNameManager {
     private val beanNames = HashSet<String>()
@@ -13,11 +9,7 @@ object BeanNameManager {
     }
 
     fun containsBean(beanType: Class<*>): Boolean {
-        beanTypes.keys.forEach {
-            if (beanType.isAssignableFrom(it))
-                return true
-        }
-        return false
+        return beanTypes.keys.any { beanType.isAssignableFrom(it) }
     }
 
     fun recordBean(beanName: String, bean: Class<*>) {

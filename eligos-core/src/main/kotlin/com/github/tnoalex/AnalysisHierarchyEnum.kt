@@ -4,5 +4,5 @@ enum class AnalysisHierarchyEnum {
     FILE,
     CLASS,
     EXPRESSION,
-    METHOD
+    MEMBER
 }

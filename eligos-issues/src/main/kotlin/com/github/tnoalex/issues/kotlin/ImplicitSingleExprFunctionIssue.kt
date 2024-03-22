@@ -10,7 +10,7 @@ class ImplicitSingleExprFunctionIssue(
     valueParamList: List<String>,
     startLine: Int
 ) : FunctionTypeIssue(
-    AnalysisHierarchyEnum.METHOD,
+    AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile),
     content,
     functionFqName,
