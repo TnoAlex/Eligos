@@ -6,6 +6,7 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.common.UnusedImportIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.referenceExpressionSelfOrInChildren
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.*
 import com.intellij.psi.impl.compiled.ClsFileImpl
@@ -13,7 +14,6 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.analysis.decompiler.psi.file.KtDecompiledFile
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.isInImportDirective
-import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.slf4j.LoggerFactory
 import java.util.*
 
@@ -100,10 +100,10 @@ class UnUsedImportProcessor : PsiProcessor {
             override fun visitReferenceExpression(expression: KtReferenceExpression) {
                 if (expression.isInImportDirective()) return
                 if (PsiTreeUtil.getParentOfType(expression, KtPackageDirective::class.java) != null) return
-                expression.referenceExpression()?.run {
+                expression.referenceExpressionSelfOrInChildren().forEach {
                     try {
-                        references.forEach {
-                            it.resolve()?.let { r ->
+                        it.references.forEach {ref->
+                            ref.resolve()?.let { r ->
                                 resolveImports(r, importsRefs)
                             }
                         }

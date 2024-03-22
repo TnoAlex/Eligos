@@ -7,6 +7,7 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.common.CircularReferencesIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.referenceExpressionSelfOrInChildren
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
@@ -17,7 +18,6 @@ import org.jetbrains.kotlin.psi.KtPackageDirective
 import org.jetbrains.kotlin.psi.KtReferenceExpression
 import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
 import org.jetbrains.kotlin.psi.psiUtil.isInImportDirective
-import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jgrapht.Graph
 import org.jgrapht.alg.connectivity.GabowStrongConnectivityInspector
 import org.jgrapht.graph.DefaultEdge
@@ -59,10 +59,10 @@ class CircularReferencesProcessor : PsiProcessor {
             override fun visitReferenceExpression(expression: KtReferenceExpression) {
                 if (expression.isInImportDirective()) return
                 if (PsiTreeUtil.getParentOfType(expression, KtPackageDirective::class.java) != null) return
-                expression.referenceExpression()?.run {
+                expression.referenceExpressionSelfOrInChildren().forEach {
                     try {
-                        references.forEach {
-                            it.resolve()?.let { r -> resolveRef(r, fileName) }
+                        it.references.forEach {ref->
+                            ref.resolve()?.let { r -> resolveRef(r, fileName) }
                         }
                     } catch (e: NullPointerException) {
                         logger.warn("Can not resolve reference in file ${expression.containingFile.virtualFile.path}," +

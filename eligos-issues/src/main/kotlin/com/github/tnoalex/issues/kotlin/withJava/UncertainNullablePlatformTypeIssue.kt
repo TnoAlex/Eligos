@@ -4,7 +4,7 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 
-class UnclearPlatformTypeIssue(
+class UncertainNullablePlatformTypeIssue(
     affectedFile: String,
     content: String,
     val propertyName: String,
@@ -14,13 +14,13 @@ class UnclearPlatformTypeIssue(
     val isLocal: Boolean = false,
     val isTop: Boolean = false,
     val isMember: Boolean = false
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile), "Unclear Platform Type", content) {
+) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile), "Uncertain Nullable Platform Type", content) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
         if (!super.equals(other)) return false
 
-        other as UnclearPlatformTypeIssue
+        other as UncertainNullablePlatformTypeIssue
 
         if (propertyName != other.propertyName) return false
         if (startLine != other.startLine) return false

@@ -6,6 +6,7 @@ import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
 import org.jetbrains.kotlin.references.fe10.base.KtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.typeUtil.supertypes
@@ -37,6 +38,14 @@ fun KtDeclaration.resolveToDescriptorIfAny(): DeclarationDescriptor? {
     } else {
         context.get(BindingContext.DECLARATION_TO_DESCRIPTOR, this)
     }
+}
+
+fun KtExpression.referenceExpressionSelfOrInChildren(): List<KtReferenceExpression> {
+    val result = ArrayList<KtReferenceExpression>()
+    if (this is KtReferenceExpression)
+        result.add(this)
+    result.addAll(this.getChildrenOfType<KtReferenceExpression>())
+    return result
 }
 
 val KtClass.superTypes

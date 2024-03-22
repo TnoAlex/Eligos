@@ -102,6 +102,8 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
             EnvironmentConfigFiles.JVM_CONFIG_FILES
         )
 
+        environment.projectEnvironment.registerExtensionsFromPlugins(configuration)
+
         val projectCandidate = environment.project
 
         project = requireNotNull(projectCandidate as? MockProject) {

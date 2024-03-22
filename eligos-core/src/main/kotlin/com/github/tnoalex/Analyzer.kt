@@ -29,7 +29,7 @@ class Analyzer(val analyzerSpec: AnalyzerSpec) {
         logger.info("Start dispatch files")
         val fileDistributor = ApplicationContext.getBean(FileDistributor::class.java)
             .filter { it.launchEnvironment == analyzerSpec.launchEnvironment }.toMutableList()
-        val enableAllProcessors = enableAllProcessor()
+        val enableAllProcessors = enableAllLangs()
         val it = fileDistributor.iterator()
         while (it.hasNext()) {
             val distributor = it.next()
@@ -53,7 +53,7 @@ class Analyzer(val analyzerSpec: AnalyzerSpec) {
 
     private fun registerProcessorEvent() {
         logger.info("Init processors")
-        val psiProcessors = ArrayList<PsiProcessor>()
+        val psiProcessors = HashSet<PsiProcessor>()
 
         ApplicationContext.getBean(PsiProcessor::class.java).forEach {
             if (it.supportLanguage.contains("any")) {
@@ -68,15 +68,33 @@ class Analyzer(val analyzerSpec: AnalyzerSpec) {
                 }
             }
         }
+        disableProcessorsIfDebug(psiProcessors)
     }
 
-    private fun enableAllProcessor(): Boolean {
+    private fun disableProcessorsIfDebug(processors: HashSet<PsiProcessor>) {
+        if (!analyzerSpec.debugSpec.enabledDebug) return
+        if (analyzerSpec.debugSpec.disableAnyElse.isNotEmpty()) {
+            processors.forEach {
+                if (it::class.simpleName in analyzerSpec.debugSpec.disableAnyElse) return@forEach
+                logger.debug("Disable ${it::class.simpleName}")
+                it.unregisterListener()
+            }
+        }else if (analyzerSpec.debugSpec.enableAnyElse.isNotEmpty()){
+            processors.forEach {
+                if (it::class.simpleName !in analyzerSpec.debugSpec.enableAnyElse) return@forEach
+                logger.debug("Disable ${it::class.simpleName}")
+                it.unregisterListener()
+            }
+        }
+    }
+
+    private fun enableAllLangs(): Boolean {
         return listOfNotNull(analyzerSpec.majorLang, analyzerSpec.withLang).contains("any")
     }
 
     private fun setTopExceptionHandle() {
         Thread.setDefaultUncaughtExceptionHandler { t, e ->
-            if (analyzerSpec.enabledDebug) {
+            if (analyzerSpec.debugSpec.enabledDebug) {
                 e.printStackTrace()
             } else {
                 if (analyzerSpec.exceptionHandler == null) {

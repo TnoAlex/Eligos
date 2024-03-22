@@ -6,11 +6,11 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.OptimizedTailRecursionIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.referenceExpressionSelfOrInChildren
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.slf4j.LoggerFactory
 
 
@@ -68,11 +68,11 @@ class TailRecursionProcessor : PsiProcessor {
                 if (callExpressions.isNotEmpty()) {
                     var containsOtherCall = false
                     callExpressions.forEach loop@{
-                        it.referenceExpression()?.run {
-                            references.forEach { r ->
+                        it.referenceExpressionSelfOrInChildren().forEach { ref->
+                            ref.references.forEach innerLoop@ { r ->
                                 val resolve = r.resolve() ?: let {
                                     containsOtherCall = true
-                                    return@forEach
+                                    return@innerLoop
                                 }
                                 if (resolve == function) {
                                     PsiTreeUtil.getParentOfType(it, KtOperationExpression::class.java)?.let {

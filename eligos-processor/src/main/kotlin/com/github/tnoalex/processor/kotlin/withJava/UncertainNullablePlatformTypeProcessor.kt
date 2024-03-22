@@ -4,7 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.kotlin.withJava.UnclearPlatformTypeIssue
+import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class UnclearPlatformTypeProcessor : PsiProcessor {
+class UncertainNullablePlatformTypeProcessor : PsiProcessor {
     override val supportLanguage: List<String>
         get() = listOf("java", "kotlin")
 
@@ -36,7 +36,7 @@ class UnclearPlatformTypeProcessor : PsiProcessor {
             if (propertyType.isFlexible() || propertyType.isFlexibleRecursive()) {
                 //found platform type
                 context.reportIssue(
-                    UnclearPlatformTypeIssue(
+                    UncertainNullablePlatformTypeIssue(
                         property.containingFile.virtualFile.path,
                         property.text,
                         property.name ?: let {
@@ -58,7 +58,7 @@ class UnclearPlatformTypeProcessor : PsiProcessor {
 
     companion object {
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(UnclearPlatformTypeProcessor::class.java)
+        private val logger = LoggerFactory.getLogger(UncertainNullablePlatformTypeProcessor::class.java)
     }
 
     private fun KotlinType.isFlexibleRecursive(): Boolean {

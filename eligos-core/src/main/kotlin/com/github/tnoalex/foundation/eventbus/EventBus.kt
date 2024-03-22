@@ -71,11 +71,8 @@ object EventBus {
         val eventClass = eventMap[listener] ?: return
         eventClass.forEach {
             val listenerList = listenerMap[it] ?: return
-            for (i in listenerList.indices) {
-                if (listenerList[i] == listener) {
-                    listenerList.removeAt(i)
-                }
-            }
+            listenerList.removeIf {l-> l.listener == listener }
+            listenerMap[it] = listenerList
         }
         eventMap.remove(listener)
     }

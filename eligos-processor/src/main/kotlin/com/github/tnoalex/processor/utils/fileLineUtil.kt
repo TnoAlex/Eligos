@@ -7,24 +7,26 @@ import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.psiUtil.endOffset
 import org.jetbrains.kotlin.psi.psiUtil.startOffset
 
-val PsiElement.startLine
-    get() = lazy {
-        fileDocumentManager.getDocument(this.containingFile.virtualFile)?.getLineNumber(this.startOffset) ?: -1
-    }.value
+val PsiElement.startLine: Int
+    get() {
+        return fileDocumentManager.getDocument(this.containingFile.virtualFile)?.getLineNumber(this.startOffset)
+            ?.let { it + 1 } ?: 0
+    }
 
-val PsiElement.endLine
-    get() = lazy {
-        fileDocumentManager.getDocument(this.containingFile.virtualFile)?.getLineNumber(this.endOffset) ?: -1
-    }.value
+val PsiElement.endLine: Int
+    get() {
+        return fileDocumentManager.getDocument(this.containingFile.virtualFile)?.getLineNumber(this.endOffset)
+            ?.let { it + 1 } ?: 0
+    }
 
-val KtFile.lineCount
-    get() = lazy {
-        fileDocumentManager.getDocument(this.virtualFile)?.lineCount ?: 0
-    }.value
+val KtFile.lineCount: Int
+    get() {
+        return fileDocumentManager.getDocument(this.virtualFile)?.lineCount?.let { it + 1 } ?: 0
+    }
 
-val PsiJavaFile.lineCount
-    get() = lazy {
-        fileDocumentManager.getDocument(this.virtualFile)?.lineCount ?: 0
-    }.value
+val PsiJavaFile.lineCount: Int
+    get() {
+        return fileDocumentManager.getDocument(this.virtualFile)?.lineCount?.let { it + 1 } ?: 0
+    }
 
 val fileDocumentManager by lazy { FileDocumentManager.getInstance() }

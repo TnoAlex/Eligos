@@ -28,7 +28,6 @@ public class KtReadActionConfinementLifetimeToken(project: Project) : KtLifetime
         error("Getting invalidation reason for valid validity token")
     }
 
-    @OptIn(KtAnalysisApiInternals::class)
     override fun isAccessible(): Boolean {
         val application = ApplicationManager.getApplication()
         if (application.isDispatchThread && !allowOnEdt.get()) return false

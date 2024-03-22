@@ -1,7 +1,8 @@
-package com.github.tnoalex
+package com.github.tnoalex.util
 
+import com.github.tnoalex.Analyzer
 import com.github.tnoalex.config.ConfigParser
-import com.github.tnoalex.formatter.Reporter
+import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.container.DefaultBeanContainerScanner
@@ -13,34 +14,41 @@ import com.github.tnoalex.specs.AnalyzerSpec
 import com.github.tnoalex.specs.DebugSpec
 import com.github.tnoalex.specs.FormatterSpec
 import com.github.tnoalex.specs.KotlinCompilerSpec
-import com.github.tnoalex.utils.StdOutErrWrapper
-import com.github.tnoalex.utils.creatDataClassAndFillProperty
+import java.io.File
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
-fun parseArguments(args: Map<String, Any?>) {
-    StdOutErrWrapper.init()
-    val analyzerSpec = buildSpec(HashMap(args))
-    initApplication(analyzerSpec)
-    Analyzer(analyzerSpec).analyze()
-    if (analyzerSpec.debugSpec.notAllowedReport()) return
-    Reporter(analyzerSpec.formatterSpec).report()
+private fun buildSpec(): AnalyzerSpec {
+    val kotlinCompilerSpec = KotlinCompilerSpec(
+        TEST_SRC_PATH.toPath(),
+        listOf(TEST_SRC_PATH.toPath()),
+        defaultJdkHome,
+        "1.9",
+        "11",
+        defaultKotlinLib,
+        false
+    )
+    val formatterSpec = FormatterSpec(
+        TEST_SRC_PATH.canonicalPath,
+        TEST_SRC_PATH.toPath(),
+        "",
+        FormatterTypeEnum.JSON
+    )
+    val debugSpec = DebugSpec()
+    return AnalyzerSpec(
+        "kotlin",
+        "java",
+        null,
+        kotlinCompilerSpec,
+        formatterSpec,
+        LaunchEnvironment.CLI,
+        debugSpec
+    )
 }
 
-private fun buildSpec(args: HashMap<String, Any?>): AnalyzerSpec {
-    val debugSpec = creatDataClassAndFillProperty(args, DebugSpec::class)
-    val kotlinCompilerSpec = creatDataClassAndFillProperty(args, KotlinCompilerSpec::class)
-    args["kotlinCompilerSpec"] = kotlinCompilerSpec
-    args["srcPathPrefix"] = kotlinCompilerSpec.srcPath.toFile().canonicalPath
-    val formatterSpec = creatDataClassAndFillProperty(args, FormatterSpec::class)
-    args["formatterSpec"] = formatterSpec
-    args["launchEnvironment"] = LaunchEnvironment.CLI
-    args["debugSpec"] = debugSpec
-    val analyzerSpec = creatDataClassAndFillProperty(args, AnalyzerSpec::class)
-    return analyzerSpec
-}
 
-private fun initApplication(analyzerSpec: AnalyzerSpec) {
+fun initEligosEnv() {
+    val analyzerSpec = buildSpec()
     val executorPool = Executors.newFixedThreadPool(2)
     val compilerThread = Callable {
         Thread.currentThread().name = "compilerThread"
@@ -51,14 +59,15 @@ private fun initApplication(analyzerSpec: AnalyzerSpec) {
     val containerThread = Runnable {
         Thread.currentThread().name = "containerThread"
         val configParser = ConfigParser()
-        configParser.extendRules = analyzerSpec.extendRulePath
-
-
         ApplicationContext.addBeanRegisterDistributor(listOf(DefaultBeanRegisterDistributor()))
         ApplicationContext.addBeanContainerScanner(listOf(DefaultBeanContainerScanner()))
         ApplicationContext.addBeanHandlerScanner(listOf(DefaultBeanHandlerScanner()))
 
-        ApplicationContext.addBean(configParser.javaClass.simpleName, configParser, SimpleSingletonBeanContainer)
+        ApplicationContext.addBean(
+            configParser.javaClass.simpleName,
+            configParser,
+            SimpleSingletonBeanContainer
+        )
 
         ApplicationContext.init()
     }
@@ -71,4 +80,11 @@ private fun initApplication(analyzerSpec: AnalyzerSpec) {
         cliCompilerEnvironmentContext,
         SimpleSingletonBeanContainer
     )
+    Analyzer(analyzerSpec).analyze()
 }
+
+
+private val TEST_SRC_PATH = File("../testData/kotlin-code-samples")
+private val defaultJdkHome = File(System.getProperty("java.home")).toPath()
+private val defaultKotlinLib = File(CharRange::class.java.protectionDomain.codeSource.location.path).toPath()
+

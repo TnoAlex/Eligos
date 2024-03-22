@@ -15,9 +15,9 @@ dependencies {
     implementation(project(":kt-references-analysis:analysis-api-impl-base"))
     implementation(project(":kt-references-analysis:analysis-internal-utils"))
     implementation(project(":kt-references-analysis:kt-references-fe10"))
-    implementation(project(":kt-references-analysis:project-structure"))
     implementation("com.github.ajalt.clikt:clikt:4.2.2")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testImplementation(project(":eligos-issues"))
 }
 
 

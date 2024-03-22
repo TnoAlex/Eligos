@@ -6,22 +6,22 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.withJava.IgnoreExceptionIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.bindingContext
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
-import com.github.tnoalex.processor.utils.superTypes
 import com.intellij.psi.*
-import com.intellij.psi.impl.compiled.ClsClassImpl
-import com.intellij.psi.impl.compiled.ClsMethodImpl
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.util.PsiTypesUtil
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
 import org.jetbrains.kotlin.resolve.descriptorUtil.isPublishedApi
+import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.typeUtil.supertypes
+import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 import org.slf4j.LoggerFactory
+
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
@@ -47,7 +47,7 @@ class IgnoreExceptionProcessor : PsiProcessor {
             function.resolveToDescriptorIfAny()?.let {
                 if (!it.isPublishedApi()) return
                 if (it.annotations.findAnnotation(THROWS_FQ_NAME) != null) return
-            } ?:return
+            } ?: return
             function.accept(ktThrowVisitor)
             super.visitNamedFunction(function)
         }
@@ -83,6 +83,7 @@ class IgnoreExceptionProcessor : PsiProcessor {
             super.visitReferenceExpression(expression)
         }
     }
+
     private fun isAnnotatedWithThrows(element: KtElement): Boolean {
         val declaration = when (element) {
             is KtConstructor<*> -> {
@@ -107,62 +108,20 @@ class IgnoreExceptionProcessor : PsiProcessor {
     private val ktThrowVisitor = object : KtTreeVisitorVoid() {
         override fun visitThrowExpression(expression: KtThrowExpression) {
             val throws = expression.thrownExpression ?: return
-            val exceptions = throws.referenceExpression()?.let {
-                it.references.mapNotNull { r ->
-                    try {
-                        r.resolve()
-                    } catch (e: RuntimeException) {
-                        logger.warn(
-                            "Can not resolve expression in file ${expression.containingFile.virtualFile.path}" +
-                                    ",line ${expression.startLine}"
-                        )
-                    }
-                }
-            } ?: return
-            val runtimeException =
-                PsiType.getTypeByName(JAVA_RUNTIME_EXCEPTION_FQ_NAME, expression.project, expression.resolveScope)
-            findCheckedException(throws, exceptions, runtimeException)
+            val exceptions = expression.bindingContext.getType(throws) ?: let {
+                logger.warn("Can not resolve expression type in file ${expression.containingFile.virtualFile.path},line ${expression.startLine}")
+                return
+            }
+            findCheckedException(expression, exceptions)
             super.visitThrowExpression(expression)
         }
     }
 
-    private fun findCheckedException(element: KtExpression, exceptions: List<Any>, runtimeException: PsiType) {
-        exceptions.forEach {
-            when (it) {
-                is ClsMethodImpl -> {
-                    val clazz = PsiTreeUtil.getParentOfType(it, ClsClassImpl::class.java) ?: return@forEach
-                    val classType = PsiTypesUtil.getClassType(clazz)
-                    classType.isConvertibleFrom(runtimeException).ifTrue { return@forEach }
-                    reportIssue(element, clazz.qualifiedName ?: "Unknown exception name")
-                    return
-                }
-
-                is KtClass -> {
-                    val superTypes = it.superTypes ?: return@forEach
-                    superTypes.any { t -> t.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME }
-                        .ifTrue { return@forEach }
-                    reportIssue(element, it.fqName?.asString() ?: "Unknown exception name")
-                    return
-                }
-
-                is KtConstructor<*> -> {
-                    val clazz = PsiTreeUtil.getParentOfType(it, KtClass::class.java) ?: return@forEach
-                    val superTypes = clazz.superTypes ?: return@forEach
-                    superTypes.any { t -> t.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME }
-                        .ifTrue { return@forEach }
-                    reportIssue(element, clazz.fqName?.asString() ?: "Unknown exception name")
-                    return
-                }
-
-                is KtTypeAlias -> {
-                    val typeReference = it.getTypeReference() ?: return@forEach
-                    if (typeReference.name == JAVA_RUNTIME_EXCEPTION_FQ_NAME) {
-                        return@forEach
-                    }
-                    reportIssue(element, typeReference.name ?: "Unknown exception name")
-                    return
-                }
-            }
+    private fun findCheckedException(element: KtExpression, exception: KotlinType) {
+        exception.supertypes().any {
+            it.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME
+        }.ifFalse {
+            reportIssue(element,exception.getKotlinTypeFqName(false))
         }
     }
 
