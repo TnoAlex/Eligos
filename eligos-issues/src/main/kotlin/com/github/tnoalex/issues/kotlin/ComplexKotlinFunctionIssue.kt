@@ -34,10 +34,4 @@ class ComplexKotlinFunctionIssue(
         result = 31 * result + circleComplexity
         return result
     }
-
-    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = super.unwrap(spec)
-        rawMap["circleComplexity"] = circleComplexity
-        return rawMap
-    }
 }

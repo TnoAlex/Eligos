@@ -4,6 +4,7 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 
+@Suppress("unused")
 class ProvideImmutableCollectionIssue(
     affectedFiles: HashSet<String>,
     val providerKtElementFqName: String,
@@ -33,14 +34,5 @@ class ProvideImmutableCollectionIssue(
         result = 31 * result + startLine
         result = 31 * result + useJavaClassFqName.hashCode()
         return result
-    }
-
-    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = super.unwrap(spec)
-        rawMap["useJavaClassFqName"] = useJavaClassFqName
-        rawMap["providerKtElementFqName"] = providerKtElementFqName
-        if (isFunction) rawMap["isFunction"] = true else rawMap["isProperty"] = true
-        rawMap["startLine"] = startLine
-        return rawMap
     }
 }

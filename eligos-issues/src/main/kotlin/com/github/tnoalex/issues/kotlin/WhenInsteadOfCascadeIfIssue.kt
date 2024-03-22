@@ -29,11 +29,4 @@ class WhenInsteadOfCascadeIfIssue(
         result = 31 * result + startLine
         return result
     }
-
-    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = super.unwrap(spec)
-        rawMap["cascadeDepth"] = cascadeDepth
-        rawMap["startLine"] = startLine
-        return rawMap
-    }
 }

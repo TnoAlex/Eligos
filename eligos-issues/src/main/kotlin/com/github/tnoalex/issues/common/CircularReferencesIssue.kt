@@ -2,6 +2,7 @@ package com.github.tnoalex.issues.common
 
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.formatter.UnpackIgnore
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 import com.github.tnoalex.utils.relativePath
@@ -12,6 +13,7 @@ import org.jgrapht.graph.DefaultEdge
 
 class CircularReferencesIssue(
     affectedFiles: HashSet<String>,
+    @UnpackIgnore
     private val refGraph: Graph<String, DefaultEdge>,
 ) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles, "Circular References", null) {
     override fun equals(other: Any?): Boolean {
@@ -38,7 +40,7 @@ class CircularReferencesIssue(
             nodeMap[v] = relativePath(spec.srcPathPrefix, k)
         }
         if (spec.resultFormat == FormatterTypeEnum.JSON || spec.resultFormat == FormatterTypeEnum.HTML) {
-            rawMap["refGraph"] = mapOf("nodeMap" to nodeMap, "matrix" to matrix)
+            rawMap[::refGraph.name] = mapOf("nodeMap" to nodeMap, "matrix" to matrix)
         } else {
             val sb = StringBuilder()
             matrix.forEach {
@@ -47,7 +49,7 @@ class CircularReferencesIssue(
                 }
                 sb.append("\n")
             }
-            rawMap["refGraph"] = mapOf("nodeMap" to nodeMap, "matrix" to sb.toString())
+            rawMap[::refGraph.name] = mapOf("nodeMap" to nodeMap, "matrix" to sb.toString())
         }
         return rawMap
     }

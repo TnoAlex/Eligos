@@ -23,10 +23,4 @@ class UnusedImportIssue(
         result = 31 * result + unusedImports.hashCode()
         return result
     }
-
-    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = super.unwrap(spec)
-        rawMap["unusedImports"] = unusedImports
-        return rawMap
-    }
 }

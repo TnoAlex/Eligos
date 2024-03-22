@@ -1,6 +1,7 @@
 package com.github.tnoalex.issues.kotlin.withJava
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.formatter.UnpackIgnore
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 
@@ -11,8 +12,14 @@ class UncertainNullablePlatformTypeInPropertyIssue(
     val startLine: Int,
     val upperBound: String,
     val lowerBound: String,
+    @UnpackIgnore
     val isTop: Boolean = false,
-) : Issue(AnalysisHierarchyEnum.MEMBER, hashSetOf(affectedFile), "Uncertain Nullable Platform Type In Property", content) {
+) : Issue(
+    AnalysisHierarchyEnum.MEMBER,
+    hashSetOf(affectedFile),
+    "Uncertain Nullable Platform Type In Property",
+    content
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -41,10 +48,6 @@ class UncertainNullablePlatformTypeInPropertyIssue(
 
     override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
         val rawMap = super.unwrap(spec)
-        rawMap["propertyName"] = propertyName
-        rawMap["startLine"] = startLine
-        rawMap["upperBound"] = upperBound
-        rawMap["lowerBound"] = lowerBound
         rawMap["propertyType"] = if (isTop) "topLevel" else "member"
         return rawMap
     }

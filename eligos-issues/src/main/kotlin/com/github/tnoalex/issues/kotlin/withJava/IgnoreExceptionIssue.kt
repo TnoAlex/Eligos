@@ -29,11 +29,4 @@ class IgnoreExceptionIssue(
         result = 31 * result + startLine
         return result
     }
-
-    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = super.unwrap(spec)
-        rawMap["ignoredExceptions"] = ignoredExceptions
-        rawMap["startLine"] = startLine
-        return rawMap
-    }
 }

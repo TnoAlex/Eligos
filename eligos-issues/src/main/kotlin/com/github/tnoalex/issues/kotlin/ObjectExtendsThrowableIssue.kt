@@ -7,12 +7,6 @@ import com.github.tnoalex.specs.FormatterSpec
 class ObjectExtendsThrowableIssue(affectedFile: String, val objectFqName: String) :
     Issue(AnalysisHierarchyEnum.CLASS, hashSetOf(affectedFile), "Object Extends Throwable",null) {
 
-    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = super.unwrap(spec)
-        rawMap["objectFqName"] = objectFqName
-        return rawMap
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
