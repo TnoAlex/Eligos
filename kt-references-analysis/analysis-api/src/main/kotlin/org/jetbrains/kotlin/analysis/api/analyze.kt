@@ -35,6 +35,7 @@ public inline fun <R> analyze(
  * @see KtAnalysisSession
  * @see KtLifetimeTokenFactory
  */
+@OptIn(KtAnalysisApiInternals::class)
 public inline fun <R> analyze(
     useSiteKtModule: KtModule,
     crossinline action: KtAnalysisSession.() -> R
@@ -44,6 +45,7 @@ public inline fun <R> analyze(
 }
 
 
+@OptIn(KtAnalysisApiInternals::class)
 public inline fun <R> analyzeInDependedAnalysisSession(
     originalFile: KtFile,
     elementToReanalyze: KtElement,

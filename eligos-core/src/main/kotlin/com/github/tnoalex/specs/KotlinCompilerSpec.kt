@@ -8,6 +8,7 @@ data class KotlinCompilerSpec(
     val jdkHome: Path,
     val kotlinVersion: String = "1.9",
     val jvmTarget: String = "1.8",
-    val kotlinStdLibPath: Path
+    val kotlinStdLibPath: Path,
+    val disableCompilerLog: Boolean
 )
 

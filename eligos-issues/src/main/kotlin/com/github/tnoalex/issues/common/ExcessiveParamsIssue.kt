@@ -11,7 +11,7 @@ class ExcessiveParamsIssue(
     startLine: Int,
     val arity: Int
 ) : FunctionTypeIssue(
-    AnalysisHierarchyEnum.METHOD,
+    AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile), null, functionFqName, valueParamList, startLine, "Excessive Parameters"
 ) {
 

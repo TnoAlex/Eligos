@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class ObjectExtendsThrowableProcessor : PsiProcessor {
+    override val supportLanguage: List<String>
+        get() = listOf("kotlin")
+
     @EventListener
     fun process(ktFile: KtFile) {
         ktFile.accept(objectVisitor)
@@ -26,7 +29,7 @@ class ObjectExtendsThrowableProcessor : PsiProcessor {
     private val objectVisitor = object : KtTreeVisitorVoid() {
 
         override fun visitObjectDeclaration(declaration: KtObjectDeclaration) {
-            if (declaration.isCompanion()) return
+            if (declaration.isCompanion()) return  super.visitObjectDeclaration(declaration)
 
             declaration.superTypes?.any { it.isNotNullThrowable() }?.ifTrue {
                 context.reportIssue(ObjectExtendsThrowableIssue(

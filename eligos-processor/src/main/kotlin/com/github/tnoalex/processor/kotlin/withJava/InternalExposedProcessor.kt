@@ -28,20 +28,20 @@ class InternalExposedProcessor : PsiProcessor {
 
     private val javaClassVisitor = object : JavaRecursiveElementVisitor() {
         override fun visitClass(aClass: PsiClass) {
-            if (aClass.superClass == null) return
-            val superClass = aClass.superClass ?: return
+            if (aClass.superClass == null) return super.visitClass(aClass)
+            val superClass = aClass.superClass ?: return super.visitClass(aClass)
             val interfaces = aClass.interfaces.filterIsInstance<KtLightClass>()
                 .filter { it.kotlinOrigin != null && it.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD) }
-            if (superClass !is KtLightClass && interfaces.isEmpty()) return
+            if (superClass !is KtLightClass && interfaces.isEmpty()) return super.visitClass(aClass)
             if (superClass is KtLightClass) {
                 superClass.kotlinOrigin ?: let {
                     logger.warn("Unknown kotlin source file during visit ${aClass.containingFile.name}")
-                    return
+                    return super.visitClass(aClass)
                 }
-                if (!superClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)) return
+                if (!superClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)) return super.visitClass(aClass)
             }
-            if (!aClass.hasModifier(JvmModifier.PUBLIC)) return
-            if (!isAllPublic(aClass)) return
+            if (!aClass.hasModifier(JvmModifier.PUBLIC)) return super.visitClass(aClass)
+            if (!isAllPublic(aClass)) return super.visitClass(aClass)
 
             val filePaths = hashSetOf(aClass.containingFile.virtualFile.path)
             var superClassName: String? = null

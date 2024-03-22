@@ -14,7 +14,7 @@ class TextFormatter : IFormatter {
 
     private fun render(content: Any, builder: StringBuilder, nest: Int) {
         when (content) {
-            is Number -> {
+            is Number, is Boolean -> {
                 builder.append("\t".repeat(nest)).append(content).append("\n")
             }
 

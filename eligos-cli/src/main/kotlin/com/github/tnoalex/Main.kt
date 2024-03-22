@@ -4,7 +4,7 @@ import java.util.*
 
 fun main(args: Array<String>) {
     showBanner()
-    CommandParser().main(args)
+    EligosCli().main(args)
 }
 
 private fun showBanner() {

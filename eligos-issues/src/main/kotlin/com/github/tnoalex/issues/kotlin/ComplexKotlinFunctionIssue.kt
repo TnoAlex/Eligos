@@ -11,7 +11,7 @@ class ComplexKotlinFunctionIssue(
     startLine: Int,
     val circleComplexity: Int
 ) : FunctionTypeIssue(
-    AnalysisHierarchyEnum.METHOD,
+    AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile),
     null,
     functionFqName,

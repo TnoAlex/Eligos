@@ -6,13 +6,15 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.common.UnusedImportIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.referenceExpressionSelfOrInChildren
+import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.*
 import com.intellij.psi.impl.compiled.ClsFileImpl
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.analysis.decompiler.psi.file.KtDecompiledFile
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.isInImportDirective
-import org.jetbrains.kotlin.psi.psiUtil.referenceExpression
+import org.slf4j.LoggerFactory
 import java.util.*
 
 @Component
@@ -50,10 +52,16 @@ class UnUsedImportProcessor : PsiProcessor {
         }
         javaFile.acceptChildren(object : JavaRecursiveElementVisitor() {
             override fun visitReferenceElement(reference: PsiJavaCodeReferenceElement) {
-                if (PsiTreeUtil.getParentOfType(reference, PsiPackageStatement::class.java) != null) return
-                if (PsiTreeUtil.getParentOfType(reference, PsiImportStatement::class.java) != null) return
-                reference.resolve()?.let {
-                    resolveImports(it, importRefs)
+                if (PsiTreeUtil.getParentOfType(reference, PsiPackageStatement::class.java) != null)
+                    return super.visitReferenceElement(reference)
+                if (PsiTreeUtil.getParentOfType(reference, PsiImportStatement::class.java) != null)
+                    return super.visitReferenceElement(reference)
+                try {
+                    reference.resolve()?.let {
+                        resolveImports(it, importRefs)
+                    }
+                } catch (e: IllegalArgumentException) {
+                    logger.warn("Can not resolve reference in file ${reference.containingFile.virtualFile.path},line ${reference.startLine}")
                 }
                 super.visitReferenceElement(reference)
             }
@@ -92,13 +100,22 @@ class UnUsedImportProcessor : PsiProcessor {
 
         ktFile.accept(object : KtTreeVisitorVoid() {
             override fun visitReferenceExpression(expression: KtReferenceExpression) {
-                if (expression.isInImportDirective()) return
-                if (PsiTreeUtil.getParentOfType(expression, KtPackageDirective::class.java) != null) return
-                expression.referenceExpression()?.run {
-                    references.forEach {
-                        it.resolve()?.let { r ->
-                            resolveImports(r, importsRefs)
+                if (expression.isInImportDirective())
+                    return super.visitReferenceExpression(expression)
+                if (PsiTreeUtil.getParentOfType(expression, KtPackageDirective::class.java) != null)
+                    return super.visitReferenceExpression(expression)
+                expression.referenceExpressionSelfOrInChildren().forEach {
+                    try {
+                        it.references.forEach { ref ->
+                            ref.resolve()?.let { r ->
+                                resolveImports(r, importsRefs)
+                            }
                         }
+                    } catch (e: NullPointerException) {
+                        logger.warn(
+                            "Can not resolve reference in file ${expression.containingFile.virtualFile.path}," +
+                                    "line ${expression.startLine}"
+                        )
                     }
                 }
                 super.visitReferenceExpression(expression)
@@ -108,6 +125,7 @@ class UnUsedImportProcessor : PsiProcessor {
             issues.add(UnusedImportIssue(hashSetOf(ktFile.virtualFilePath), importsRefs.map { importsMap[it]!! }))
         }
     }
+
 
     private fun resolveImports(element: PsiElement, importsRefs: HashSet<PsiElement>) {
         if (!importsRefs.contains(element)) { //import from cc.zz.*
@@ -131,5 +149,9 @@ class UnUsedImportProcessor : PsiProcessor {
                 }
             }
         } else importsRefs.remove(element) //import from cc.zz.AA
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(UnUsedImportProcessor::class.java)
     }
 }
