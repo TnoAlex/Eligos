@@ -52,8 +52,10 @@ class UnUsedImportProcessor : PsiProcessor {
         }
         javaFile.acceptChildren(object : JavaRecursiveElementVisitor() {
             override fun visitReferenceElement(reference: PsiJavaCodeReferenceElement) {
-                if (PsiTreeUtil.getParentOfType(reference, PsiPackageStatement::class.java) != null) return
-                if (PsiTreeUtil.getParentOfType(reference, PsiImportStatement::class.java) != null) return
+                if (PsiTreeUtil.getParentOfType(reference, PsiPackageStatement::class.java) != null)
+                    return super.visitReferenceElement(reference)
+                if (PsiTreeUtil.getParentOfType(reference, PsiImportStatement::class.java) != null)
+                    return super.visitReferenceElement(reference)
                 try {
                     reference.resolve()?.let {
                         resolveImports(it, importRefs)
@@ -98,18 +100,22 @@ class UnUsedImportProcessor : PsiProcessor {
 
         ktFile.accept(object : KtTreeVisitorVoid() {
             override fun visitReferenceExpression(expression: KtReferenceExpression) {
-                if (expression.isInImportDirective()) return
-                if (PsiTreeUtil.getParentOfType(expression, KtPackageDirective::class.java) != null) return
+                if (expression.isInImportDirective())
+                    return super.visitReferenceExpression(expression)
+                if (PsiTreeUtil.getParentOfType(expression, KtPackageDirective::class.java) != null)
+                    return super.visitReferenceExpression(expression)
                 expression.referenceExpressionSelfOrInChildren().forEach {
                     try {
-                        it.references.forEach {ref->
+                        it.references.forEach { ref ->
                             ref.resolve()?.let { r ->
                                 resolveImports(r, importsRefs)
                             }
                         }
                     } catch (e: NullPointerException) {
-                        logger.warn("Can not resolve reference in file ${expression.containingFile.virtualFile.path}," +
-                                "line ${expression.startLine}")
+                        logger.warn(
+                            "Can not resolve reference in file ${expression.containingFile.virtualFile.path}," +
+                                    "line ${expression.startLine}"
+                        )
                     }
                 }
                 super.visitReferenceExpression(expression)
@@ -119,6 +125,7 @@ class UnUsedImportProcessor : PsiProcessor {
             issues.add(UnusedImportIssue(hashSetOf(ktFile.virtualFilePath), importsRefs.map { importsMap[it]!! }))
         }
     }
+
 
     private fun resolveImports(element: PsiElement, importsRefs: HashSet<PsiElement>) {
         if (!importsRefs.contains(element)) { //import from cc.zz.*

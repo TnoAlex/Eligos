@@ -24,14 +24,22 @@ class ImplicitSingleExprFunctionProcessor : PsiProcessor {
     fun process(ktFile: KtFile) {
         ktFile.accept(object : KtTreeVisitorVoid() {
             override fun visitNamedFunction(function: KtNamedFunction) {
-                if (PsiTreeUtil.getChildOfType(function, KtTypeReference::class.java) != null) return
-                if (PsiTreeUtil.getChildOfType(function, KtBlockExpression::class.java) != null) return
+                if (PsiTreeUtil.getChildOfType(
+                        function,
+                        KtTypeReference::class.java
+                    ) != null
+                ) return super.visitNamedFunction(function)
+                if (PsiTreeUtil.getChildOfType(
+                        function,
+                        KtBlockExpression::class.java
+                    ) != null
+                ) return super.visitNamedFunction(function)
                 val returnType = function.resolveToDescriptorIfAny()?.returnType
                     ?: let {
                         logger.warn("Unknown return type of function in ${ktFile.name} at line ${function.startLine}")
-                        return
+                        return super.visitNamedFunction(function)
                     }
-                if (returnType.unwrap().isUnit()) return
+                if (returnType.unwrap().isUnit()) return super.visitNamedFunction(function)
                 context.reportIssue(
                     ImplicitSingleExprFunctionIssue(
                         ktFile.virtualFilePath,

@@ -45,9 +45,9 @@ class IgnoreExceptionProcessor : PsiProcessor {
     private val ktApiVisitor = object : KtTreeVisitorVoid() {
         override fun visitNamedFunction(function: KtNamedFunction) {
             function.resolveToDescriptorIfAny()?.let {
-                if (!it.isPublishedApi()) return
-                if (it.annotations.findAnnotation(THROWS_FQ_NAME) != null) return
-            } ?: return
+                if (!it.isPublishedApi()) return super.visitNamedFunction(function)
+                if (it.annotations.findAnnotation(THROWS_FQ_NAME) != null) super.visitNamedFunction(function)
+            } ?: super.visitNamedFunction(function)
             function.accept(ktThrowVisitor)
             super.visitNamedFunction(function)
         }
@@ -55,9 +55,16 @@ class IgnoreExceptionProcessor : PsiProcessor {
 
     private val javaCallExpressionVisitor = object : JavaRecursiveElementVisitor() {
         override fun visitCallExpression(callExpression: PsiCallExpression) {
-            if (PsiTreeUtil.getParentOfType(callExpression, PsiTryStatement::class.java) != null) return
-            val parent = PsiTreeUtil.getParentOfType(callExpression, PsiMethod::class.java) ?: return
-            parent.throwsList.referencedTypes.isNotEmpty().ifTrue { return }
+            if (PsiTreeUtil.getParentOfType(
+                    callExpression,
+                    PsiTryStatement::class.java
+                ) != null
+            ) super.visitCallExpression(callExpression)
+            val parent =
+                PsiTreeUtil.getParentOfType(callExpression, PsiMethod::class.java) ?: return super.visitCallExpression(
+                    callExpression
+                )
+            parent.throwsList.referencedTypes.isNotEmpty().ifTrue { super.visitCallExpression(callExpression) }
             callExpression.accept(javaReferenceVisitor)
             super.visitCallExpression(callExpression)
         }
@@ -107,10 +114,10 @@ class IgnoreExceptionProcessor : PsiProcessor {
 
     private val ktThrowVisitor = object : KtTreeVisitorVoid() {
         override fun visitThrowExpression(expression: KtThrowExpression) {
-            val throws = expression.thrownExpression ?: return
+            val throws = expression.thrownExpression ?: return super.visitThrowExpression(expression)
             val exceptions = expression.bindingContext.getType(throws) ?: let {
                 logger.warn("Can not resolve expression type in file ${expression.containingFile.virtualFile.path},line ${expression.startLine}")
-                return
+                return super.visitThrowExpression(expression)
             }
             findCheckedException(expression, exceptions)
             super.visitThrowExpression(expression)
@@ -121,7 +128,7 @@ class IgnoreExceptionProcessor : PsiProcessor {
         exception.supertypes().any {
             it.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME
         }.ifFalse {
-            reportIssue(element,exception.getKotlinTypeFqName(false))
+            reportIssue(element, exception.getKotlinTypeFqName(false))
         }
     }
 

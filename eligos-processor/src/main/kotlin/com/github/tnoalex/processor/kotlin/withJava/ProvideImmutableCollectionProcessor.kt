@@ -38,18 +38,18 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
             val targetFunc = try {
                 expression.methodExpression.resolve() ?: let {
                     logger.warn("Can not resolve call expression in file ${expression.containingFile.name} at line ${expression.startLine}")
-                    return
+                    return super.visitMethodCallExpression(expression)
                 }
             } catch (e: IllegalArgumentException) {
                 logger.warn("Can not resolve reference in file ${expression.containingFile.virtualFile.path},line ${expression.startLine}")
             }
-            if (targetFunc !is KtLightElement<*, *>) return
+            if (targetFunc !is KtLightElement<*, *>) return super.visitMethodCallExpression(expression)
             val ktOrigin = targetFunc.kotlinOrigin ?: let {// maybe kotlin enum
                 logger.warn(
                     "Can not resolve origin kotlin file in expression ${expression.text} " +
                             "at file ${expression.containingFile.virtualFile.path},line ${expression.startLine}"
                 )
-                return
+                return super.visitMethodCallExpression(expression)
             }
             val returnType: KotlinType? = when (ktOrigin) {
                 is KtNamedFunction -> {
@@ -66,9 +66,10 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
             }
             if (returnType == null) {
                 logger.warn("Unknown return type of element in ${ktOrigin.containingFile.name} at line ${ktOrigin.startLine}")
-                return
+                return super.visitMethodCallExpression(expression)
             }
-            if (returnType.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQNAME) return
+            if (returnType.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQNAME)
+                return super.visitMethodCallExpression(expression)
             val className = PsiTreeUtil.getParentOfType(expression, PsiClass::class.java)?.qualifiedName
                 ?: "AnonymousInnerClass"
             context.reportIssue(

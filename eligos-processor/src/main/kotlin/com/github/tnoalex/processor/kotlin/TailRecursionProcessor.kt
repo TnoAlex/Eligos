@@ -24,7 +24,7 @@ class TailRecursionProcessor : PsiProcessor {
     fun process(ktFile: KtFile) {
         ktFile.accept(object : KtTreeVisitorVoid() {
             override fun visitNamedFunction(function: KtNamedFunction) {
-                if (function.hasModifier(KtTokens.TAILREC_KEYWORD)) return
+                if (function.hasModifier(KtTokens.TAILREC_KEYWORD)) return  super.visitNamedFunction(function)
                 val isTailRecursion = findRecursion(function)
                 if (isTailRecursion) {
                     context.reportIssue(

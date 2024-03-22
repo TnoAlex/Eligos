@@ -29,7 +29,7 @@ class ObjectExtendsThrowableProcessor : PsiProcessor {
     private val objectVisitor = object : KtTreeVisitorVoid() {
 
         override fun visitObjectDeclaration(declaration: KtObjectDeclaration) {
-            if (declaration.isCompanion()) return
+            if (declaration.isCompanion()) return  super.visitObjectDeclaration(declaration)
 
             declaration.superTypes?.any { it.isNotNullThrowable() }?.ifTrue {
                 context.reportIssue(ObjectExtendsThrowableIssue(

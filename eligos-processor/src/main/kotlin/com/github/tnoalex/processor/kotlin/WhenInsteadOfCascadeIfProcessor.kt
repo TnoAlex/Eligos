@@ -30,7 +30,8 @@ class WhenInsteadOfCascadeIfProcessor : PsiProcessor {
 
     private val ifExpressionVisitor = object : KtTreeVisitorVoid() {
         override fun visitIfExpression(expression: KtIfExpression) {
-            if (expression.parent.node.elementType == KtNodeTypes.ELSE) return // if ... else if ..
+            // if ... else if ..
+            if (expression.parent.node.elementType == KtNodeTypes.ELSE) return super.visitIfExpression(expression)
             val cascadeDepth = maxCascadeDepth(expression) + 1
             if (cascadeDepth >= maxCascadeIfDepth) {
                 context.reportIssue(
