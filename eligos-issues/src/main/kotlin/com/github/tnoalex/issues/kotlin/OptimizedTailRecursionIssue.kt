@@ -9,7 +9,7 @@ class OptimizedTailRecursionIssue(
     valueParamList: List<String>,
     startLine: Int
 ) : FunctionTypeIssue(
-    AnalysisHierarchyEnum.METHOD,
+    AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile),
     null,
     functionFqName,

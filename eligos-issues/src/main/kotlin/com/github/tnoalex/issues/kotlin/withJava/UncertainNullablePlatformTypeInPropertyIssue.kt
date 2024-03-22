@@ -4,31 +4,27 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 
-class UncertainNullablePlatformTypeIssue(
+class UncertainNullablePlatformTypeInPropertyIssue(
     affectedFile: String,
     content: String,
     val propertyName: String,
     val startLine: Int,
     val upperBound: String,
     val lowerBound: String,
-    val isLocal: Boolean = false,
     val isTop: Boolean = false,
-    val isMember: Boolean = false
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile), "Uncertain Nullable Platform Type", content) {
+) : Issue(AnalysisHierarchyEnum.MEMBER, hashSetOf(affectedFile), "Uncertain Nullable Platform Type In Property", content) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
         if (!super.equals(other)) return false
 
-        other as UncertainNullablePlatformTypeIssue
+        other as UncertainNullablePlatformTypeInPropertyIssue
 
         if (propertyName != other.propertyName) return false
         if (startLine != other.startLine) return false
         if (upperBound != other.upperBound) return false
         if (lowerBound != other.lowerBound) return false
-        if (isLocal != other.isLocal) return false
         if (isTop != other.isTop) return false
-        if (isMember != other.isMember) return false
 
         return true
     }
@@ -39,9 +35,7 @@ class UncertainNullablePlatformTypeIssue(
         result = 31 * result + startLine
         result = 31 * result + upperBound.hashCode()
         result = 31 * result + lowerBound.hashCode()
-        result = 31 * result + isLocal.hashCode()
         result = 31 * result + isTop.hashCode()
-        result = 31 * result + isMember.hashCode()
         return result
     }
 
@@ -51,7 +45,7 @@ class UncertainNullablePlatformTypeIssue(
         rawMap["startLine"] = startLine
         rawMap["upperBound"] = upperBound
         rawMap["lowerBound"] = lowerBound
-        rawMap["propertyType"] = if (isTop) "topLevel" else if (isLocal) "local" else "member"
+        rawMap["propertyType"] = if (isTop) "topLevel" else "member"
         return rawMap
     }
 }

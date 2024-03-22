@@ -43,6 +43,8 @@ import org.jetbrains.kotlin.references.fe10.base.DummyKtFe10ReferenceResolutionH
 import org.jetbrains.kotlin.references.fe10.base.KtFe10KotlinReferenceProviderContributor
 import org.jetbrains.kotlin.references.fe10.base.KtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
+import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactoryImpl
 import org.jetbrains.kotlin.resolve.lazy.declarations.FileBasedDeclarationProviderFactory
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -154,6 +156,11 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
                     apiVersion = ApiVersion.createByLanguageVersion(it)
                 )
             }
+
+        ApplicationContext.addBean(
+            DataFlowValueFactory::class.simpleName!!,
+            DataFlowValueFactoryImpl(languageVersionSettings), SimpleSingletonBeanContainer
+        )
 
         return CompilerConfiguration().apply {
             put(CommonConfigurationKeys.LANGUAGE_VERSION_SETTINGS, languageVersionSettings)
