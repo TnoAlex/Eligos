@@ -13,7 +13,7 @@ class ProvideImmutableCollectionIssue(
     val startLine: Int,
     content: String,
     val useJavaClassFqName: String
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, affectedFiles, "Provide Immutable Collection", content) {
+) : Issue(AnalysisHierarchyEnum.EXPRESSION, affectedFiles,  content) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

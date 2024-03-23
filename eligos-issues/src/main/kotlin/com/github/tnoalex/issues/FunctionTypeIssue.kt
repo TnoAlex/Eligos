@@ -12,9 +12,8 @@ abstract class FunctionTypeIssue(
     @UnpackIgnore
     val functionFqName: String,
     val valueParamList: List<String>,
-    val startLine: Int,
-    issueName: String
-) : Issue(layer, affectedFiles, issueName, content) {
+    val startLine: Int
+) : Issue(layer, affectedFiles, content) {
     val functionSignature: String by lazy { buildSignature() }
 
     private fun buildSignature(): String {

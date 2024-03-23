@@ -11,10 +11,11 @@ abstract class Issue(
     val layer: AnalysisHierarchyEnum,
     @UnpackIgnore
     val affectedFiles: HashSet<String>,
-    val issueName: String,
     @UnpackIgnore
     val content: String? = null
 ) : Formatable {
+    @UnpackIgnore
+    val issueName: String = getIssueNameFormProperties(this::class.simpleName!!)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -34,7 +35,9 @@ abstract class Issue(
     }
 
     override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = unpackingIssue()
+        val rawMap = LinkedHashMap<String, Any>()
+        rawMap["issueName"] = issueName
+        rawMap.putAll(unpackingIssue())
         rawMap["affectedFiles"] = affectedFiles.map { relativePath(spec.srcPathPrefix, it) }
         if (spec.resultFormat == FormatterTypeEnum.HTML || spec.resultFormat == FormatterTypeEnum.TEXT) {
             content?.let {

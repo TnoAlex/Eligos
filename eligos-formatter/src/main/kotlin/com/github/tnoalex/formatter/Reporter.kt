@@ -1,12 +1,11 @@
 package com.github.tnoalex.formatter
 
 import com.github.tnoalex.Context
+import com.github.tnoalex.formatter.utils.getMetaInfoProperties
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.specs.FormatterSpec
 import org.slf4j.LoggerFactory
-import java.io.InputStream
 import java.time.ZonedDateTime
-import java.util.*
 
 class Reporter(private val formatterSpec: FormatterSpec) {
 
@@ -47,17 +46,10 @@ class Reporter(private val formatterSpec: FormatterSpec) {
     }
 
     private fun getMetaInfo(): LinkedHashMap<String, Any> {
-        val stream = ApplicationContext.currentClassLoader.getResourceAsStream("eligos-meta.properties")
-            ?: InputStream.nullInputStream()
-        val properties = Properties()
-        properties.load(stream)
         val metaInfo = LinkedHashMap<String, Any>()
-        properties.toMap().forEach { (k, v) ->
-            metaInfo[k.toString()] = v
-        }
+        getMetaInfoProperties()?.let { metaInfo.putAll(it) }
         metaInfo["Create Time"] = ZonedDateTime.now().toString()
         metaInfo["Source Base Path"] = formatterSpec.srcPathPrefix
-        stream.close()
         return metaInfo
     }
 

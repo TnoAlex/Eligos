@@ -5,7 +5,7 @@ import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 
 class ObjectExtendsThrowableIssue(affectedFile: String, val objectFqName: String) :
-    Issue(AnalysisHierarchyEnum.CLASS, hashSetOf(affectedFile), "Object Extends Throwable",null) {
+    Issue(AnalysisHierarchyEnum.CLASS, hashSetOf(affectedFile),null) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

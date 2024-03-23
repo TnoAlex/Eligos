@@ -4,11 +4,10 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.issues.kotlin.withJava.IgnoreExceptionIssue
+import com.github.tnoalex.issues.kotlin.withJava.IgnoredExceptionIssue
 import com.github.tnoalex.processor.PsiProcessor
-import com.github.tnoalex.processor.utils.bindingContext
-import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
-import com.github.tnoalex.processor.utils.startLine
+import com.github.tnoalex.processor.utils.*
+import com.github.tnoalex.processor.utils.refCanNotResolveWarn
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
@@ -25,7 +24,7 @@ import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class IgnoreExceptionProcessor : PsiProcessor {
+class IgnoredExceptionProcessor : PsiProcessor {
     override val supportLanguage: List<String>
         get() = listOf("kotlin", "java")
 
@@ -46,7 +45,7 @@ class IgnoreExceptionProcessor : PsiProcessor {
         override fun visitNamedFunction(function: KtNamedFunction) {
             function.resolveToDescriptorIfAny()?.let {
                 if (!it.isPublishedApi()) return super.visitNamedFunction(function)
-                if (it.annotations.findAnnotation(THROWS_FQ_NAME) != null) super.visitNamedFunction(function)
+                if (it.annotations.findAnnotation(THROWS_FQ_NAME) != null) return super.visitNamedFunction(function)
             } ?: super.visitNamedFunction(function)
             function.accept(ktThrowVisitor)
             super.visitNamedFunction(function)
@@ -80,10 +79,7 @@ class IgnoreExceptionProcessor : PsiProcessor {
                     if (isAnnotatedWithThrows(ktOrigin)) return@forEach
                     ktOrigin.accept(ktThrowVisitor)
                 } catch (e: RuntimeException) {
-                    logger.warn(
-                        "Can not resolve reference in file ${expression.containingFile.virtualFile.path}," +
-                                "line ${expression.startLine}"
-                    )
+                    logger.refCanNotResolveWarn(expression)
                     return@forEach
                 }
             }
@@ -116,7 +112,7 @@ class IgnoreExceptionProcessor : PsiProcessor {
         override fun visitThrowExpression(expression: KtThrowExpression) {
             val throws = expression.thrownExpression ?: return super.visitThrowExpression(expression)
             val exceptions = expression.bindingContext.getType(throws) ?: let {
-                logger.warn("Can not resolve expression type in file ${expression.containingFile.virtualFile.path},line ${expression.startLine}")
+                logger.refCanNotResolveWarn(expression)
                 return super.visitThrowExpression(expression)
             }
             findCheckedException(expression, exceptions)
@@ -134,8 +130,8 @@ class IgnoreExceptionProcessor : PsiProcessor {
 
     private fun reportIssue(expression: KtExpression, exceptions: String) {
         context.reportIssue(
-            IgnoreExceptionIssue(
-                expression.containingFile.virtualFile.path,
+            IgnoredExceptionIssue(
+                expression.filePath,
                 expression.text,
                 exceptions,
                 expression.startLine
@@ -144,7 +140,7 @@ class IgnoreExceptionProcessor : PsiProcessor {
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(IgnoreExceptionProcessor::class.java)
+        private val logger = LoggerFactory.getLogger(IgnoredExceptionProcessor::class.java)
         private val THROWS_FQ_NAME = FqName("kotlin.jvm.Throws")
         private const val JAVA_RUNTIME_EXCEPTION_FQ_NAME = "java.lang.RuntimeException"
     }

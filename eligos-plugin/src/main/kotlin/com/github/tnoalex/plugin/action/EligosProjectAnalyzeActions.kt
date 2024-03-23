@@ -10,6 +10,7 @@ import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.plugin.bean.IdeBeanSupportStructureScanner
 import com.github.tnoalex.plugin.parser.IdePluginFileDistributor
 import com.github.tnoalex.specs.AnalyzerSpec
+import com.github.tnoalex.specs.DebugSpec
 import com.github.tnoalex.specs.FormatterSpec
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.notification.NotificationGroupManager
@@ -35,13 +36,6 @@ class EligosProjectAnalyzeActions : AnAction() {
                     ApplicationManager.getApplication().runReadAction { startEligosAnalyzerTask(project) }
                 }
             }
-        val reportBackgroundTask = object : Task.Backgroundable(project, "Eligos reporting", false, ALWAYS_BACKGROUND) {
-            override fun run(indicator: ProgressIndicator) {
-                indicator.text = "Eligos reporting..."
-                indicator.isIndeterminate = true
-                ApplicationManager.getApplication().runWriteAction { startEligosReportTask(project) }
-            }
-        }
         ProgressManager.getInstance().run(analysisBackgroundTask)
     }
 
@@ -98,7 +92,8 @@ class EligosProjectAnalyzeActions : AnAction() {
                     project.name,
                     FormatterTypeEnum.JSON,
                 ),
-                launchEnvironment = LaunchEnvironment.IDE_PLUGIN
+                launchEnvironment = LaunchEnvironment.IDE_PLUGIN,
+                DebugSpec()
             )
         )
     }

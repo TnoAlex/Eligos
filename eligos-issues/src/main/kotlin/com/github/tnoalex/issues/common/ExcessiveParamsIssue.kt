@@ -12,7 +12,7 @@ class ExcessiveParamsIssue(
     val arity: Int
 ) : FunctionTypeIssue(
     AnalysisHierarchyEnum.MEMBER,
-    hashSetOf(affectedFile), null, functionFqName, valueParamList, startLine, "Excessive Parameters"
+    hashSetOf(affectedFile), null, functionFqName, valueParamList, startLine
 ) {
 
     override fun equals(other: Any?): Boolean {

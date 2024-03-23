@@ -14,7 +14,6 @@ class UncertainNullablePlatformExpressionUsageIssue(
 ) : Issue(
     AnalysisHierarchyEnum.EXPRESSION,
     hashSetOf(affectedFile),
-    "Uncertain Nullable Platform Expression Usage",
     content
 ) {
     override fun equals(other: Any?): Boolean {

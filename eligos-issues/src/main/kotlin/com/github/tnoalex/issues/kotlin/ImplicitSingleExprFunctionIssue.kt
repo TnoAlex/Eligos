@@ -15,6 +15,5 @@ class ImplicitSingleExprFunctionIssue(
     content,
     functionFqName,
     valueParamList,
-    startLine,
-    "Implicit Single Expression Function"
+    startLine
 )

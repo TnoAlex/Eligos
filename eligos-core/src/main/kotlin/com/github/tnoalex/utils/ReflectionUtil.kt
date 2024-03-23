@@ -8,13 +8,12 @@ import java.io.File
 import java.lang.reflect.InvocationTargetException
 import java.net.URL
 import kotlin.reflect.*
-import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.functions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
-fun <T : Any> getDeclaredMemberProperties(clazz: KClass<T>): Collection<KProperty1<T, *>> {
-    return clazz.declaredMemberProperties
+fun <T : Any> getMemberProperties(clazz: KClass<T>): Collection<KProperty1<T, *>> {
+    return clazz.memberProperties
 }
 
 fun <T> KProperty<T>.isAnnotatedWith(annotationKClass: KClass<out Annotation>): Boolean {

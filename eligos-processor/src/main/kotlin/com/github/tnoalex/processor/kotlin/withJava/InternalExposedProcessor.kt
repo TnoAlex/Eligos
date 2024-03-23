@@ -6,6 +6,9 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.withJava.InternalExposedIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.filePath
+import com.github.tnoalex.processor.utils.kotlinOriginCanNotResolveWarn
+import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.intellij.lang.jvm.JvmModifier
 import com.intellij.psi.JavaRecursiveElementVisitor
 import com.intellij.psi.PsiClass
@@ -35,7 +38,7 @@ class InternalExposedProcessor : PsiProcessor {
             if (superClass !is KtLightClass && interfaces.isEmpty()) return super.visitClass(aClass)
             if (superClass is KtLightClass) {
                 superClass.kotlinOrigin ?: let {
-                    logger.warn("Unknown kotlin source file during visit ${aClass.containingFile.name}")
+                    logger.kotlinOriginCanNotResolveWarn("class", aClass)
                     return super.visitClass(aClass)
                 }
                 if (!superClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)) return super.visitClass(aClass)
@@ -53,18 +56,22 @@ class InternalExposedProcessor : PsiProcessor {
             context.reportIssue(
                 InternalExposedIssue(
                     (filePaths + interfaces.map {
-                        it.kotlinOrigin?.containingFile?.virtualFile?.path ?: let {
-                            logger.warn("Unknown kotlin source file during visit ${aClass.containingFile.name}")
+                        it.kotlinOrigin?.filePath ?: let {
+                            logger.kotlinOriginCanNotResolveWarn("class", aClass)
                             "unknown kotlin file"
                         }
                     }).toHashSet(),
-                    aClass.qualifiedName ?: let{
-                        logger.warn("Unknown java class name during visit ${aClass.containingFile.name}")
-                        "unknown java class"},
+                    aClass.qualifiedName ?: let {
+                        logger.nameCanNotResolveWarn("class", aClass)
+                        "unknown java class"
+                    },
                     superClassName,
-                    interfaces.map { it.kotlinOrigin?.fqName?.asString() ?: let{
-                        logger.warn("Unknown kotlin interface name during visit ${aClass.containingFile.name}")
-                        "unknown kotlin interface"}
+                    interfaces.map {
+                        val name = it.kotlinOrigin?.fqName?.asString()
+                        if (name == null) {
+                            logger.nameCanNotResolveWarn("interface", it)
+                            "unknown kotlin interface"
+                        } else name
                     }
                 )
             )

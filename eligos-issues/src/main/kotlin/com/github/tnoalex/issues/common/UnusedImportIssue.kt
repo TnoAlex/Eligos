@@ -7,7 +7,7 @@ import com.github.tnoalex.specs.FormatterSpec
 class UnusedImportIssue(
     affectedFiles: HashSet<String>,
     val unusedImports: List<String>
-) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles, "Unused Import", null) {
+) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles,  null) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

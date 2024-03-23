@@ -11,7 +11,7 @@ class InternalExposedIssue(
     val javaClassFqName: String,
     val kotlinClassFqName: String?,
     val kotlinInterfacesFqNames: List<String>?
-) : Issue(AnalysisHierarchyEnum.CLASS, affectedFiles,"Internal Exposed",null) {
+) : Issue(AnalysisHierarchyEnum.CLASS, affectedFiles,null) {
 
     @UnpackIgnore
     val isExtend: Boolean

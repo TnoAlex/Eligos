@@ -6,8 +6,7 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.withJava.ProvideImmutableCollectionIssue
 import com.github.tnoalex.processor.PsiProcessor
-import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
-import com.github.tnoalex.processor.utils.startLine
+import com.github.tnoalex.processor.utils.*
 import com.intellij.psi.JavaRecursiveElementVisitor
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiJavaFile
@@ -37,18 +36,15 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
         override fun visitMethodCallExpression(expression: PsiMethodCallExpression) {
             val targetFunc = try {
                 expression.methodExpression.resolve() ?: let {
-                    logger.warn("Can not resolve call expression in file ${expression.containingFile.name} at line ${expression.startLine}")
+                    logger.refCanNotResolveWarn(expression)
                     return super.visitMethodCallExpression(expression)
                 }
-            } catch (e: IllegalArgumentException) {
-                logger.warn("Can not resolve reference in file ${expression.containingFile.virtualFile.path},line ${expression.startLine}")
+            } catch (e: RuntimeException) {
+                logger.refCanNotResolveWarn(expression)
             }
             if (targetFunc !is KtLightElement<*, *>) return super.visitMethodCallExpression(expression)
             val ktOrigin = targetFunc.kotlinOrigin ?: let {// maybe kotlin enum
-                logger.warn(
-                    "Can not resolve origin kotlin file in expression ${expression.text} " +
-                            "at file ${expression.containingFile.virtualFile.path},line ${expression.startLine}"
-                )
+                logger.kotlinOriginCanNotResolveWarn("expression", expression)
                 return super.visitMethodCallExpression(expression)
             }
             val returnType: KotlinType? = when (ktOrigin) {
@@ -65,18 +61,18 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
                 }
             }
             if (returnType == null) {
-                logger.warn("Unknown return type of element in ${ktOrigin.containingFile.name} at line ${ktOrigin.startLine}")
+                logger.nameCanNotResolveWarn("return type", expression)
                 return super.visitMethodCallExpression(expression)
             }
-            if (returnType.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQNAME)
+            if (returnType.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQ_NAME)
                 return super.visitMethodCallExpression(expression)
             val className = PsiTreeUtil.getParentOfType(expression, PsiClass::class.java)?.qualifiedName
                 ?: "AnonymousInnerClass"
             context.reportIssue(
                 ProvideImmutableCollectionIssue(
-                    hashSetOf(expression.containingFile.virtualFile.path, ktOrigin.containingFile.virtualFile.path),
+                    hashSetOf(expression.filePath, ktOrigin.filePath),
                     (ktOrigin as KtCallableDeclaration).fqName?.asString() ?: let {
-                        logger.warn("Unknown function name in file ${ktOrigin.containingFile.name} at line ${ktOrigin.startLine}")
+                        logger.nameCanNotResolveWarn("function", ktOrigin)
                         "unknown func name"
                     },
                     ktOrigin is KtNamedFunction,
@@ -94,7 +90,7 @@ class ProvideImmutableCollectionProcessor : PsiProcessor {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(ProvideImmutableCollectionProcessor::class.java)
 
-        private val KOTLIN_IMMUTABLE_FQNAME =
+        private val KOTLIN_IMMUTABLE_FQ_NAME =
             listOf("kotlin.collections.List", "kotlin.collections.Set", "kotlin.collections.Map")
     }
 }

@@ -15,7 +15,7 @@ class CircularReferencesIssue(
     affectedFiles: HashSet<String>,
     @UnpackIgnore
     private val refGraph: Graph<String, DefaultEdge>,
-) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles, "Circular References", null) {
+) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles, null) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

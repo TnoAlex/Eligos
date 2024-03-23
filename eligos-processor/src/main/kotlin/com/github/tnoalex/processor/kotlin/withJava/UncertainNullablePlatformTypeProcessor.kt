@@ -8,9 +8,8 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpressionUsageIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeInPropertyIssue
 import com.github.tnoalex.processor.PsiProcessor
-import com.github.tnoalex.processor.utils.bindingContext
-import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
-import com.github.tnoalex.processor.utils.startLine
+import com.github.tnoalex.processor.utils.*
+import com.github.tnoalex.processor.utils.typeCanNotResolveWarn
 import org.jetbrains.kotlin.cfg.containingDeclarationForPseudocode
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFile
@@ -29,6 +28,7 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
     override val supportLanguage: List<String>
         get() = listOf("java", "kotlin")
     val dataFlowValueFactory = ApplicationContext.getBean(DataFlowValueFactory::class.java).first()
+
     @EventListener
     fun process(ktFile: KtFile) {
         ktFile.accept(kotlinPropertyVisitor)
@@ -37,10 +37,8 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
     private val kotlinPropertyVisitor = object : KtTreeVisitorVoid() {
         override fun visitExpression(expression: KtExpression) {
             val bindingContext = expression.bindingContext
-            val expectedType =
-                bindingContext[BindingContext.EXPECTED_EXPRESSION_TYPE, expression] ?: return super.visitExpression(
-                    expression
-                )
+            val expectedType = bindingContext[BindingContext.EXPECTED_EXPRESSION_TYPE, expression]
+                ?: return super.visitExpression(expression)
             if (expectedType.isNullable() || expectedType.isFlexibleRecursive()) {
                 return super.visitExpression(expression)
             }
@@ -74,7 +72,7 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
         override fun visitProperty(property: KtProperty) {
             if (property.isLocal) return super.visitProperty(property)
             val descriptor = property.resolveToDescriptorIfAny() ?: let {
-                logger.warn("Unknown type of ${property.text} in file ${property.containingFile.name}")
+                logger.typeCanNotResolveWarn("property", property)
                 return super.visitProperty(property)
             }
             val propertyType = descriptor.type
@@ -84,10 +82,10 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
                 //found platform type
                 context.reportIssue(
                     UncertainNullablePlatformTypeInPropertyIssue(
-                        property.containingFile.virtualFile.path,
+                        property.filePath,
                         property.text,
                         property.name ?: let {
-                            logger.warn("unknown property name in file ${property.containingFile.name} at line ${property.startLine}")
+                            logger.nameCanNotResolveWarn("property",property)
                             "unknown property name"
                         },
                         property.startLine,

@@ -7,8 +7,8 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.common.CircularReferencesIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.refCanNotResolveWarn
 import com.github.tnoalex.processor.utils.referenceExpressionSelfOrInChildren
-import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.analysis.decompiler.psi.file.KtDecompiledFile
@@ -65,11 +65,8 @@ class CircularReferencesProcessor : PsiProcessor {
                         it.references.forEach { ref ->
                             ref.resolve()?.let { r -> resolveRef(r, fileName) }
                         }
-                    } catch (e: NullPointerException) {
-                        logger.warn(
-                            "Can not resolve reference in file ${expression.containingFile.virtualFile.path}," +
-                                    "line ${expression.startLine}"
-                        )
+                    } catch (e: RuntimeException) {
+                        logger.refCanNotResolveWarn(expression)
                     }
                 }
                 super.visitReferenceExpression(expression)
@@ -90,8 +87,8 @@ class CircularReferencesProcessor : PsiProcessor {
                     reference.resolve()?.let {
                         resolveRef(it, fileName)
                     }
-                } catch (e: IllegalArgumentException) {
-                    logger.warn("Can not resolve reference in file ${reference.containingFile.virtualFile.path},line ${reference.startLine}")
+                } catch (e: RuntimeException) {
+                    logger.refCanNotResolveWarn(reference)
                 }
                 super.visitReferenceElement(reference)
             }

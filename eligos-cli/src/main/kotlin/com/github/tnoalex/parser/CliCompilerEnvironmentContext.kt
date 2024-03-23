@@ -191,7 +191,7 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         environment: KotlinCoreEnvironment,
         files: List<KtFile>
     ): BindingContext {
-        logger.info("Analyzing... Please waiting")
+        logger.info("Analyzing... Please wait")
         val analyzer = AnalyzerWithCompilerReport(
             MyMessageCollector(compilerSpec.disableCompilerLog),
             environment.configuration.languageVersionSettings,

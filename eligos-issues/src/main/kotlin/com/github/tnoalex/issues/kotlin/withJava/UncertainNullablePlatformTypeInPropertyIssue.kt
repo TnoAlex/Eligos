@@ -17,7 +17,6 @@ class UncertainNullablePlatformTypeInPropertyIssue(
 ) : Issue(
     AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile),
-    "Uncertain Nullable Platform Type In Property",
     content
 ) {
     override fun equals(other: Any?): Boolean {

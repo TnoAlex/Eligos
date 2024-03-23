@@ -14,6 +14,5 @@ class OptimizedTailRecursionIssue(
     null,
     functionFqName,
     valueParamList,
-    startLine,
-    "Optimized Tail Recursion"
+    startLine
 )

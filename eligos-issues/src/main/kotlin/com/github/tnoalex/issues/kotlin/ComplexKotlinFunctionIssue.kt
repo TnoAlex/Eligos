@@ -16,8 +16,7 @@ class ComplexKotlinFunctionIssue(
     null,
     functionFqName,
     valueParamList,
-    startLine,
-    "Complex Kotlin Function"
+    startLine
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
