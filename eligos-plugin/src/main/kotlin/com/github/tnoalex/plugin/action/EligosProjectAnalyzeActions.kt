@@ -7,7 +7,9 @@ import com.github.tnoalex.formatter.Reporter
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
+import com.github.tnoalex.plugin.EligosBundle
 import com.github.tnoalex.plugin.bean.IdeBeanSupportStructureScanner
+import com.github.tnoalex.plugin.config.EligosSettings
 import com.github.tnoalex.plugin.parser.IdePluginFileDistributor
 import com.github.tnoalex.specs.AnalyzerSpec
 import com.github.tnoalex.specs.DebugSpec
@@ -22,6 +24,12 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import org.jetbrains.kotlin.config.ApiVersion
+import org.jetbrains.kotlin.config.LanguageVersion
+import org.jetbrains.kotlin.config.LanguageVersionSettings
+import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
+import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
+import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactoryImpl
 import java.io.File
 
 
@@ -29,9 +37,10 @@ class EligosProjectAnalyzeActions : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val analysisBackgroundTask =
-            object : Task.Backgroundable(project, "Eligos analyzing", true, ALWAYS_BACKGROUND) {
+            object :
+                Task.Backgroundable(project, EligosBundle.message("eligos.analysis.title"), true, ALWAYS_BACKGROUND) {
                 override fun run(indicator: ProgressIndicator) {
-                    indicator.text = "Running Eligos analysis task..."
+                    indicator.text = EligosBundle.message("eligos.analysis.message")
                     indicator.isIndeterminate = true
                     ApplicationManager.getApplication().runReadAction { startEligosAnalyzerTask(project) }
                 }
@@ -40,7 +49,13 @@ class EligosProjectAnalyzeActions : AnAction() {
     }
 
     private fun startEligosReportTask(project: Project) {
-        val formatterSpec = ApplicationContext.getExactBean(Analyzer::class.java)!!.analyzerSpec.formatterSpec
+        val settings = project.getService(EligosSettings::class.java)!!
+        val formatterSpec = FormatterSpec(
+            settings.getOutputPath(),
+            File(settings.getOutputPath()).toPath(),
+            project.name,
+            settings.getFormatType()
+        )
         Reporter(formatterSpec).report()
         ApplicationManager.getApplication().invokeLater {
             displayDoneBalloon(project)
@@ -64,8 +79,9 @@ class EligosProjectAnalyzeActions : AnAction() {
     }
 
     private fun initEligosApplication(project: Project) {
-        val classLoader = PluginManager.getPlugins().first { it.name == "Eligos" }.pluginClassLoader
-            ?: throw RuntimeException("Can not find plugin clas loader")
+        val classLoader =
+            PluginManager.getPlugins().first { it.name == EligosBundle.message("eligos.name") }.pluginClassLoader
+                ?: throw RuntimeException(EligosBundle.message("eligos.classloader.error.message"))
         val ideBeanSupportStructureScanner = IdeBeanSupportStructureScanner(classLoader)
         ApplicationContext.addBeanRegisterDistributor(listOf(ideBeanSupportStructureScanner))
         ApplicationContext.addBeanContainerScanner(listOf(ideBeanSupportStructureScanner))
@@ -73,13 +89,31 @@ class EligosProjectAnalyzeActions : AnAction() {
         val configParser = ConfigParser()
         ApplicationContext.addBean(configParser::class.java.simpleName, configParser, SimpleSingletonBeanContainer)
 
+        ApplicationContext.addBean(
+            DataFlowValueFactory::class.java.simpleName,
+            createDataFlowFactory(),
+            SimpleSingletonBeanContainer
+        )
+
         ApplicationContext.currentClassLoader = classLoader
         ApplicationContext.init()
         val analyzer = createAnalyzer(project)
         ApplicationContext.addBean(analyzer::class.java.simpleName, analyzer, SimpleSingletonBeanContainer)
     }
 
+    private fun createDataFlowFactory(): DataFlowValueFactoryImpl {
+        val languageVersionSettings: LanguageVersionSettings =
+            LanguageVersion.fromVersionString(EligosBundle.message("eligos.supportKtVersion"))!!.let {
+                LanguageVersionSettingsImpl(
+                    languageVersion = it,
+                    apiVersion = ApiVersion.createByLanguageVersion(it)
+                )
+            }
+        return DataFlowValueFactoryImpl(languageVersionSettings)
+    }
+
     private fun createAnalyzer(project: Project): Analyzer {
+        val settings = project.getService(EligosSettings::class.java)!!
         return Analyzer(
             AnalyzerSpec(
                 "kotlin",
@@ -87,8 +121,8 @@ class EligosProjectAnalyzeActions : AnAction() {
                 extendRulePath = project.basePath?.let { File(it) },
                 kotlinCompilerSpec = null,
                 formatterSpec = FormatterSpec(
-                    project.basePath ?: "",
-                    project.basePath?.let { File(it).toPath() } ?: File(".").toPath(),
+                    settings.getOutputPath(),
+                    File(settings.getOutputPath()).toPath(),
                     project.name,
                     FormatterTypeEnum.JSON,
                 ),
@@ -99,18 +133,20 @@ class EligosProjectAnalyzeActions : AnAction() {
     }
 
     private fun displayErrorBalloon(project: Project) {
-        NotificationGroupManager.getInstance().getNotificationGroup("Eligos Error")
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup(EligosBundle.message("eligos.errorNotification.group"))
             .createNotification(
-                "Eligos error",
-                "An error has occurred ... please contact us on github",
+                EligosBundle.message("eligos.errorNotification.title"),
+                EligosBundle.message("eligos.errorNotification.message"),
                 NotificationType.ERROR
             )
             .notify(project)
     }
 
     private fun displayDoneBalloon(project: Project) {
-        NotificationGroupManager.getInstance().getNotificationGroup("Eligos Done")
-            .createNotification("Eligos done!", NotificationType.INFORMATION)
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup(EligosBundle.message("eligos.doneNotification.group"))
+            .createNotification(EligosBundle.message("eligos.doneNotification.title"), NotificationType.INFORMATION)
             .notify(project)
     }
 }

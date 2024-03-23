@@ -19,5 +19,8 @@
     <extensions defaultExtensionNs="com.intellij">
         <notificationGroup displayType="BALLOON" id="Eligos Error"/>
         <notificationGroup displayType="BALLOON" id="Eligos Done"/>
+
+        <projectConfigurable groupId="tools" displayName="Eligos"
+                             provider="com.github.tnoalex.plugin.config.EligosConfigurableProvider"/>
     </extensions>
 </idea-plugin>

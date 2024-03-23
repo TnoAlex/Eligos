@@ -7,6 +7,7 @@ import com.github.tnoalex.foundation.bean.handler.BeanHandler
 import com.github.tnoalex.foundation.bean.handler.BeanHandlerScanner
 import com.github.tnoalex.foundation.bean.register.BeanRegister
 import com.github.tnoalex.foundation.bean.register.BeanRegisterDistributor
+import com.github.tnoalex.plugin.EligosBundle
 import java.lang.reflect.Modifier
 import java.net.JarURLConnection
 
@@ -59,8 +60,8 @@ class IdeBeanSupportStructureScanner(private val classLoader: ClassLoader) :
     }
 
     private fun loadClass() {
-        val extensionList = classLoader.getResource("eligos.extension.pkgs")?.readText()
-            ?: throw RuntimeException("Can not find eligos components or components config is null !")
+        val extensionList = classLoader.getResource(EligosBundle.message("eligos.extension.name"))?.readText()
+            ?: throw RuntimeException(EligosBundle.message("eligos.classFind.error.message"))
         extensionList.split("\n").forEach { ext ->
             val resourcePath = ext.replace(".", "/")
             val urls = classLoader.getResources(resourcePath)
