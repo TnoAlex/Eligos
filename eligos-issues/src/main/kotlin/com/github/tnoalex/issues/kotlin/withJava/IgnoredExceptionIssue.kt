@@ -1,6 +1,7 @@
 package com.github.tnoalex.issues.kotlin.withJava
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 
 class IgnoredExceptionIssue(
@@ -8,7 +9,12 @@ class IgnoredExceptionIssue(
     content: String?,
     val ignoredExceptions: String,
     val startLine: Int
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile),  content) {
+) : Issue(
+    EligosIssueBundle.message("issue.name.IgnoredExceptionIssue"),
+    AnalysisHierarchyEnum.EXPRESSION,
+    hashSetOf(affectedFile),
+    content
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

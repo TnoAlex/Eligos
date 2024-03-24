@@ -8,14 +8,14 @@ import com.github.tnoalex.specs.FormatterSpec
 import com.github.tnoalex.utils.relativePath
 
 abstract class Issue(
+    @UnpackIgnore
+    val issueName: String ,
     val layer: AnalysisHierarchyEnum,
     @UnpackIgnore
     val affectedFiles: HashSet<String>,
     @UnpackIgnore
     val content: String? = null
 ) : Formatable {
-    @UnpackIgnore
-    val issueName: String = getIssueNameFormProperties(this::class.simpleName!!)
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

@@ -2,10 +2,10 @@ package com.github.tnoalex.issues
 
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.formatter.UnpackIgnore
-import com.github.tnoalex.specs.FormatterSpec
 
 @Suppress("unused")
 abstract class FunctionTypeIssue(
+    issueName: String,
     layer: AnalysisHierarchyEnum,
     affectedFiles: HashSet<String>,
     content: String?,
@@ -13,7 +13,7 @@ abstract class FunctionTypeIssue(
     val functionFqName: String,
     val valueParamList: List<String>,
     val startLine: Int
-) : Issue(layer, affectedFiles, content) {
+) : Issue(issueName, layer, affectedFiles, content) {
     val functionSignature: String by lazy { buildSignature() }
 
     private fun buildSignature(): String {

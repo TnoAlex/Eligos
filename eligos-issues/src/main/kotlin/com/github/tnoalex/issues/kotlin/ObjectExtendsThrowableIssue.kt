@@ -1,11 +1,16 @@
 package com.github.tnoalex.issues.kotlin
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
-import com.github.tnoalex.specs.FormatterSpec
 
 class ObjectExtendsThrowableIssue(affectedFile: String, val objectFqName: String) :
-    Issue(AnalysisHierarchyEnum.CLASS, hashSetOf(affectedFile),null) {
+    Issue(
+        EligosIssueBundle.message("issue.name.ObjectExtendsThrowableIssue"),
+        AnalysisHierarchyEnum.CLASS,
+        hashSetOf(affectedFile),
+        null
+    ) {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

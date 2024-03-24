@@ -1,7 +1,7 @@
 package com.github.tnoalex.formatter
 
 import com.github.tnoalex.Context
-import com.github.tnoalex.formatter.utils.getMetaInfoProperties
+import com.github.tnoalex.EligosCoreBundle
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.specs.FormatterSpec
 import org.slf4j.LoggerFactory
@@ -47,8 +47,9 @@ class Reporter(private val formatterSpec: FormatterSpec) {
 
     private fun getMetaInfo(): LinkedHashMap<String, Any> {
         val metaInfo = LinkedHashMap<String, Any>()
-        getMetaInfoProperties()?.let { metaInfo.putAll(it) }
-        metaInfo["Create Time"] = ZonedDateTime.now().toString()
+        metaInfo["EligosVersion"] = EligosCoreBundle.message("meta.EligosVersion")
+        metaInfo["EligosBuildTime"] = EligosCoreBundle.message("meta.EligosBuildTime")
+        metaInfo["Report Time"] = ZonedDateTime.now().toString()
         metaInfo["Source Base Path"] = formatterSpec.srcPathPrefix
         return metaInfo
     }

@@ -1,15 +1,20 @@
 package com.github.tnoalex.issues.kotlin
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
-import com.github.tnoalex.specs.FormatterSpec
 
 class WhenInsteadOfCascadeIfIssue(
     affectedFile: String,
     content: String,
     val cascadeDepth: Int,
     val startLine: Int
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, hashSetOf(affectedFile),  content) {
+) : Issue(
+    EligosIssueBundle.message("issue.name.WhenInsteadOfCascadeIfIssue"),
+    AnalysisHierarchyEnum.EXPRESSION,
+    hashSetOf(affectedFile),
+    content
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

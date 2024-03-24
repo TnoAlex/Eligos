@@ -1,13 +1,13 @@
 package com.github.tnoalex.issues.common
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
-import com.github.tnoalex.specs.FormatterSpec
 
 class UnusedImportIssue(
     affectedFiles: HashSet<String>,
     val unusedImports: List<String>
-) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles,  null) {
+) : Issue(EligosIssueBundle.message("issue.name.UnusedImportIssue"), AnalysisHierarchyEnum.FILE, affectedFiles, null) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

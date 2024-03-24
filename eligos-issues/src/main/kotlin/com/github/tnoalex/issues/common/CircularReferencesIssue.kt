@@ -3,6 +3,7 @@ package com.github.tnoalex.issues.common
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.formatter.UnpackIgnore
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 import com.github.tnoalex.utils.relativePath
@@ -15,7 +16,12 @@ class CircularReferencesIssue(
     affectedFiles: HashSet<String>,
     @UnpackIgnore
     private val refGraph: Graph<String, DefaultEdge>,
-) : Issue(AnalysisHierarchyEnum.FILE, affectedFiles, null) {
+) : Issue(
+    EligosIssueBundle.message("issue.name.CircularReferencesIssue"),
+    AnalysisHierarchyEnum.FILE,
+    affectedFiles,
+    null
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

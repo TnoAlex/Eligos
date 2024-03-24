@@ -2,6 +2,7 @@ package com.github.tnoalex.issues.kotlin.withJava
 
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.formatter.UnpackIgnore
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 
@@ -11,7 +12,12 @@ class InternalExposedIssue(
     val javaClassFqName: String,
     val kotlinClassFqName: String?,
     val kotlinInterfacesFqNames: List<String>?
-) : Issue(AnalysisHierarchyEnum.CLASS, affectedFiles,null) {
+) : Issue(
+    EligosIssueBundle.message("issue.name.InternalExposedIssue"),
+    AnalysisHierarchyEnum.CLASS,
+    affectedFiles,
+    null
+) {
 
     @UnpackIgnore
     val isExtend: Boolean

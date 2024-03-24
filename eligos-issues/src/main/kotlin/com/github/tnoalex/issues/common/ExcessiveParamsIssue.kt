@@ -1,6 +1,7 @@
 package com.github.tnoalex.issues.common
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.FunctionTypeIssue
 import com.github.tnoalex.specs.FormatterSpec
 
@@ -11,6 +12,7 @@ class ExcessiveParamsIssue(
     startLine: Int,
     val arity: Int
 ) : FunctionTypeIssue(
+    EligosIssueBundle.message("issue.name.ExcessiveParamsIssue"),
     AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile), null, functionFqName, valueParamList, startLine
 ) {

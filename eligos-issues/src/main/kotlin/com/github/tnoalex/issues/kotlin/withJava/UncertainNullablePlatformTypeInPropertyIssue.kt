@@ -2,6 +2,7 @@ package com.github.tnoalex.issues.kotlin.withJava
 
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.formatter.UnpackIgnore
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.specs.FormatterSpec
 
@@ -15,6 +16,7 @@ class UncertainNullablePlatformTypeInPropertyIssue(
     @UnpackIgnore
     val isTop: Boolean = false,
 ) : Issue(
+    EligosIssueBundle.message("issue.name.UncertainNullablePlatformTypeInPropertyIssue"),
     AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile),
     content

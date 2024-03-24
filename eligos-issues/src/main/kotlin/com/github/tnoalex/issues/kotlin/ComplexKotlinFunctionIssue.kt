@@ -1,6 +1,7 @@
 package com.github.tnoalex.issues.kotlin
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.FunctionTypeIssue
 import com.github.tnoalex.specs.FormatterSpec
 
@@ -11,6 +12,7 @@ class ComplexKotlinFunctionIssue(
     startLine: Int,
     val circleComplexity: Int
 ) : FunctionTypeIssue(
+    EligosIssueBundle.message("issue.name.ComplexKotlinFunctionIssue"),
     AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile),
     null,
