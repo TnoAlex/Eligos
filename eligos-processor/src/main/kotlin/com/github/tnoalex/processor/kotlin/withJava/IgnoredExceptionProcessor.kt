@@ -123,6 +123,9 @@ class IgnoredExceptionProcessor : PsiProcessor {
 
     private fun findCheckedException(element: KtExpression, exception: KotlinType) {
         if (exception.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME) return
+        exception.supertypes().any { it.getKotlinTypeFqName(false) == JAVA_ERROR }.ifTrue {
+            return
+        }
         exception.supertypes().any {
             it.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME
         }.ifFalse {
@@ -145,5 +148,6 @@ class IgnoredExceptionProcessor : PsiProcessor {
         private val logger = LoggerFactory.getLogger(IgnoredExceptionProcessor::class.java)
         private val THROWS_FQ_NAME = FqName("kotlin.jvm.Throws")
         private const val JAVA_RUNTIME_EXCEPTION_FQ_NAME = "java.lang.RuntimeException"
+        private const val JAVA_ERROR = "java.lang.Error"
     }
 }
