@@ -52,7 +52,7 @@ fun initEligosEnv() {
     val executorPool = Executors.newFixedThreadPool(2)
     val compilerThread = Callable {
         Thread.currentThread().name = "compilerThread"
-        val cliCompilerEnvironmentContext = CliCompilerEnvironmentContext(analyzerSpec.kotlinCompilerSpec)
+        val cliCompilerEnvironmentContext = CliCompilerEnvironmentContext(analyzerSpec.kotlinCompilerSpec!!)
         cliCompilerEnvironmentContext.initCompilerEnv()
         cliCompilerEnvironmentContext
     }

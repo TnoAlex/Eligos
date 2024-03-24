@@ -6,7 +6,8 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.ObjectExtendsThrowableIssue
 import com.github.tnoalex.processor.PsiProcessor
-import com.github.tnoalex.processor.utils.startLine
+import com.github.tnoalex.processor.utils.filePath
+import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.superTypes
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
@@ -33,12 +34,9 @@ class ObjectExtendsThrowableProcessor : PsiProcessor {
 
             declaration.superTypes?.any { it.isNotNullThrowable() }?.ifTrue {
                 context.reportIssue(ObjectExtendsThrowableIssue(
-                    declaration.containingKtFile.virtualFilePath,
+                    declaration.filePath,
                     declaration.fqName?.asString() ?: let {
-                        logger.warn(
-                            "Can not resolve object fq name in file ${declaration.containingKtFile.virtualFilePath}," +
-                                    "line ${declaration.startLine}"
-                        )
+                        logger.nameCanNotResolveWarn("object",declaration)
                         "unknown object name"
                     }
                 )

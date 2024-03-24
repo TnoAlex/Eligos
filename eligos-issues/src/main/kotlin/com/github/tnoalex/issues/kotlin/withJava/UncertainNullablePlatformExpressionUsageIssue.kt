@@ -1,10 +1,10 @@
 package com.github.tnoalex.issues.kotlin.withJava
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
-import com.github.tnoalex.specs.FormatterSpec
 
-@Suppress("MemberVisibilityCanBePrivate")
+
 class UncertainNullablePlatformExpressionUsageIssue(
     affectedFile: String,
     content: String,
@@ -13,21 +13,11 @@ class UncertainNullablePlatformExpressionUsageIssue(
     val actualType: String,
     val smartCastedActualType: String
 ) : Issue(
+    EligosIssueBundle.message("issue.name.UncertainNullablePlatformExpressionUsageIssue"),
     AnalysisHierarchyEnum.EXPRESSION,
     hashSetOf(affectedFile),
-    "Uncertain Nullable Platform Expression Usage",
     content
 ) {
-
-    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = super.unwrap(spec)
-        rawMap[::startLine.name] = startLine
-        rawMap[::expectType.name] = expectType
-        rawMap[::actualType.name] = actualType
-        rawMap[::smartCastedActualType.name] = smartCastedActualType
-        return rawMap
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

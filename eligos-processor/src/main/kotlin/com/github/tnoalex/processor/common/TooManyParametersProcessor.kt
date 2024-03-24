@@ -7,6 +7,8 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.common.ExcessiveParamsIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.filePath
+import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.*
 import org.jetbrains.kotlin.psi.KtFile
@@ -67,16 +69,15 @@ class TooManyParametersProcessor : PsiProcessor {
                     with(function) {
                         issues.add(
                             ExcessiveParamsIssue(
-                                containingFile.virtualFile.path,
+                                filePath,
                                 fqName?.asString() ?: let {
-                                    logger.warn("Unknown function name in ${function.containingFile.name} at line ${function.startLine}")
+                                   logger.nameCanNotResolveWarn("function",this)
                                     "unknown func"
                                 },
-                                function.valueParameters.map {
-                                    it.name ?: let {
-                                        logger.warn("Unknown parameter name in ${function.name} of file ${function.containingFile.name} " +
-                                                "at line ${function.startLine} ")
-                                        ""
+                                function.valueParameters.map {p->
+                                    p.name ?: let {
+                                        logger.nameCanNotResolveWarn("parameter",p)
+                                        "unknown param"
                                     }
                                 },
                                 function.startLine,

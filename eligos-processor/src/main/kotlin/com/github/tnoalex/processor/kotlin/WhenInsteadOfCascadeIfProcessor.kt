@@ -7,6 +7,7 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.WhenInsteadOfCascadeIfIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.startLine
 import org.jetbrains.kotlin.KtNodeTypes
 import org.jetbrains.kotlin.psi.KtExpression
@@ -36,7 +37,7 @@ class WhenInsteadOfCascadeIfProcessor : PsiProcessor {
             if (cascadeDepth >= maxCascadeIfDepth) {
                 context.reportIssue(
                     WhenInsteadOfCascadeIfIssue(
-                        expression.containingKtFile.virtualFilePath,
+                        expression.filePath,
                         expression.text,
                         cascadeDepth,
                         expression.startLine

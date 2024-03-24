@@ -1,9 +1,10 @@
 package com.github.tnoalex.issues.kotlin.withJava
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
-import com.github.tnoalex.specs.FormatterSpec
 
+@Suppress("unused")
 class ProvideImmutableCollectionIssue(
     affectedFiles: HashSet<String>,
     val providerKtElementFqName: String,
@@ -12,7 +13,12 @@ class ProvideImmutableCollectionIssue(
     val startLine: Int,
     content: String,
     val useJavaClassFqName: String
-) : Issue(AnalysisHierarchyEnum.EXPRESSION, affectedFiles, "Provide Immutable Collection", content) {
+) : Issue(
+    EligosIssueBundle.message("issue.name.ProvideImmutableCollectionIssue"),
+    AnalysisHierarchyEnum.EXPRESSION,
+    affectedFiles,
+    content
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -33,14 +39,5 @@ class ProvideImmutableCollectionIssue(
         result = 31 * result + startLine
         result = 31 * result + useJavaClassFqName.hashCode()
         return result
-    }
-
-    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = super.unwrap(spec)
-        rawMap["useJavaClassFqName"] = useJavaClassFqName
-        rawMap["providerKtElementFqName"] = providerKtElementFqName
-        if (isFunction) rawMap["isFunction"] = true else rawMap["isProperty"] = true
-        rawMap["startLine"] = startLine
-        return rawMap
     }
 }

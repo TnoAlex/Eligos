@@ -6,6 +6,7 @@ import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.OptimizedTailRecursionIssue
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.referenceExpressionSelfOrInChildren
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.util.PsiTreeUtil
@@ -31,15 +32,12 @@ class TailRecursionProcessor : PsiProcessor {
                         OptimizedTailRecursionIssue(
                             ktFile.virtualFilePath,
                             function.fqName?.asString() ?: let {
-                                logger.warn("Unknown function name in ${ktFile.name} at line ${function.startLine}")
+                                logger.nameCanNotResolveWarn("function",function)
                                 "unknown func"
                             },
                             function.valueParameters.map {
                                 it.name ?: let {
-                                    logger.warn(
-                                        "Unknown parameter name in ${function.name} of file ${function.containingFile.name}" +
-                                                " at line ${function.startLine}"
-                                    )
+                                    logger.nameCanNotResolveWarn("parameter",function)
                                     ""
                                 }
                             },

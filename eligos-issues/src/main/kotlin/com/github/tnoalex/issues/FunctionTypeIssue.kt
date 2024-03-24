@@ -1,17 +1,19 @@
 package com.github.tnoalex.issues
 
 import com.github.tnoalex.AnalysisHierarchyEnum
-import com.github.tnoalex.specs.FormatterSpec
+import com.github.tnoalex.formatter.UnpackIgnore
 
+@Suppress("unused")
 abstract class FunctionTypeIssue(
+    issueName: String,
     layer: AnalysisHierarchyEnum,
     affectedFiles: HashSet<String>,
     content: String?,
+    @UnpackIgnore
     val functionFqName: String,
     val valueParamList: List<String>,
-    val startLine: Int,
-    issueName: String
-) : Issue(layer, affectedFiles, issueName, content) {
+    val startLine: Int
+) : Issue(issueName, layer, affectedFiles, content) {
     val functionSignature: String by lazy { buildSignature() }
 
     private fun buildSignature(): String {
@@ -40,12 +42,5 @@ abstract class FunctionTypeIssue(
         result = 31 * result + functionFqName.hashCode()
         result = 31 * result + valueParamList.hashCode()
         return result
-    }
-
-    override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
-        val rawMap = super.unwrap(spec)
-        rawMap["function"] = functionSignature
-        rawMap["startLine"] = startLine
-        return rawMap
     }
 }

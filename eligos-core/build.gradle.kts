@@ -13,8 +13,8 @@ dependencies {
 tasks.register("writeProperties") {
     doLast {
         val properties = mapOf(
-            "EligosVersion" to project.version,
-            "EligosBuildTime" to ZonedDateTime.now()
+            "meta.EligosVersion" to project.version,
+            "meta.EligosBuildTime" to ZonedDateTime.now()
         )
 
         val content = properties.entries.joinToString("\n") { (key, value) ->
