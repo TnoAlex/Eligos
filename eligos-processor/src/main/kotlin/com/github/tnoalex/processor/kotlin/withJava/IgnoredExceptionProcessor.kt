@@ -7,7 +7,6 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.withJava.IgnoredExceptionIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.*
-import com.github.tnoalex.processor.utils.refCanNotResolveWarn
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
@@ -63,7 +62,9 @@ class IgnoredExceptionProcessor : PsiProcessor {
                 PsiTreeUtil.getParentOfType(callExpression, PsiMethod::class.java) ?: return super.visitCallExpression(
                     callExpression
                 )
-            parent.throwsList.referencedTypes.isNotEmpty().ifTrue { super.visitCallExpression(callExpression) }
+            parent.throwsList.referencedTypes.isNotEmpty().ifTrue {
+                return super.visitCallExpression(callExpression)
+            }
             callExpression.accept(javaReferenceVisitor)
             super.visitCallExpression(callExpression)
         }
