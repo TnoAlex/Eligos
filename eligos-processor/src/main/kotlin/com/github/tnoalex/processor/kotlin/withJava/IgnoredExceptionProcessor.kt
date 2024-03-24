@@ -122,6 +122,7 @@ class IgnoredExceptionProcessor : PsiProcessor {
     }
 
     private fun findCheckedException(element: KtExpression, exception: KotlinType) {
+        if (exception.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME) return
         exception.supertypes().any {
             it.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME
         }.ifFalse {
