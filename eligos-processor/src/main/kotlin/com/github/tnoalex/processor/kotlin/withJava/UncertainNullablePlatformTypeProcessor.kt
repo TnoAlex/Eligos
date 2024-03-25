@@ -11,6 +11,7 @@ import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.*
 import com.github.tnoalex.processor.utils.typeCanNotResolveWarn
 import org.jetbrains.kotlin.cfg.containingDeclarationForPseudocode
+import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtProperty
@@ -54,16 +55,21 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
                 dataFlowValueFactory.createDataFlowValue(expression, type, bindingContext, declarationDescriptor)
             val nullabilities = completeNullabilityInfo[dataFlowValue].getOrNull()
             if (nullabilities != Nullability.NOT_NULL && type.isFlexibleRecursive()) {
-                context.reportIssue(
-                    UncertainNullablePlatformExpressionUsageIssue(
-                        expression.containingFile.virtualFile.path,
-                        expression.parent.text!!,
-                        expression.startLine,
-                        expectedType.toString(),
-                        type.toString(),
-                        nullabilities?.toString() ?: "no smart cast"
+                val target = expression.mainReference?.resolve()
+                if (target !is KtProperty) {
+                    context.reportIssue(
+                        UncertainNullablePlatformExpressionUsageIssue(
+                            expression.containingFile.virtualFile.path,
+                            expression.parent.text!!,
+                            expression.startLine,
+                            expectedType.toString(),
+                            type.toString(),
+                            nullabilities?.toString() ?: "no smart cast"
+                        )
                     )
-                )
+                } else {
+                    reportProperty(target)
+                }
             }
             super.visitExpression(expression)
         }
@@ -71,13 +77,18 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
 
         override fun visitProperty(property: KtProperty) {
             if (property.isLocal) return super.visitProperty(property)
+            reportProperty(property)
+            super.visitProperty(property)
+        }
+
+        private fun reportProperty(property: KtProperty) {
             val descriptor = property.resolveToDescriptorIfAny() ?: let {
                 logger.typeCanNotResolveWarn("property", property)
-                return super.visitProperty(property)
+                return
             }
             val propertyType = descriptor.type
             // dynamic type can not be resolved
-            if (propertyType.isDynamic()) return super.visitProperty(property)
+            if (propertyType.isDynamic()) return
             if (propertyType.isFlexibleRecursive()) {
                 //found platform type
                 context.reportIssue(
@@ -95,7 +106,7 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
                     )
                 )
             }
-            super.visitProperty(property)
+            return
         }
     }
 
