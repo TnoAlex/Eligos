@@ -15,6 +15,8 @@ class UncertainNullablePlatformTypeInPropertyIssue(
     val lowerBound: String,
     @UnpackIgnore
     val isTop: Boolean = false,
+    @UnpackIgnore
+    val isLocal: Boolean = false,
 ) : Issue(
     EligosIssueBundle.message("issue.name.UncertainNullablePlatformTypeInPropertyIssue"),
     AnalysisHierarchyEnum.MEMBER,
@@ -49,7 +51,7 @@ class UncertainNullablePlatformTypeInPropertyIssue(
 
     override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
         val rawMap = super.unwrap(spec)
-        rawMap["propertyType"] = if (isTop) "topLevel" else "member"
+        rawMap["propertyType"] = if (isTop) "topLevel" else if (isLocal) "local" else "member"
         return rawMap
     }
 }
