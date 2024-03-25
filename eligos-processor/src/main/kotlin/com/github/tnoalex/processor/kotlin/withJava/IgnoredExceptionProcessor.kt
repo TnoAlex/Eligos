@@ -7,7 +7,6 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.kotlin.withJava.IgnoredExceptionIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.*
-import com.github.tnoalex.processor.utils.refCanNotResolveWarn
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
@@ -63,7 +62,9 @@ class IgnoredExceptionProcessor : PsiProcessor {
                 PsiTreeUtil.getParentOfType(callExpression, PsiMethod::class.java) ?: return super.visitCallExpression(
                     callExpression
                 )
-            parent.throwsList.referencedTypes.isNotEmpty().ifTrue { super.visitCallExpression(callExpression) }
+            parent.throwsList.referencedTypes.isNotEmpty().ifTrue {
+                return super.visitCallExpression(callExpression)
+            }
             callExpression.accept(javaReferenceVisitor)
             super.visitCallExpression(callExpression)
         }
@@ -121,6 +122,10 @@ class IgnoredExceptionProcessor : PsiProcessor {
     }
 
     private fun findCheckedException(element: KtExpression, exception: KotlinType) {
+        if (exception.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME) return
+        exception.supertypes().any { it.getKotlinTypeFqName(false) == JAVA_ERROR }.ifTrue {
+            return
+        }
         exception.supertypes().any {
             it.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME
         }.ifFalse {
@@ -143,5 +148,6 @@ class IgnoredExceptionProcessor : PsiProcessor {
         private val logger = LoggerFactory.getLogger(IgnoredExceptionProcessor::class.java)
         private val THROWS_FQ_NAME = FqName("kotlin.jvm.Throws")
         private const val JAVA_RUNTIME_EXCEPTION_FQ_NAME = "java.lang.RuntimeException"
+        private const val JAVA_ERROR = "java.lang.Error"
     }
 }
