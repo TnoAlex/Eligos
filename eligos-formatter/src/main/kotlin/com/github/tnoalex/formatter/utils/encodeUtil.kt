@@ -37,7 +37,7 @@ private fun encodeObj(obj: Any, encoder: (String) -> String): Any {
         }
 
         else -> {
-            throw RuntimeException("Can not encode object with type ${obj::class.simpleName}")
+            obj.toString()
         }
     }
 }
