@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.resolve.descriptorUtil.isPublishedApi
+import org.jetbrains.kotlin.resolve.descriptorUtil.isEffectivelyPublicApi
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.typeUtil.supertypes
 import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
@@ -43,10 +43,10 @@ class IgnoredExceptionProcessor : PsiProcessor {
     private val ktApiVisitor = object : KtTreeVisitorVoid() {
         override fun visitNamedFunction(function: KtNamedFunction) {
             function.resolveToDescriptorIfAny()?.let {
-                if (!it.isPublishedApi()) return super.visitNamedFunction(function)
+                if (!it.isEffectivelyPublicApi) return super.visitNamedFunction(function)
                 if (it.annotations.findAnnotation(THROWS_FQ_NAME) != null) return super.visitNamedFunction(function)
             } ?: super.visitNamedFunction(function)
-            function.accept(ktThrowVisitor)
+            function.accept(ThrowExpressionVisitor(false))
             super.visitNamedFunction(function)
         }
     }
@@ -78,7 +78,7 @@ class IgnoredExceptionProcessor : PsiProcessor {
                     if (psiElement !is KtLightElement<*, *>) return@forEach
                     val ktOrigin = psiElement.kotlinOrigin ?: return@forEach
                     if (isAnnotatedWithThrows(ktOrigin)) return@forEach
-                    ktOrigin.accept(ktThrowVisitor)
+                    ktOrigin.accept(ThrowExpressionVisitor(true))
                 } catch (e: RuntimeException) {
                     logger.refCanNotResolveWarn(expression)
                     return@forEach
@@ -109,19 +109,21 @@ class IgnoredExceptionProcessor : PsiProcessor {
         return false
     }
 
-    private val ktThrowVisitor = object : KtTreeVisitorVoid() {
+    private inner class ThrowExpressionVisitor(
+        private val calledByJava: Boolean
+    ) : KtTreeVisitorVoid() {
         override fun visitThrowExpression(expression: KtThrowExpression) {
             val throws = expression.thrownExpression ?: return super.visitThrowExpression(expression)
             val exceptions = expression.bindingContext.getType(throws) ?: let {
                 logger.refCanNotResolveWarn(expression)
                 return super.visitThrowExpression(expression)
             }
-            findCheckedException(expression, exceptions)
+            findCheckedException(expression, exceptions, calledByJava)
             super.visitThrowExpression(expression)
         }
     }
 
-    private fun findCheckedException(element: KtExpression, exception: KotlinType) {
+    private fun findCheckedException(element: KtExpression, exception: KotlinType, calledByJava: Boolean) {
         if (exception.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME) return
         exception.supertypes().any { it.getKotlinTypeFqName(false) == JAVA_ERROR }.ifTrue {
             return
@@ -129,19 +131,21 @@ class IgnoredExceptionProcessor : PsiProcessor {
         exception.supertypes().any {
             it.getKotlinTypeFqName(false) == JAVA_RUNTIME_EXCEPTION_FQ_NAME
         }.ifFalse {
-            reportIssue(element, exception.getKotlinTypeFqName(false))
+            reportIssue(element, exception.getKotlinTypeFqName(false), calledByJava)
         }
     }
 
-    private fun reportIssue(expression: KtExpression, exceptions: String) {
-        context.reportIssue(
-            IgnoredExceptionIssue(
-                expression.filePath,
-                expression.text,
-                exceptions,
-                expression.startLine
-            )
+    private fun reportIssue(expression: KtExpression, exceptions: String, calledByJava: Boolean) {
+        val issue = IgnoredExceptionIssue(
+            expression.filePath,
+            expression.text,
+            exceptions,
+            expression.startLine,
+            calledByJava
         )
+        if (issue !in context.issues || calledByJava) {
+            context.reportIssue(issue)
+        }
     }
 
     companion object {
