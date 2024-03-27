@@ -136,7 +136,7 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         val kotlinFiles = with(compilerSpec.srcPath) {
             toFile().walk()
                 .filter { it.isFile }
-                .filter { it.extension.equals("kt", true) || it.extension.equals("kts", true) }
+                .filter { it.extension.equals("kt", true) }
                 .map { it.absolutePath }
                 .toList()
         }

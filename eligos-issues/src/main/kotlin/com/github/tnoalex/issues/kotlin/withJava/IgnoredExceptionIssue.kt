@@ -8,7 +8,8 @@ class IgnoredExceptionIssue(
     affectedFile: String,
     content: String?,
     val ignoredExceptions: String,
-    val startLine: Int
+    val startLine: Int,
+    var calledByJava: Boolean
 ) : Issue(
     EligosIssueBundle.message("issue.name.IgnoredExceptionIssue"),
     AnalysisHierarchyEnum.EXPRESSION,
