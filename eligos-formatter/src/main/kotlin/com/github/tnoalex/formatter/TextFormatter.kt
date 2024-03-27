@@ -56,7 +56,7 @@ class TextFormatter : IFormatter {
 
             is Enum<*> -> builder.append("\t".repeat(nest)).append(content.name).append("\n")
 
-            else -> throw RuntimeException("Can not create render text")
+            else -> builder.append("\t".repeat(nest)).append(content.toString()).append("\n")
         }
     }
 }

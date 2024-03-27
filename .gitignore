@@ -3,6 +3,8 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+**/src/main/resources/eligos-meta.properties
+testData/**/.idea
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

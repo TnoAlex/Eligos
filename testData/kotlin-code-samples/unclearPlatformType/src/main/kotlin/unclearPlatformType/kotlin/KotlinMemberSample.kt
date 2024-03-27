@@ -25,5 +25,6 @@ class KotlinMemberSample {
             test1(x)
             println("x is null")
         }
+        test1(x)
     }
 }

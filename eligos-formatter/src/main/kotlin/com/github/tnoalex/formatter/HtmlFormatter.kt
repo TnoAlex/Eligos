@@ -34,7 +34,12 @@ class HtmlFormatter : IFormatter {
         writeCss(filePath)
         writeImg(filePath)
         logger.info("Report will be wrote in $dirName ")
-        val fileOutputStream = FileOutputStream(File(dirName + File.separatorChar + "report." + fileExtension))
+        val html = File(dirName + File.separatorChar + "report." + fileExtension)
+        if (!html.exists()){
+            if (!html.createNewFile())
+                throw RuntimeException("Can not creat html report")
+        }
+        val fileOutputStream = FileOutputStream(html)
         fileOutputStream.write(formatted.toByteArray(Charsets.UTF_8))
         fileOutputStream.close()
     }
