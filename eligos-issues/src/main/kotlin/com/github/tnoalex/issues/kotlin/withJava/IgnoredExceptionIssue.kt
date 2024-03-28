@@ -4,6 +4,7 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 
+@Suppress("unused")
 class IgnoredExceptionIssue(
     affectedFile: String,
     content: String?,

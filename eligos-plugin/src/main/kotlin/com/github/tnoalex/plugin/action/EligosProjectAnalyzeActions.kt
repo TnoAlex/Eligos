@@ -24,6 +24,7 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFileManager
 import org.jetbrains.kotlin.config.ApiVersion
 import org.jetbrains.kotlin.config.LanguageVersion
 import org.jetbrains.kotlin.config.LanguageVersionSettings
@@ -59,6 +60,7 @@ class EligosProjectAnalyzeActions : AnAction() {
         Reporter(formatterSpec).report()
         ApplicationManager.getApplication().invokeLater {
             displayDoneBalloon(project)
+            VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
         }
     }
 
