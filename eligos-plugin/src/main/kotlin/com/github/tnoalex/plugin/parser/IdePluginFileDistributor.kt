@@ -32,16 +32,24 @@ class IdePluginFileDistributor : FileDistributor {
     override fun init() {}
 
     fun initPsiManager(project: Project) {
+        if (!this::psiManager.isInitialized) {
+            initSelf(project)
+            val resolutionHelper =
+                ApplicationManager.getApplication().getService(KtFe10ReferenceResolutionHelper::class.java)
+            ApplicationContext.addBean(
+                resolutionHelper::class.java.simpleName,
+                resolutionHelper,
+                SimpleSingletonBeanContainer
+            )
+        } else if (psiManager.isDisposed) {
+            initSelf(project)
+        }
+    }
+
+    private fun initSelf(project: Project) {
         psiManager = project.getService(PsiManager::class.java)
         projectFiles = VirtualFileManager.getInstance().findFileByNioPath(Path(project.basePath ?: return))
         fileIndex = ProjectFileIndex.getInstance(project)
-        val resolutionHelper =
-            ApplicationManager.getApplication().getService(KtFe10ReferenceResolutionHelper::class.java)
-        ApplicationContext.addBean(
-            resolutionHelper::class.java.simpleName,
-            resolutionHelper,
-            SimpleSingletonBeanContainer
-        )
     }
 
     override fun dispatch() {

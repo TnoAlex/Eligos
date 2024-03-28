@@ -65,10 +65,10 @@ class EligosProjectAnalyzeActions : AnAction() {
     private fun startEligosAnalyzerTask(project: Project) {
         if (!ApplicationContext.isInitialized) {
             initEligosApplication(project)
-            val idePluginFileDistributor =
-                ApplicationContext.getExactBean(IdePluginFileDistributor::class.java) ?: return
-            idePluginFileDistributor.initPsiManager(project)
         }
+        val idePluginFileDistributor =
+            ApplicationContext.getExactBean(IdePluginFileDistributor::class.java) ?: return
+        idePluginFileDistributor.initPsiManager(project)
         try {
             ApplicationContext.getExactBean(Analyzer::class.java)!!.analyze()
             startEligosReportTask(project)
