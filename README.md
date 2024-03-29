@@ -9,55 +9,93 @@ Eligos, a static code analysis tool for the [_Kotlin_ programming language](http
 In the current version, we can detect the following 11 code smell:
 
 <table>
-    <tr  align="center">
+    <tr align="center">
         <td><b>Type</b></td>
+        <td><b>Label</b></td>
         <td><b>Description</b></td>
     </tr>
-    <tr bgcolor="#FCF3CF"  align="center">
-        <td>Circular References 🟨 </td>
+    <tr>
+        <td>Circular References</td>
+        <td>🟨</td>
         <td>Two or more classes or files have interdependencies that form a closed loop</td>
     </tr>
-    <tr bgcolor="#FCF3CF"  align="center">
-        <td>Excessive Parameters 🟨</td>
+    <tr>
+        <td>Excessive Parameters</td>
+        <td>🟨</td>
         <td>A method has too many arguments</td>
     </tr>
-    <tr bgcolor="#FCF3CF"  align="center">
-        <td>Unused Import 🟨</td>
+    <tr>
+        <td>Unused Import</td>
+        <td>🟨</td>
         <td>Classes, attributes, methods, or packages that have been imported into a file, but have never been used</td>
     </tr>
-    <tr bgcolor="#FCF3CF"  align="center">
-        <td>Complex Method 🟨</td>
+    <tr>
+        <td>Complex Method</td>
+        <td>🟨</td>
         <td>The complexity of the loop is too large</td>
     </tr>
-    <tr bgcolor="#D5F5E3"  align="center">
-        <td>Provide Immutable Collection 🟩</td>
+    <tr>
+        <td>Provide Immutable Collection</td>
+        <td>🟩</td>
         <td>Kotlin provides immutable collection types when java calling Kotlin&#39;s API</td>
     </tr>
-    <tr  bgcolor="#D5F5E3"  align="center">
-        <td>Internal Exposed 🟩</td>
+    <tr >
+        <td>Internal Exposed</td>
+        <td>🟩</td>
         <td>Java inherits or implements an abstract class or interface for Internal in kotlin and extends its access to public</td>
     </tr>
-    <tr  bgcolor="#D5F5E3"  align="center">
-        <td>Unclear Platform Type 🟩</td>
-        <td>Kotlin calls the Java return value non-null-safe API and does not specify the nullability of the return value</td>
+    <tr>
+        <td>Uncertain Nullable Platform Expression Usage</td>
+        <td>🟩</td>
+        <td>Kotlin locally calls a Java method that returns a null-agnostic type, and uses this result directly in a Kotlin method that expects completely non-null arguments</td>
     </tr>
-    <tr bgcolor="#D2B4DE"  align="center">
-        <td>When Instead Of Cascade If 🟪</td>
+   <tr>
+       <td>Uncertain Nullable Platform Type In Property</td>
+       <td>🟩</td>
+       <td>Kotlin calls an empty agnostic Java method or property and uses this value as the return value of the getter for the class property</td>
+    </tr>
+    <tr>
+        <td>Non JVMStatic Companion Function</td>
+        <td>🟩</td>
+        <td>Public functions in a companion object must be annotated with @JvmStatic to be exposed as a static method.Without the annotation, these functions are only available as instance methods on a static Companion field.</td>
+    </tr>
+    <tr>
+        <td>Non JVMField Companion Value</td>
+        <td>🟩</td>
+        <td>Public, non-const properties which are effective constants in a companion object must be annotated with @JvmField to be exposed as a static field.</td>
+    </tr>
+    <tr>
+        <td>Incomprehensible JavaFacade Name</td>
+        <td>🟩</td>
+        <td>When a file contains top-level functions or properties, always annotate it with @file:JvmName("Foo") to provide a nice name.By default, top-level members in a file MyClass.kt will end up in a class called MyClassKt which is unappealing and leaks the language as an implementation detail.</td>
+    </tr>
+    <tr>
+        <td>Ignored Exception</td>
+        <td>🟩</td>
+        <td>Functions which can throw checked exceptions should document them with @Throws. Runtime exceptions should be documented in KDoc.Be mindful of the APIs a function delegates to as they may throw checked exceptions which Kotlin otherwise silently allows to propagate.</td>
+    </tr>
+    <tr >
+        <td>When Instead Of Cascade If</td>
+        <td>🟪</td>
         <td>If statements with too many cascades should be replaced with when statements</td>
     </tr>
-    <tr bgcolor="#D2B4DE"  align="center">
-        <td>Implicit Single Expression Function 🟪</td>
+    <tr >
+        <td>Implicit Single Expression Function</td>
+          <td>🟪</td>
         <td>kotlin&#39;s one-expression method returns a value of type other than Unit, but does not specify the return type</td>
     </tr>
-    <tr bgcolor="#D2B4DE"  align="center">
-        <td>Object Extends Throwable 🟪</td>
+    <tr >
+        <td>Object Extends Throwable</td>
+          <td>🟪</td>
         <td>The class decorated with kotlin object inherits from Throwable</td>
     </tr>
-    <tr bgcolor="#D2B4DE"  align="center">
-        <td>Optimized Tail Recursion 🟪</td>
+    <tr >
+        <td>Optimized Tail Recursion</td>
+          <td>🟪</td>
         <td>The tail recursion function in Kotlin does not indicate that it is tail recursive</td>
     </tr>
 </table>
+
 
 In the table, yellow is common to Java Kotlin, green is generated when Koltin Java calls each other, and purple is unique to Kotlin.
 
