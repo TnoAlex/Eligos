@@ -1,6 +1,6 @@
-# Eligos
+# <conter class="img"><img src="./doc/imgs/icon.svg"/></center> Eligos
 
-![GitHub License](https://img.shields.io/github/license/TnoAlex/Eligos)
+![GitHub License](https://img.shields.io/github/license/TnoAlex/Eligos) 
 
 Eligos, a static code analysis tool for the [_Kotlin_ programming language](https://kotlinlang.org/).
 
