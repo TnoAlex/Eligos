@@ -7,5 +7,7 @@ class Test {
 
         @JvmField
         val ste = "ste"
+
+        val tt by lazy { "" }
     }
 }

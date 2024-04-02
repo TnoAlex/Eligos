@@ -40,6 +40,7 @@ class NonJVMFieldCompanionValueProcessor : PsiProcessor {
 
     private val propertyVisitorVoid = object : KtTreeVisitorVoid() {
         override fun visitProperty(property: KtProperty) {
+            if (property.hasDelegate()) return super.visitProperty(property)
             property.resolveToDescriptorIfAny()?.let {
                 if (!it.isEffectivelyPublicApi) return super.visitProperty(property)
                 if (it.isConst) return super.visitProperty(property)
