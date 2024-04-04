@@ -5,6 +5,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.common.CircularReferencesIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.refCanNotResolveWarn
@@ -28,6 +29,8 @@ import org.slf4j.LoggerFactory
 @Suitable(LaunchEnvironment.CLI)
 class CircularReferencesProcessor : PsiProcessor {
     private var dependencyGraph = newEmptyGraph()
+    override val severity: Severity
+        get() = Severity.CODE_SMELL
     override val supportLanguage: List<String>
         get() = listOf("java", "kotlin")
 

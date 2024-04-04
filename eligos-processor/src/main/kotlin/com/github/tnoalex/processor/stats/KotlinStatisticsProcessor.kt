@@ -5,7 +5,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.BaseProcessor
 import com.github.tnoalex.processor.utils.lineCount
 import com.github.tnoalex.statistics.KotlinStatistics
 import org.jetbrains.kotlin.psi.*
@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.psi.*
 
 @Component(order = -1)
 @Suitable(LaunchEnvironment.CLI)
-class KotlinStatisticsProcessor : PsiProcessor {
+class KotlinStatisticsProcessor : BaseProcessor {
     private var stats = KotlinStatistics()
 
     @EventListener(order = -1)

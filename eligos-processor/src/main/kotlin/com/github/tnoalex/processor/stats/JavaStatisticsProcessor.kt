@@ -5,7 +5,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.BaseProcessor
 import com.github.tnoalex.processor.utils.lineCount
 import com.github.tnoalex.statistics.JavaStatistics
 import com.intellij.psi.JavaRecursiveElementVisitor
@@ -15,7 +15,7 @@ import com.intellij.psi.PsiMethod
 
 @Component(order = -1)
 @Suitable(LaunchEnvironment.CLI)
-class JavaStatisticsProcessor : PsiProcessor {
+class JavaStatisticsProcessor : BaseProcessor {
     private var stats = JavaStatistics()
 
     @EventListener(order = -1)

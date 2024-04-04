@@ -5,6 +5,7 @@ import com.github.tnoalex.formatter.FormatterTypeEnum
 import com.github.tnoalex.formatter.UnpackIgnore
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
+import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.specs.FormatterSpec
 import com.github.tnoalex.utils.relativePath
 import com.github.tnoalex.utils.toAdjacencyMatrices
@@ -18,6 +19,7 @@ class CircularReferencesIssue(
     private val refGraph: Graph<String, DefaultEdge>,
 ) : Issue(
     EligosIssueBundle.message("issue.name.CircularReferencesIssue"),
+    Severity.CODE_SMELL,
     AnalysisHierarchyEnum.FILE,
     affectedFiles,
     null

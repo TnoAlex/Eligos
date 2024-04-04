@@ -3,6 +3,7 @@ package com.github.tnoalex.issues.kotlin.withJava
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
+import com.github.tnoalex.issues.Severity
 
 
 class UncertainNullablePlatformExpressionUsageIssue(
@@ -14,6 +15,7 @@ class UncertainNullablePlatformExpressionUsageIssue(
     val smartCastedActualType: String
 ) : Issue(
     EligosIssueBundle.message("issue.name.UncertainNullablePlatformExpressionUsageIssue"),
+    Severity.CODE_SMELL,
     AnalysisHierarchyEnum.EXPRESSION,
     hashSetOf(affectedFile),
     content

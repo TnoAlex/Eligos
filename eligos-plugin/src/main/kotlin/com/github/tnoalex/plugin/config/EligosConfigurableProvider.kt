@@ -1,6 +1,7 @@
 package com.github.tnoalex.plugin.config
 
 import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.plugin.EligosBundle
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
@@ -27,12 +28,16 @@ internal class EligosSettingsPanel(private val project: Project) :
             comboBox(FormatterTypeEnum.entries)
                 .bindItem(settings::getFormatType, settings::setFormatType)
         }
+        row(EligosBundle.message("eligos.setting.severityLevel")) {
+            comboBox(Severity.entries)
+                .bindItem(settings::getSeverityLevel, settings::setSeverityLevel)
+        }
         row(EligosBundle.message("eligos.settings.outputPathLabel")) {
             textFieldWithBrowseButton(
                 fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                 project = project
             ).bindText(settings::getOutputPath, settings::setOutputPath)
-                .columns(60)
+                .columns(45)
                 .resizableColumn()
         }
     }

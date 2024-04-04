@@ -3,6 +3,7 @@ package com.github.tnoalex.issues.kotlin.withJava
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
+import com.github.tnoalex.issues.Severity
 
 @Suppress("unused")
 class ProvideImmutableCollectionIssue(
@@ -15,6 +16,7 @@ class ProvideImmutableCollectionIssue(
     val useJavaClassFqName: String
 ) : Issue(
     EligosIssueBundle.message("issue.name.ProvideImmutableCollectionIssue"),
+    Severity.CODE_SMELL,
     AnalysisHierarchyEnum.EXPRESSION,
     affectedFiles,
     content

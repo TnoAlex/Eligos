@@ -4,6 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.common.UnusedImportIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.refCanNotResolveWarn
@@ -22,6 +23,8 @@ import java.util.*
 @Suitable(LaunchEnvironment.CLI)
 class UnUsedImportProcessor : PsiProcessor {
     private val issues = LinkedList<UnusedImportIssue>()
+    override val severity: Severity
+        get() = Severity.CODE_SMELL
     override val supportLanguage: List<String>
         get() = listOf("java", "kotlin")
 

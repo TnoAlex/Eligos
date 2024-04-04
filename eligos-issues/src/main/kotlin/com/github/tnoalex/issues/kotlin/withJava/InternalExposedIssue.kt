@@ -4,6 +4,7 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.formatter.UnpackIgnore
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
+import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.specs.FormatterSpec
 
 
@@ -14,6 +15,7 @@ class InternalExposedIssue(
     val kotlinInterfacesFqNames: List<String>?
 ) : Issue(
     EligosIssueBundle.message("issue.name.InternalExposedIssue"),
+    Severity.CODE_SMELL,
     AnalysisHierarchyEnum.CLASS,
     affectedFiles,
     null

@@ -6,6 +6,7 @@ import com.github.tnoalex.formatter.UnpackIgnore
 @Suppress("unused")
 abstract class FunctionTypeIssue(
     issueName: String,
+    severity: Severity,
     layer: AnalysisHierarchyEnum,
     affectedFiles: HashSet<String>,
     content: String?,
@@ -13,7 +14,7 @@ abstract class FunctionTypeIssue(
     val functionFqName: String,
     val valueParamList: List<String>,
     val startLine: Int
-) : Issue(issueName, layer, affectedFiles, content) {
+) : Issue(issueName, severity, layer, affectedFiles, content) {
     val functionSignature: String by lazy { buildSignature() }
 
     private fun buildSignature(): String {

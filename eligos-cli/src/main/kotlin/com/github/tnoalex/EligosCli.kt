@@ -11,6 +11,7 @@ import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.issues.Severity
 import java.io.File
 import kotlin.io.path.Path
 import kotlin.reflect.full.declaredMemberProperties
@@ -42,6 +43,12 @@ class EligosCli : CliktCommand(name = "eligos-cli") {
         "--with",
         help = "Secondary languages that are analyzed in collaboration with the primary language"
     )
+
+    private val severityLevel by option(
+        "-sl",
+        "--severity-level",
+        help = "The lowest severity level recorded during the analysis"
+    ).enum<Severity> { it.name }.default(Severity.SUGGESTION)
 
     private val classPath by option(
         "-ecp",

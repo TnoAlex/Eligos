@@ -2,6 +2,7 @@ package com.github.tnoalex
 
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.parser.FileDistributor
+import com.github.tnoalex.processor.BaseProcessor
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.specs.AnalyzerSpec
 import org.slf4j.LoggerFactory
@@ -27,51 +28,67 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
 
     private fun dispatchFiles() {
         logger.info("Start dispatch files")
-        val fileDistributor = ApplicationContext.getBean(FileDistributor::class.java)
-            .filter { it.launchEnvironment == analyzerSpec.launchEnvironment }.toMutableList()
         val enableAllProcessors = enableAllLangs()
-        val it = fileDistributor.iterator()
-        while (it.hasNext()) {
-            val distributor = it.next()
-            if (enableAllProcessors) {
-                distributor.init()
-            } else {
-                listOfNotNull(analyzerSpec.majorLang, analyzerSpec.withLang).forEach { l ->
-                    if (distributor.supportLanguage.contains(l)) {
-                        distributor.init()
+        val distributors = HashSet<FileDistributor>()
+        val preToRemove = HashSet<FileDistributor>()
+        ApplicationContext.getBean(FileDistributor::class.java)
+            .filter { it.launchEnvironment == analyzerSpec.launchEnvironment }
+            .forEach {
+                if (enableAllProcessors) {
+                    distributors.add(it)
+                } else {
+                    if (it.supportLanguage.any { l ->
+                            l in listOfNotNull(
+                                analyzerSpec.majorLang,
+                                analyzerSpec.withLang
+                            )
+                        }) {
+                        distributors.add(it)
                     } else {
-                        ApplicationContext.removeBean(distributor::class.java)
-                        it.remove()
+                        preToRemove.add(it)
                     }
                 }
             }
+        preToRemove.forEach {
+            ApplicationContext.removeBean(it::class.java)
         }
-        fileDistributor.forEach {
+        distributors.forEach {
+            it.init()
             it.dispatch()
         }
     }
 
     private fun registerProcessorEvent() {
         logger.info("Init processors")
-        val psiProcessors = HashSet<PsiProcessor>()
+        val psiProcessors = HashSet<BaseProcessor>()
+        val preToRemove = HashSet<BaseProcessor>()
 
-        ApplicationContext.getBean(PsiProcessor::class.java).forEach {
+        ApplicationContext.getBean(BaseProcessor::class.java).forEach {
+            if (it is PsiProcessor && it.severity.level < analyzerSpec.severityLevel.level) {
+                preToRemove.add(it)
+                return@forEach
+            }
             if (it.supportLanguage.contains("any")) {
-                it.registerListener()
                 psiProcessors.add(it)
             } else {
-                listOfNotNull(analyzerSpec.majorLang, analyzerSpec.withLang).forEach { l ->
-                    if (it.supportLanguage.contains(l)) {
-                        it.registerListener()
-                        psiProcessors.add(it)
-                    }
+                if (it.supportLanguage.all { l ->
+                        l in listOfNotNull(
+                            analyzerSpec.majorLang,
+                            analyzerSpec.withLang
+                        )
+                    }) {
+                    psiProcessors.add(it)
+                } else {
+                    preToRemove.add(it)
                 }
             }
         }
+        psiProcessors.forEach { it.registerListener() }
+        preToRemove.forEach { ApplicationContext.removeBean(it::class.java) }
         disableProcessorsIfDebug(psiProcessors)
     }
 
-    private fun disableProcessorsIfDebug(processors: HashSet<PsiProcessor>) {
+    private fun disableProcessorsIfDebug(processors: HashSet<BaseProcessor>) {
         if (!analyzerSpec.debugSpec.enabledDebug) return
         if (analyzerSpec.debugSpec.disableAnyElse.isNotEmpty()) {
             processors.forEach {
@@ -79,7 +96,7 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
                 logger.debug("Disable ${it::class.simpleName}")
                 it.unregisterListener()
             }
-        }else if (analyzerSpec.debugSpec.enableAnyElse.isNotEmpty()){
+        } else if (analyzerSpec.debugSpec.enableAnyElse.isNotEmpty()) {
             processors.forEach {
                 if (it::class.simpleName !in analyzerSpec.debugSpec.enableAnyElse) return@forEach
                 logger.debug("Disable ${it::class.simpleName}")

@@ -129,7 +129,8 @@ class EligosProjectAnalyzeActions : AnAction() {
                     FormatterTypeEnum.JSON,
                 ),
                 launchEnvironment = LaunchEnvironment.IDE_PLUGIN,
-                DebugSpec()
+                severityLevel = settings.getSeverityLevel(),
+                debugSpec = DebugSpec()
             )
         )
     }

@@ -10,6 +10,8 @@ import com.github.tnoalex.utils.relativePath
 abstract class Issue(
     @UnpackIgnore
     val issueName: String,
+    @UnpackIgnore
+    val severity: Severity,
     val layer: AnalysisHierarchyEnum,
     @UnpackIgnore
     val affectedFiles: HashSet<String>,
@@ -19,6 +21,7 @@ abstract class Issue(
     override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
         val rawMap = LinkedHashMap<String, Any>()
         rawMap["issueName"] = issueName
+        rawMap["severity"] = severity.describe
         rawMap.putAll(unpackingIssue())
         rawMap["affectedFiles"] = affectedFiles.map { relativePath(spec.srcPathPrefix, it) }
         if (spec.resultFormat == FormatterTypeEnum.HTML || spec.resultFormat == FormatterTypeEnum.TEXT) {

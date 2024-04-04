@@ -4,6 +4,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.InternalExposedIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.filePath
@@ -21,6 +22,8 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class InternalExposedProcessor : PsiProcessor {
+    override val severity: Severity
+        get() = Severity.CODE_SMELL
     override val supportLanguage: List<String>
         get() = listOf("kotlin", "java")
 

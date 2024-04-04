@@ -5,6 +5,7 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.common.ExcessiveParamsIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.filePath
@@ -21,6 +22,8 @@ import java.util.*
 @Suitable(LaunchEnvironment.CLI)
 class TooManyParametersProcessor : PsiProcessor {
     private val issues = LinkedList<ExcessiveParamsIssue>()
+    override val severity: Severity
+        get() = Severity.CODE_SMELL
     override val supportLanguage: List<String>
         get() = listOf("java", "kotlin")
 

@@ -4,6 +4,7 @@ import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.formatter.UnpackIgnore
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
+import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.specs.FormatterSpec
 
 class UncertainNullablePlatformTypeInPropertyIssue(
@@ -19,6 +20,7 @@ class UncertainNullablePlatformTypeInPropertyIssue(
     val isLocal: Boolean = false,
 ) : Issue(
     EligosIssueBundle.message("issue.name.UncertainNullablePlatformTypeInPropertyIssue"),
+    Severity.CODE_SMELL,
     AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile),
     content

@@ -5,11 +5,11 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpressionUsageIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeInPropertyIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.*
-import com.github.tnoalex.processor.utils.typeCanNotResolveWarn
 import org.jetbrains.kotlin.cfg.containingDeclarationForPseudocode
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.psi.KtExpression
@@ -26,6 +26,8 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class UncertainNullablePlatformTypeProcessor : PsiProcessor {
+    override val severity: Severity
+        get() = Severity.CODE_SMELL
     override val supportLanguage: List<String>
         get() = listOf("java", "kotlin")
     val dataFlowValueFactory = ApplicationContext.getBean(DataFlowValueFactory::class.java).first()
@@ -96,7 +98,7 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
                         property.filePath,
                         property.text,
                         property.name ?: let {
-                            logger.nameCanNotResolveWarn("property",property)
+                            logger.nameCanNotResolveWarn("property", property)
                             "unknown property name"
                         },
                         property.startLine,

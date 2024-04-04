@@ -3,6 +3,7 @@ package com.github.tnoalex.issues.kotlin.withJava
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
+import com.github.tnoalex.issues.Severity
 
 class NonJVMFieldCompanionValueIssue(
     affectedFile: String,
@@ -11,6 +12,7 @@ class NonJVMFieldCompanionValueIssue(
     val startLine: Int
 ) : Issue(
     EligosIssueBundle.message("issue.name.NonJVMFieldCompanionValueIssue"),
+    Severity.SUGGESTION,
     AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile),
     content
