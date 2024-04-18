@@ -10,7 +10,7 @@ interface BeanRegisterDistributor {
         val dispatcherMap = HashMap<String, BeanRegister>()
         val containerMap = HashMap<BeanScope, BeanContainer>()
 
-        scanDispatchers()?.forEach {
+        scanRegisters()?.forEach {
             dispatcherMap[it.simpleName] = it.getDeclaredConstructor().newInstance()
         }
         ApplicationContext.visitContainers { beanScope, beanContainer ->
@@ -35,7 +35,7 @@ interface BeanRegisterDistributor {
 
     }
 
-    fun scanDispatchers(): List<Class<out BeanRegister>>?
+    fun scanRegisters(): List<Class<out BeanRegister>>?
 
     fun scanComponent(): List<Class<*>>?
 }

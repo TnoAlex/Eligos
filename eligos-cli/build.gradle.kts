@@ -17,7 +17,9 @@ dependencies {
     implementation(project(":kt-references-analysis:kt-references-fe10"))
     implementation("com.github.ajalt.clikt:clikt:4.2.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     testImplementation(project(":eligos-issues"))
+    testImplementation(project(":eligos-processor"))
 }
 
 

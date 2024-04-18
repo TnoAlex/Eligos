@@ -15,6 +15,14 @@ public class JavaLibSample0 {
         }
     }
 
+    public static JavaMd funcInJava1() {
+        Random random = new Random();
+        if (random.nextInt() > 10) {
+            return null;
+        }
+        return new JavaMd();
+    }
+
     public static InterfaceA intAInJava(){
         return  new AInJava();
     }

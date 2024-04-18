@@ -18,7 +18,7 @@ class IdeBeanSupportStructureScanner(private val classLoader: ClassLoader) :
     private val classCache = ArrayList<Class<*>>()
 
     @Suppress("UNCHECKED_CAST")
-    override fun scanDispatchers(): List<Class<out BeanRegister>> {
+    override fun scanRegisters(): List<Class<out BeanRegister>> {
         checkCache()
         return classCache.filter {
             BeanRegister::class.java.isAssignableFrom(it) &&

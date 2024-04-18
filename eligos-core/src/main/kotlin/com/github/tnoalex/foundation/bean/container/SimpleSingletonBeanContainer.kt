@@ -19,11 +19,11 @@ object SimpleSingletonBeanContainer : BeanContainer {
     override fun removeBean(beanName: String): Any? {
         if (!container.containsKey(beanName))
             return null
-        ApplicationContext.beanPreRemoveHandler.handle(container[beanName]!!)
+        ApplicationContext.invokeBeanPreRemoveHandler(container[beanName]!!)
         val bean = container.remove(beanName)
         if (bean != null) {
             BeanNameManager.removeBeanName(beanName, bean::class.java)
-            ApplicationContext.beanAfterRemoveHandler.handle(bean)
+            ApplicationContext.invokeBeanAfterRemoveHandler(bean)
         }
         return bean
     }
@@ -34,11 +34,11 @@ object SimpleSingletonBeanContainer : BeanContainer {
         while (it.hasNext()) {
             val entity = it.next()
             if (beanType.isAssignableFrom(entity.value::class.java)) {
-                ApplicationContext.beanPreRemoveHandler.handle(entity.value)
+                ApplicationContext.invokeBeanPreRemoveHandler(entity.value)
                 BeanNameManager.removeBeanName(entity.key, entity.value.javaClass)
                 removed.add(entity.value)
                 it.remove()
-                ApplicationContext.beanAfterRemoveHandler.handle(entity.value)
+                ApplicationContext.invokeBeanAfterRemoveHandler(entity.value)
             }
         }
         return removed

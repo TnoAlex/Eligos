@@ -4,7 +4,7 @@ import unclearPlatformType.java.JavaLibSample0
 
 val x = JavaLibSample0.funcInJava0()
 val y: String
-    get() = x
+    get() = JavaLibSample0.funcInJava1.name()
 class KotlinMemberSample {
     private val property0 = JavaLibSample0.funcInJava0()
     private val property1
@@ -27,4 +27,10 @@ class KotlinMemberSample {
         }
         test1(x)
     }
+
+    fun inKotlin(){
+        val x = JavaLibSample0.funcInJava1.name()
+        test1(x)
+    }
 }
+

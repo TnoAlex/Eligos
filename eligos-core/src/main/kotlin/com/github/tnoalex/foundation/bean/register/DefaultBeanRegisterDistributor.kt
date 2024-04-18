@@ -5,7 +5,7 @@ import com.github.tnoalex.utils.scanEntries
 import org.reflections.scanners.Scanners
 
 class DefaultBeanRegisterDistributor : BeanRegisterDistributor {
-    override fun scanDispatchers(): List<Class<out BeanRegister>>? {
+    override fun scanRegisters(): List<Class<out BeanRegister>>? {
         return scanEntries(Scanners.SubTypes).getSubTypesOf(BeanRegister::class.java)?.toList()
     }
 

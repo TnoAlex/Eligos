@@ -5,6 +5,7 @@ import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.specs.KotlinCompilerSpec
 import com.intellij.mock.MockApplication
+import com.intellij.mock.MockComponentManager
 import com.intellij.mock.MockProject
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.Disposer
@@ -175,7 +176,9 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         }
     }
 
-    class MyMessageCollector(private val isDisableLog: Boolean) : MessageCollector by MessageCollector.NONE {
+    private inner class MyMessageCollector(private val isDisableLog: Boolean) :
+        MessageCollector by MessageCollector.NONE {
+
         override fun report(
             severity: CompilerMessageSeverity,
             message: String,
@@ -209,6 +212,11 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
         }
 
         return analyzer.analysisResult.bindingContext
+    }
+
+    fun resetEnvironment(){
+        KotlinCoreEnvironment.disposeApplicationEnvironment()
+        ApplicationManager.setApplication(MockApplication(disposer),disposer)
     }
 
     companion object {

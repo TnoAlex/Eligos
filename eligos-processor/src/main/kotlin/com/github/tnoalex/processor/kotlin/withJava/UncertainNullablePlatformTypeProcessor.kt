@@ -104,7 +104,8 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
                         property.startLine,
                         propertyType.upperIfFlexible().toString(),
                         propertyType.lowerIfFlexible().toString(),
-                        property.isTopLevel
+                        property.isTopLevel,
+                        property.isLocal
                     )
                 )
             }

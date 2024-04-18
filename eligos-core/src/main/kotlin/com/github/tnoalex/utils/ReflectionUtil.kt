@@ -73,6 +73,16 @@ fun invokePropertyGetter(instant: Any, property: KProperty<*>): Any? {
     }
 }
 
+fun invokeProperty0Getter(property: KProperty<*>): Any? {
+    property.isAccessible = true
+    try {
+        return property.getter.call()
+    } catch (e: InvocationTargetException) {
+        throw RuntimeException("Invoke target error", e.targetException)
+    }
+}
+
+
 fun <T : Any> creatDataClassAndFillProperty(
     propertyValues: Map<String, Any?>,
     clazz: KClass<T>

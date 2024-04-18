@@ -8,6 +8,7 @@ import com.github.tnoalex.foundation.bean.container.BeanContainerScanner
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.foundation.bean.handler.*
 import com.github.tnoalex.foundation.bean.register.BeanRegisterDistributor
+import org.jetbrains.annotations.TestOnly
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Modifier
 import kotlin.reflect.full.memberProperties
@@ -16,16 +17,15 @@ object ApplicationContext {
 
     var currentClassLoader: ClassLoader = Thread.currentThread().contextClassLoader
     var launchEnvironment: LaunchEnvironment = LaunchEnvironment.CLI
-    val beanPreRemoveHandler = BeanHandler.DefaultBeanHandler()
-    val beanAfterRemoveHandler = BeanHandler.DefaultBeanHandler()
-    val beanPreRegisterHandler = BeanHandler.DefaultBeanHandler()
-    val beanPostRegisterHandler = BeanHandler.DefaultBeanHandler()
-
+    private val beanPreRemoveHandler = BeanHandler.DefaultBeanHandler()
+    private val beanAfterRemoveHandler = BeanHandler.DefaultBeanHandler()
+    private val beanPreRegisterHandler = BeanHandler.DefaultBeanHandler()
+    private val beanPostRegisterHandler = BeanHandler.DefaultBeanHandler()
+    private val beansAfterRegisterHandler = BeanHandler.DefaultBeanHandler()
 
     var isInitialized = false
         private set
     private val beanContainers = HashMap<BeanScope, ArrayList<BeanContainer>>()
-    private val beansAfterRegisterHandler = BeanHandler.DefaultBeanHandler()
     private val beanRegisterDistributors: ArrayList<BeanRegisterDistributor> = ArrayList()
     private val beanContainerScanners: ArrayList<BeanContainerScanner> = ArrayList()
     private val beanHandlerScanners: ArrayList<BeanHandlerScanner> = ArrayList()
@@ -233,6 +233,22 @@ object ApplicationContext {
             }
         }
         return null
+    }
+
+    fun invokeBeanPreRemoveHandler(bean: Any) {
+        beanPreRemoveHandler.handle(bean)
+    }
+
+    fun invokeBeanAfterRemoveHandler(bean: Any) {
+        beanAfterRemoveHandler.handle(bean)
+    }
+
+    fun invokeBeanPreRegisterHandler(bean: Any) {
+        beanPreRegisterHandler.handle(bean)
+    }
+
+    fun invokeBeanPostRegisterHandler(bean: Any) {
+        beanPostRegisterHandler.handle(bean)
     }
 
     fun containsBean(beanName: String): Boolean {
