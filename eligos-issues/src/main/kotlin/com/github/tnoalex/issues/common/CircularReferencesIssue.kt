@@ -7,6 +7,7 @@ import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.specs.FormatterSpec
+import com.github.tnoalex.utils.ReferencesMatrix
 import com.github.tnoalex.utils.relativePath
 import com.github.tnoalex.utils.toAdjacencyMatrices
 import org.jgrapht.Graph
@@ -24,6 +25,9 @@ class CircularReferencesIssue(
     affectedFiles,
     null
 ) {
+    val refMatrix: ReferencesMatrix<String>
+        get() = refGraph.toAdjacencyMatrices()
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -42,7 +46,7 @@ class CircularReferencesIssue(
 
     override fun unwrap(spec: FormatterSpec): LinkedHashMap<String, Any> {
         val rawMap = super.unwrap(spec)
-        val (node, matrix) = refGraph.toAdjacencyMatrices()
+        val (node, matrix) = refMatrix
         val nodeMap = HashMap<Int, String>()
         node.forEach { (k, v) ->
             nodeMap[v] = relativePath(spec.srcPathPrefix, k)

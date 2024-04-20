@@ -3,6 +3,7 @@ package com.github.tnoalex.foundation
 import com.github.tnoalex.foundation.bean.BeanScope
 import com.github.tnoalex.foundation.bean.container.BeanContainer
 import com.github.tnoalex.foundation.bean.handler.BeanHandler
+import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.utils.invokeProperty0Getter
 import org.jetbrains.annotations.TestOnly
 import kotlin.reflect.full.declaredMemberProperties

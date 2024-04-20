@@ -1,13 +1,15 @@
 package com.github.tnoalex
 
 import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.parser.CliCompilerEnvironmentContext
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import org.jetbrains.annotations.TestOnly
 
-
-fun getPsiFiles(): ArrayList<PsiFile> {
+@TestOnly
+fun psiFiles(): ArrayList<PsiFile> {
     val environmentContext = ApplicationContext.getExactBean(CliCompilerEnvironmentContext::class.java)!!
     val psiFiles = ArrayList<PsiFile>()
     psiFiles.addAll(environmentContext.environment.getSourceFiles())
@@ -30,4 +32,10 @@ private fun visitVirtualFile(virtualFile: VirtualFile, visitor: (file: VirtualFi
     } else {
         visitor(virtualFile)
     }
+}
+
+@TestOnly
+@JvmSynthetic
+inline fun <reified T : Issue> issue(): List<T> {
+    return ApplicationContext.getExactBean(Context::class.java)!!.issues.filterIsInstance<T>()
 }

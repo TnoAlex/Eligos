@@ -2,7 +2,9 @@ package com.github.tnoalex.utils
 
 import org.jgrapht.Graph
 
-fun <V : Any, T> Graph<V, T>.toAdjacencyMatrices(): Pair<HashMap<V, Int>, ArrayList<ArrayList<Int>>> {
+typealias ReferencesMatrix<V> = Pair<HashMap<V, Int>, ArrayList<ArrayList<Int>>>
+
+fun <V : Any, T> Graph<V, T>.toAdjacencyMatrices(): ReferencesMatrix<V> {
     val nodeMap = HashMap<V, Int>()
     var nodeCounter = 0
     vertexSet().forEach {
