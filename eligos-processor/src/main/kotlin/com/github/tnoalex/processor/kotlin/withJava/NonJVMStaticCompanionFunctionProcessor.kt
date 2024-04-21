@@ -61,7 +61,7 @@ class NonJVMStaticCompanionFunctionProcessor : PsiProcessor {
                             logger.nameCanNotResolveWarn("parameter", it)
                             "unknown parameter name"
                         }
-                    },
+                    }.takeIf { it.isNotEmpty() },
                     function.startLine,
                     function.text
                 )

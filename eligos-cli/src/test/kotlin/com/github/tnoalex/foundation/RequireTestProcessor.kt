@@ -1,7 +1,5 @@
 package com.github.tnoalex.foundation
 
-import org.junit.jupiter.api.DisplayNameGeneration
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ArgumentsSource

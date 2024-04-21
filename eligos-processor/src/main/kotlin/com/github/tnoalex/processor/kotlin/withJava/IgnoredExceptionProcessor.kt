@@ -146,8 +146,14 @@ class IgnoredExceptionProcessor : PsiProcessor {
             expression.startLine,
             calledByJava
         )
-        if (issue !in context.issues || calledByJava) {
+        if (issue !in context.issues) {
             context.reportIssue(issue)
+        } else {
+            (context.issues.find { it == issue } as? IgnoredExceptionIssue)?.let {
+                if (calledByJava && !it.calledByJava){
+                    it.calledByJava = true
+                }
+            }
         }
     }
 

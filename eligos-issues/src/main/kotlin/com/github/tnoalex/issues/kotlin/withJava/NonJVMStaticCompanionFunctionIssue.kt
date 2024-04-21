@@ -8,7 +8,7 @@ import com.github.tnoalex.issues.Severity
 class NonJVMStaticCompanionFunctionIssue(
     affectedFile: String,
     functionFqName: String,
-    valueParamList: List<String>,
+    valueParamList: List<String>?,
     startLine: Int,
     content: String?
 ) : FunctionTypeIssue(

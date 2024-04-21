@@ -12,14 +12,14 @@ abstract class FunctionTypeIssue(
     content: String?,
     @UnpackIgnore
     val functionFqName: String,
-    val valueParamList: List<String>,
+    val valueParamList: List<String>?,
     val startLine: Int
 ) : Issue(issueName, severity, layer, affectedFiles, content) {
     val functionSignature: String by lazy { buildSignature() }
 
     private fun buildSignature(): String {
         val sb = StringBuilder(functionFqName).append("(")
-        valueParamList.forEach {
+        valueParamList?.forEach {
             sb.append(it).append(",")
         }
         return sb.removeSuffix(",").toString() + ")"

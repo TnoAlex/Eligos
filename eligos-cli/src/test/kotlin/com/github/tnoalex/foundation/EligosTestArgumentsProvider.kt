@@ -21,8 +21,8 @@ class EligosTestArgumentsProvider : ArgumentsProvider {
         val testResource = resolveTestResources(testAnnotation.testResourcePath)
         require(testMethod.parameters.size == 1)
         val requiredProcessor = testMethod.parameters[0].type.kotlin as KClass<PsiProcessor>
-        creatMockContext(requiredProcessor)
         createMockCompilerEnv(testResource)
+        creatMockContext(requiredProcessor)
         return Stream.of(Arguments.of(ApplicationContext.getExactBean(requiredProcessor.java)))
     }
 

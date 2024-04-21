@@ -75,7 +75,7 @@ class InternalExposedProcessor : PsiProcessor {
                             logger.nameCanNotResolveWarn("interface", it)
                             "unknown kotlin interface"
                         } else name
-                    }
+                    }.takeIf { it.isNotEmpty() }
                 )
             )
             super.visitClass(aClass)
