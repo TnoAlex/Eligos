@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.distsDirectory
 
 plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
@@ -30,6 +31,21 @@ tasks.withType(ShadowJar::class.java) {
     isZip64 = true
 }
 
+tasks.distTar {
+    enabled = false
+}
+
+tasks.distZip {
+    enabled = false
+}
+
+tasks.shadowDistTar {
+    enabled = false
+}
+
+tasks.shadowDistZip {
+    enabled = false
+}
 
 application {
     mainClass.set("com.github.tnoalex.MainKt")

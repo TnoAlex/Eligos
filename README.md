@@ -101,7 +101,7 @@ In the table, yellow is common to Java Kotlin, green is generated when Koltin Ja
 
 ### Quick Start ...
 
-1. Clone the this Repo
+1. Clone  this Repo
 ```bash
    git clone https://github.com/TnoAlex/Eligos.git
 ```
@@ -119,6 +119,28 @@ In the table, yellow is common to Java Kotlin, green is generated when Koltin Ja
 ```
 4. Find the libs
 	You can find the executable cli jar at `eligos-cli/build/libs` and Installable plugin at `eligos-plugin/build/distributions`. 
+
+### From Docker
+
+1. Clone this Repo
+
+   ```bash
+      git clone https://github.com/TnoAlex/Eligos.git
+   ```
+
+2. Build Docker Image
+
+   ```bash
+   	docker build -t eligos:1.0 .
+   ```
+
+3. Run Eligos by docker
+
+   ```bash
+   	docker run -v $PROJECT:/dist/project -v $RESULT:/dist/result eligos:1.0 kotlin ./project ./result --with java
+   ```
+
+   In the above command, `$PRJECT` refers to the local location of the item to be analyzed, `$RESULT` the location where the local results are stored，**Make sure they are all present before using this command**. The two folders located after the Kotlin parameter are the internal Docker mappings, which are fixed.
 
 ### Arguments & Options
 

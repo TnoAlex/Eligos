@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
+import java.util.*
 
 @Execution(ExecutionMode.SAME_THREAD)
 @ExtendWith(EligosBeforeAllTestExtension::class)
@@ -48,17 +49,21 @@ class CommonProcessorTest {
         processor.resultGeneration(AllFileParsedEvent)
         val circularReferencesIssues = issue<CircularReferencesIssue>()
         assertEquals(2, circularReferencesIssues.size)
+        var result = circularReferencesIssues.firstOrNull {
+            it.affectedFiles.all { f -> f.contains("pkg0") }
+        }?.refMatrix?.second?.toTypedArray()
+        result?.let { Arrays.sort(it, Comparator.comparing { list -> list.joinToString() }) }
         assertArrayEquals(
             arrayOf(arrayListOf(0, 1), arrayListOf(1, 0)),
-            circularReferencesIssues.firstOrNull {
-                it.affectedFiles.all { f -> f.contains("pkg0") }
-            }?.refMatrix?.second?.toTypedArray()
+            result
         )
+        result = circularReferencesIssues.firstOrNull {
+            it.affectedFiles.all { f -> f.contains("pkg1") }
+        }?.refMatrix?.second?.toTypedArray()
+        result?.let { Arrays.sort(it, Comparator.comparing { list -> list.joinToString() }) }
         assertArrayEquals(
-            arrayOf(arrayListOf(0, 1, 0), arrayListOf(0, 0, 1), arrayListOf(1, 0, 0)),
-            circularReferencesIssues.firstOrNull {
-                it.affectedFiles.all { f -> f.contains("pkg1") }
-            }?.refMatrix?.second?.toTypedArray()
+            arrayOf(arrayListOf(0, 0, 1), arrayListOf(0, 1, 0), arrayListOf(1, 0, 0)),
+            result
         )
     }
 
