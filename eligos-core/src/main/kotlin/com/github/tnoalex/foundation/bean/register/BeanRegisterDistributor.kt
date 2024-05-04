@@ -25,7 +25,7 @@ interface BeanRegisterDistributor {
             val scope = annotation.scope
             val register =
                 dispatcherMap[registerName]
-                    ?: throw RuntimeException("Can not find bean factory named '$registerName'")
+                    ?: throw RuntimeException("Can not find bean register named '$registerName'")
             register.registerBean(
                 beanName,
                 it,

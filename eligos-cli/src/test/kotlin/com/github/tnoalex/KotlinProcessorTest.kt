@@ -93,12 +93,30 @@ class KotlinProcessorTest {
             }
         }
         val whenInsteadOfCascadeIf = issue<WhenInsteadOfCascadeIfIssue>()
-        assertEquals(1,whenInsteadOfCascadeIf.size)
+        assertEquals(1, whenInsteadOfCascadeIf.size)
         assertArrayEquals(
-            arrayOf(4,4),
+            arrayOf(4, 4),
             whenInsteadOfCascadeIf.firstOrNull()?.let {
-                arrayOf(it.startLine,it.cascadeDepth)
+                arrayOf(it.startLine, it.cascadeDepth)
             }
         )
+    }
+
+    @RequireTestProcessor("resources@compareDataObjectWithReference")
+    fun testCompareDataObjectWithReference(processor: CompareDataObjectWithReferenceProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is KtFile) {
+                processor.process(psiFile)
+            }
+        }
+        val compareDataObjectWithReferenceIssue = issue<CompareDataObjectWithReferenceIssue>()
+        assertEquals(1, compareDataObjectWithReferenceIssue.size)
+        assertArrayEquals(arrayOf(
+            "compareDataObjectWithReference.useDataObjectWithReference.rdobject",
+            "compareDataObjectWithReference.useDataObjectWithReference.dobject",
+            8),
+            compareDataObjectWithReferenceIssue.firstOrNull()?.let {
+            arrayOf(it.leftPropertyFqName, it.rightPropertyFqName, it.startLine)
+        })
     }
 }
