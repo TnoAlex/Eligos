@@ -32,8 +32,8 @@ class SpecificationBuilder(private val rawArgs: HashMap<String, Any?>) {
         return this
     }
 
-    fun <T : Any> next(targetClazz: KClass<T>, builder: (KClass<T>) -> T): SpecificationBuilder {
-        currentArtifact = builder(targetClazz)
+    fun <T : Any> next(targetClazz: KClass<T>, builder: (KClass<T>, Map<String, Any?>) -> T): SpecificationBuilder {
+        currentArtifact = builder(targetClazz, rawArgs)
         return this
     }
 
