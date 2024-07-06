@@ -4,42 +4,47 @@ import com.github.tnoalex.events.AllFileParsedEvent
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
+import com.github.tnoalex.foundation.bean.inject.InjectBean
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.common.CircularReferencesIssue
-import com.github.tnoalex.processor.PsiProcessor
-import com.github.tnoalex.processor.utils.refCanNotResolveWarn
-import com.github.tnoalex.processor.utils.referenceExpressionSelfOrInChildren
+import com.github.tnoalex.processor.ShareSpace
+import com.github.tnoalex.processor.common.providers.CircularReferencesProcessorProvider
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.analysis.decompiler.psi.file.KtDecompiledFile
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.psi.KtPackageDirective
-import org.jetbrains.kotlin.psi.KtReferenceExpression
-import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
-import org.jetbrains.kotlin.psi.psiUtil.isInImportDirective
 import org.jgrapht.Graph
 import org.jgrapht.alg.connectivity.GabowStrongConnectivityInspector
 import org.jgrapht.graph.DefaultEdge
 import org.jgrapht.graph.builder.GraphTypeBuilder
-import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class CircularReferencesProcessor : PsiProcessor {
-    private var dependencyGraph = newEmptyGraph()
+class CircularReferencesProcessor : AbstractCommonProcessor() {
     override val severity: Severity
         get() = Severity.CODE_SMELL
-    override val supportLanguage: List<String>
-        get() = listOf("java", "kotlin")
 
-    @EventListener
-    fun process(psiFile: PsiFile) {
-        when (psiFile) {
-            is PsiJavaFile -> handleJavaFile(psiFile)
-            is KtFile -> handleKtFile(psiFile)
-        }
+    override val supportLanguage: List<Language>
+        get() = listOf(JavaLanguage, KotlinLanguage)
+
+    private var dependencyGraph = newEmptyGraph()
+
+    @InjectBean(beanType = CircularReferencesProcessorProvider::class)
+    override lateinit var processorProvider: AbstractSpecificProcessorProvider
+
+    private val myShareSpace = CircularReferencesShareSpace()
+
+
+    override fun createShearSpace(): ShareSpace = myShareSpace
+
+    @EventListener(filterClazz = [PsiJavaFile::class, KtFile::class])
+    override fun process(psiFile: PsiFile) {
+        invokeSpecificProcessor(psiFile)
     }
 
     @EventListener
@@ -55,78 +60,36 @@ class CircularReferencesProcessor : PsiProcessor {
         dependencyGraph = newEmptyGraph()
     }
 
-    private fun handleKtFile(ktFile: KtFile) {
-        val fileName = ktFile.virtualFilePath
-        dependencyGraph.addVertex(fileName)
-        ktFile.accept(object : KtTreeVisitorVoid() {
-            override fun visitReferenceExpression(expression: KtReferenceExpression) {
-                if (expression.isInImportDirective()) return super.visitReferenceExpression(expression)
-                if (PsiTreeUtil.getParentOfType(expression, KtPackageDirective::class.java) != null)
-                    return super.visitReferenceExpression(expression)
-                expression.referenceExpressionSelfOrInChildren().forEach {
-                    try {
-                        it.references.forEach { ref ->
-                            ref.resolve()?.let { r -> resolveRef(r, fileName) }
-                        }
-                    } catch (e: RuntimeException) {
-                        logger.refCanNotResolveWarn(expression)
-                    }
-                }
-                super.visitReferenceExpression(expression)
-            }
-        })
-    }
-
-    private fun handleJavaFile(javaFile: PsiJavaFile) {
-        val fileName = javaFile.virtualFile.path
-        dependencyGraph.addVertex(fileName)
-        javaFile.accept(object : JavaRecursiveElementVisitor() {
-            override fun visitReferenceElement(reference: PsiJavaCodeReferenceElement) {
-                if (PsiTreeUtil.getParentOfType(reference, PsiPackageStatement::class.java) != null)
-                    return super.visitReferenceElement(reference)
-                if (PsiTreeUtil.getParentOfType(reference, PsiImportStatement::class.java) != null)
-                    return super.visitReferenceElement(reference)
-                try {
-                    reference.resolve()?.let {
-                        resolveRef(it, fileName)
-                    }
-                } catch (e: RuntimeException) {
-                    logger.refCanNotResolveWarn(reference)
-                }
-                super.visitReferenceElement(reference)
-            }
-        })
-    }
-
-    private fun resolveRef(providerElement: PsiElement, consumeFile: String) {
-        if (PsiTreeUtil.getParentOfType(providerElement, KtDecompiledFile::class.java) != null) return
-        if (PsiTreeUtil.getParentOfType(providerElement, PsiCompiledElement::class.java) != null) return
-        val srcElement =
-            if (providerElement is KtLightElement<*, *>) providerElement.kotlinOrigin!! else providerElement
-        PsiTreeUtil.getParentOfType(srcElement, PsiJavaFile::class.java)?.let {
-            it.virtualFile ?: return
-            addDependency(it.virtualFile.path, consumeFile)
-            return
-        }
-        PsiTreeUtil.getParentOfType(srcElement, KtFile::class.java)?.let {
-            it.virtualFile ?: return
-            addDependency(it.virtualFilePath, consumeFile)
-            return
-        }
-    }
-
-    private fun addDependency(providerFile: String, consumeFile: String) {
-        if (providerFile == consumeFile) return
-        dependencyGraph.addVertex(providerFile)
-        dependencyGraph.addEdge(providerFile, consumeFile)
-    }
-
     private fun newEmptyGraph(): Graph<String, DefaultEdge> {
         return GraphTypeBuilder.directed<String, DefaultEdge>().allowingMultipleEdges(false)
             .allowingSelfLoops(false).edgeClass(DefaultEdge::class.java).weighted(false).buildGraph()
     }
 
-    companion object {
-        private val logger = LoggerFactory.getLogger(CircularReferencesProcessor::class.java)
+    internal inner class CircularReferencesShareSpace : ShareSpace {
+        internal val shareDependencyGraph: Graph<String, DefaultEdge>
+            get() = dependencyGraph
+
+        fun resolveRef(providerElement: PsiElement, consumeFile: String) {
+            if (PsiTreeUtil.getParentOfType(providerElement, KtDecompiledFile::class.java) != null) return
+            if (PsiTreeUtil.getParentOfType(providerElement, PsiCompiledElement::class.java) != null) return
+            val srcElement =
+                if (providerElement is KtLightElement<*, *>) providerElement.kotlinOrigin!! else providerElement
+            PsiTreeUtil.getParentOfType(srcElement, PsiJavaFile::class.java)?.let {
+                it.virtualFile ?: return
+                addDependency(it.virtualFile.path, consumeFile)
+                return
+            }
+            PsiTreeUtil.getParentOfType(srcElement, KtFile::class.java)?.let {
+                it.virtualFile ?: return
+                addDependency(it.virtualFilePath, consumeFile)
+                return
+            }
+        }
+
+        private fun addDependency(providerFile: String, consumeFile: String) {
+            if (providerFile == consumeFile) return
+            dependencyGraph.addVertex(providerFile)
+            dependencyGraph.addEdge(providerFile, consumeFile)
+        }
     }
 }

@@ -4,13 +4,18 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.NonJVMFieldCompanionValueIssue
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
+import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiJavaFile
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtProperty
@@ -22,15 +27,15 @@ import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class NonJVMFieldCompanionValueProcessor : PsiProcessor {
+class NonJVMFieldCompanionValueProcessor : IssueProcessor {
     override val severity: Severity
         get() = Severity.SUGGESTION
-    override val supportLanguage: List<String>
-        get() = listOf("kotlin", "java")
+    override val supportLanguage: List<Language>
+        get() = listOf(JavaLanguage, KotlinLanguage)
 
-    @EventListener
-    fun process(ktFile: KtFile) {
-        ktFile.accept(companionObjectVisitor)
+    @EventListener(filterClazz = [KtFile::class])
+    override fun process(psiFile: PsiFile) {
+        psiFile.accept(companionObjectVisitor)
     }
 
     private val companionObjectVisitor = object : KtTreeVisitorVoid() {

@@ -6,6 +6,7 @@ import com.github.tnoalex.config.ConfigInjectHandler
 import com.github.tnoalex.config.ConfigParser
 import com.github.tnoalex.foundation.bean.BeanScope
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
+import com.github.tnoalex.foundation.bean.inject.BeanInjectHandler
 import org.junit.jupiter.api.extension.AfterAllCallback
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -19,9 +20,10 @@ class EligosBeforeAllTestExtension : BeforeAllCallback, AfterAllCallback {
         TestApplicationContextProxy.addBeanContainer(BeanScope.Singleton, SimpleSingletonBeanContainer)
         ApplicationContext.addBean(configParser.javaClass.simpleName, configParser, SimpleSingletonBeanContainer)
         TestApplicationContextProxy.getBeanPreRegisterHandler().addHandler(ConfigInjectHandler())
+        TestApplicationContextProxy.getBeansAfterRegisterHandler().addHandler(BeanInjectHandler())
     }
 
     override fun afterAll(context: ExtensionContext) {
-        ApplicationContext.removeBean(ConfigParser::class.java)
+        ApplicationContext.removeBeanOfType(ConfigParser::class.java)
     }
 }

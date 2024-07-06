@@ -6,6 +6,9 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.foundation.eventbus.EventBus
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.parser.FileDistributor
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
@@ -20,8 +23,8 @@ import kotlin.io.path.Path
 
 @Component(order = Short.MAX_VALUE.toInt())
 class IdePluginFileDistributor : FileDistributor {
-    override val supportLanguage: List<String>
-        get() = listOf("java", "kotlin")
+    override val supportLanguage: List<Language>
+        get() = listOf(JavaLanguage, KotlinLanguage)
     override val launchEnvironment: LaunchEnvironment
         get() = LaunchEnvironment.IDE_PLUGIN
 

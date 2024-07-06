@@ -9,6 +9,15 @@ import com.github.tnoalex.issues.common.UnusedImportIssue
 import com.github.tnoalex.processor.common.CircularReferencesProcessor
 import com.github.tnoalex.processor.common.TooManyParametersProcessor
 import com.github.tnoalex.processor.common.UnUsedImportProcessor
+import com.github.tnoalex.processor.common.java.JavaCircularReferencesProcessor
+import com.github.tnoalex.processor.common.java.JavaTooManyParametersProcessor
+import com.github.tnoalex.processor.common.java.JavaUnUsedImportProcessor
+import com.github.tnoalex.processor.common.kotlin.KotlinCircularReferencesProcessor
+import com.github.tnoalex.processor.common.kotlin.KotlinTooManyParametersProcessor
+import com.github.tnoalex.processor.common.kotlin.KotlinUnUsedImportProcessor
+import com.github.tnoalex.processor.common.providers.CircularReferencesProcessorProvider
+import com.github.tnoalex.processor.common.providers.TooManyParametersProcessorProvider
+import com.github.tnoalex.processor.common.providers.UnUsedImportProcessorProvider
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
@@ -20,7 +29,10 @@ import java.util.*
 @ExtendWith(EligosBeforeAllTestExtension::class)
 class CommonProcessorTest {
 
-    @RequireTestProcessor("resources@toomanyParams")
+    @RequireTestProcessor(
+        "resources@toomanyParams",
+        [TooManyParametersProcessorProvider::class, KotlinTooManyParametersProcessor::class, JavaTooManyParametersProcessor::class]
+    )
     fun testTooManyParameters(processor: TooManyParametersProcessor) {
         psiFiles().forEach { psiFile ->
             processor.process(psiFile)
@@ -41,7 +53,10 @@ class CommonProcessorTest {
         )
     }
 
-    @RequireTestProcessor("resources@circularRceferences")
+    @RequireTestProcessor(
+        "resources@circularRceferences",
+        [CircularReferencesProcessorProvider::class, JavaCircularReferencesProcessor::class, KotlinCircularReferencesProcessor::class]
+    )
     fun testCircularReferences(processor: CircularReferencesProcessor) {
         psiFiles().forEach { psiFile ->
             processor.process(psiFile)
@@ -67,7 +82,10 @@ class CommonProcessorTest {
         )
     }
 
-    @RequireTestProcessor("resources@unusedImport")
+    @RequireTestProcessor(
+        "resources@unusedImport",
+        [UnUsedImportProcessorProvider::class, JavaUnUsedImportProcessor::class, KotlinUnUsedImportProcessor::class]
+    )
     fun testUnUsedImport(processor: UnUsedImportProcessor) {
         psiFiles().forEach { psiFile ->
             processor.process(psiFile)

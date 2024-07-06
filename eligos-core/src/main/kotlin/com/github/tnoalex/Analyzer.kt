@@ -1,9 +1,10 @@
 package com.github.tnoalex
 
 import com.github.tnoalex.foundation.ApplicationContext
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.parser.FileDistributor
-import com.github.tnoalex.processor.BaseProcessor
 import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.specs.AnalyzerSpec
 import org.slf4j.LoggerFactory
 import kotlin.system.exitProcess
@@ -31,17 +32,16 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
         val enableAllProcessors = enableAllLangs()
         val distributors = HashSet<FileDistributor>()
         val preToRemove = HashSet<FileDistributor>()
-        ApplicationContext.getBean(FileDistributor::class.java)
+        val languages =
+            listOfNotNull(analyzerSpec.majorLang, analyzerSpec.withLang).map { Language.createFromString(it) }
+        ApplicationContext.getBeanOfType(FileDistributor::class.java)
             .filter { it.launchEnvironment == analyzerSpec.launchEnvironment }
             .forEach {
                 if (enableAllProcessors) {
                     distributors.add(it)
                 } else {
                     if (it.supportLanguage.any { l ->
-                            l in listOfNotNull(
-                                analyzerSpec.majorLang,
-                                analyzerSpec.withLang
-                            )
+                            l in languages
                         }) {
                         distributors.add(it)
                     } else {
@@ -50,7 +50,7 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
                 }
             }
         preToRemove.forEach {
-            ApplicationContext.removeBean(it::class.java)
+            ApplicationContext.removeBeanOfType(it::class.java)
         }
         distributors.forEach {
             it.init()
@@ -60,22 +60,21 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
 
     private fun registerProcessorEvent() {
         logger.info("Init processors")
-        val psiProcessors = HashSet<BaseProcessor>()
-        val preToRemove = HashSet<BaseProcessor>()
+        val psiProcessors = HashSet<PsiProcessor>()
+        val preToRemove = HashSet<PsiProcessor>()
+        val languages =
+            listOfNotNull(analyzerSpec.majorLang, analyzerSpec.withLang).map { Language.createFromString(it) }
 
-        ApplicationContext.getBean(BaseProcessor::class.java).forEach {
-            if (it is PsiProcessor && it.severity.level < analyzerSpec.severityLevel.level) {
+        ApplicationContext.getBeanOfType(PsiProcessor::class.java).forEach {
+            if (it is IssueProcessor && it.severity.level < analyzerSpec.severityLevel.level) {
                 preToRemove.add(it)
                 return@forEach
             }
-            if (it.supportLanguage.contains("any")) {
+            if (it.supportLanguage.contains(Language.AnyLanguage)) {
                 psiProcessors.add(it)
             } else {
                 if (it.supportLanguage.all { l ->
-                        l in listOfNotNull(
-                            analyzerSpec.majorLang,
-                            analyzerSpec.withLang
-                        )
+                        l in languages
                     }) {
                     psiProcessors.add(it)
                 } else {
@@ -84,11 +83,11 @@ class Analyzer(private val analyzerSpec: AnalyzerSpec) {
             }
         }
         psiProcessors.forEach { it.registerListener() }
-        preToRemove.forEach { ApplicationContext.removeBean(it::class.java) }
+        preToRemove.forEach { ApplicationContext.removeBeanOfType(it::class.java) }
         disableProcessorsIfDebug(psiProcessors)
     }
 
-    private fun disableProcessorsIfDebug(processors: HashSet<BaseProcessor>) {
+    private fun disableProcessorsIfDebug(processors: HashSet<PsiProcessor>) {
         if (!analyzerSpec.debugSpec.enabledDebug) return
         if (analyzerSpec.debugSpec.disableAnyElse.isNotEmpty()) {
             processors.forEach {

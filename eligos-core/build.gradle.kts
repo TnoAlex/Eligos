@@ -8,6 +8,7 @@ dependencies {
     api("ch.qos.logback:logback-classic:1.4.14")
     implementation("org.mvel:mvel2:2.5.0.Final")
     implementation("org.reflections:reflections:0.10.2")
+    compileOnly("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
 }
 
 tasks.register("writeProperties") {

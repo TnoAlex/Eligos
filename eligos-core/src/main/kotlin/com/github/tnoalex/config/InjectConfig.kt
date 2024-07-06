@@ -2,4 +2,4 @@ package com.github.tnoalex.config
 
 @Target(AnnotationTarget.PROPERTY)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class WiredConfig(val configKey: String)
+annotation class InjectConfig(val configKey: String)

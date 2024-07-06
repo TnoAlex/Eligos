@@ -13,7 +13,7 @@ import org.jetbrains.kotlin.types.typeUtil.supertypes
 
 val KtElement.bindingContext
     get() = lazy {
-        ApplicationContext.getBean(KtFe10ReferenceResolutionHelper::class.java).first().partialAnalyze(
+        ApplicationContext.getBeanOfType(KtFe10ReferenceResolutionHelper::class.java).first().partialAnalyze(
             this
         )
     }.value

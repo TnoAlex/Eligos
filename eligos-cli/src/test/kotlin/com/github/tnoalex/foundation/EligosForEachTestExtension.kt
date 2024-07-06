@@ -14,17 +14,21 @@ class EligosForEachTestExtension : BeforeEachCallback, AfterEachCallback {
 
     override fun beforeEach(context: ExtensionContext) {
         ApplicationContext.addBean(Context::class.simpleName!!, Context(), SimpleSingletonBeanContainer)
+        ApplicationContext.invokeAfterBeansRegisterHandler()
     }
 
     override fun afterEach(context: ExtensionContext) {
         require(context.requiredTestMethod.parameters.size == 1)
         val requireTestParams = context.requiredTestMethod.parameters[0]
+        context.requiredTestMethod.getAnnotation(RequireTestProcessor::class.java).injectedBeans.forEach {
+            ApplicationContext.removeBeanOfType(it.java)
+        }
         val testProcessor = requireTestParams.type.kotlin
-        ApplicationContext.removeBean(testProcessor.java)
-        ApplicationContext.removeBean(Context::class.java)
-        ApplicationContext.removeBean(DataFlowValueFactory::class.java)
-        ApplicationContext.removeBean(DummyKtFe10ReferenceResolutionHelper::class.java)
+        ApplicationContext.removeBeanOfType(testProcessor.java)
+        ApplicationContext.removeBeanOfType(Context::class.java)
+        ApplicationContext.removeBeanOfType(DataFlowValueFactory::class.java)
+        ApplicationContext.removeBeanOfType(DummyKtFe10ReferenceResolutionHelper::class.java)
         ApplicationContext.getExactBean(CliCompilerEnvironmentContext::class.java)!!.resetEnvironment()
-        ApplicationContext.removeBean(CliCompilerEnvironmentContext::class.java)
+        ApplicationContext.removeBeanOfType(CliCompilerEnvironmentContext::class.java)
     }
 }

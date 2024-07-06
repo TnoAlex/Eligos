@@ -4,13 +4,17 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.CompareDataObjectWithReferenceIssue
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiReference
 import org.jetbrains.kotlin.descriptors.ClassKind
 import org.jetbrains.kotlin.descriptors.buildPossiblyInnerType
@@ -22,15 +26,15 @@ import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class CompareDataObjectWithReferenceProcessor : PsiProcessor {
+class CompareDataObjectWithReferenceProcessor : IssueProcessor {
     override val severity: Severity
         get() = Severity.CODE_SMELL
-    override val supportLanguage: List<String>
-        get() = listOf("kotlin")
+    override val supportLanguage: List<Language>
+        get() = listOf(KotlinLanguage)
 
-    @EventListener
-    fun process(ktFile: KtFile) {
-        ktFile.accept(compareExpressionVisitor)
+    @EventListener(filterClazz = [KtFile::class])
+    override fun process(psiFile: PsiFile) {
+        psiFile.accept(compareExpressionVisitor)
     }
 
     private val compareExpressionVisitor = object : KtTreeVisitorVoid() {
