@@ -9,20 +9,27 @@ import kotlin.reflect.KMutableProperty
 
 class ConfigInjectHandler : BeanPreRegisterHandler() {
     private var currentInjectPoint: ArrayList<KMutableProperty<*>> = ArrayList()
+
+    override val handlerOrder: Int
+        get() = 1
+
     override fun canHandle(bean: Any): Boolean {
-        getMutablePropertiesAnnotateWith(WiredConfig::class, bean::class).let { currentInjectPoint.addAll(it) }
+        getMutablePropertiesAnnotateWith(InjectConfig::class, bean::class).let { currentInjectPoint.addAll(it) }
         return currentInjectPoint.isNotEmpty()
     }
 
     override fun doHandle(bean: Any) {
         currentInjectPoint.forEach {
-            getPropertyAnnotation(WiredConfig::class, it).forEach { ann ->
-                val configKey = (ann as WiredConfig).configKey
-                val configValue = selectConfig(configKey)
-                invokePropertySetter(bean, it, arrayOf(configValue))
-            }
+            val ann = getPropertyAnnotation<InjectConfig>(it)
+            val configKey = ann.configKey
+            val configValue = selectConfig(configKey)
+            invokePropertySetter(bean, it, arrayOf(configValue))
         }
         currentInjectPoint.clear()
+    }
+
+    override fun dispose() {
+        ApplicationContext.removeBeanOfType(this::class.java)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -38,6 +45,6 @@ class ConfigInjectHandler : BeanPreRegisterHandler() {
                 break
             rulers = rulers[key] as HashMap<String, Any?>
         }
-        return rulers[key]?:throw RuntimeException("Config can not be null")
+        return rulers[key] ?: throw RuntimeException("Config can not be null")
     }
 }

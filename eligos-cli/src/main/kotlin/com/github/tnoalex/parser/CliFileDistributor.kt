@@ -5,6 +5,9 @@ import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.eventbus.EventBus
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
@@ -13,8 +16,8 @@ import org.slf4j.LoggerFactory
 
 @Component(order = Short.MAX_VALUE.toInt())
 class CliFileDistributor : FileDistributor {
-    override val supportLanguage: List<String>
-        get() = listOf("java", "kotlin")
+    override val supportLanguage: List<Language>
+        get() = listOf(JavaLanguage, KotlinLanguage)
 
     private lateinit var psiManager: PsiManager
     override val launchEnvironment: LaunchEnvironment

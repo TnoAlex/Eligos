@@ -9,12 +9,8 @@ import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
 import com.github.tnoalex.foundation.bean.handler.DefaultBeanHandlerScanner
 import com.github.tnoalex.foundation.bean.register.DefaultBeanRegisterDistributor
 import com.github.tnoalex.parser.CliCompilerEnvironmentContext
-import com.github.tnoalex.specs.AnalyzerSpec
-import com.github.tnoalex.specs.DebugSpec
-import com.github.tnoalex.specs.FormatterSpec
-import com.github.tnoalex.specs.KotlinCompilerSpec
+import com.github.tnoalex.specs.*
 import com.github.tnoalex.utils.StdOutErrWrapper
-import com.github.tnoalex.utils.creatDataClassAndFillProperty
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 
@@ -28,15 +24,16 @@ fun parseArguments(args: Map<String, Any?>) {
 }
 
 private fun buildSpec(args: HashMap<String, Any?>): AnalyzerSpec {
-    val debugSpec = creatDataClassAndFillProperty(args, DebugSpec::class)
-    val kotlinCompilerSpec = creatDataClassAndFillProperty(args, KotlinCompilerSpec::class)
-    args["kotlinCompilerSpec"] = kotlinCompilerSpec
-    args["srcPathPrefix"] = kotlinCompilerSpec.srcPath.toFile().canonicalPath
-    val formatterSpec = creatDataClassAndFillProperty(args, FormatterSpec::class)
-    args["formatterSpec"] = formatterSpec
-    args["launchEnvironment"] = LaunchEnvironment.CLI
-    args["debugSpec"] = debugSpec
-    val analyzerSpec = creatDataClassAndFillProperty(args, AnalyzerSpec::class)
+    val analyzerSpec: AnalyzerSpec = SpecificationBuilder(args).next(KotlinCompilerSpec::class)
+        .withCurrentArtifact("kotlinCompilerSpec")
+        .withPartOfCurrentArtifact("srcPathPrefix") { (it as KotlinCompilerSpec).srcPath.toFile().canonicalPath }
+        .next(FormatterSpec::class)
+        .withCurrentArtifact("formatterSpec")
+        .next(DebugSpec::class)
+        .withCurrentArtifact("debugSpec")
+        .setProperty("launchEnvironment", LaunchEnvironment.CLI)
+        .next(AnalyzerSpec::class)
+        .build() ?: throw IllegalStateException("Arguments parser error")
     return analyzerSpec
 }
 

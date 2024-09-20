@@ -48,11 +48,36 @@ object EventBus {
     }
 
     private fun postEvent(wrapper: ListenerMethod, event: Any, prefix: String) {
-        if (wrapper.filterEl.isBlank() || evaluateBooleanElExpression(wrapper.filterEl, wrapper.listener, event)) {
-            if (prefix.isBlank() || wrapper.eventPrefix.isBlank() || wrapper.eventPrefix == prefix) {
-                invokeTarget(wrapper, event)
+        if (canPost(wrapper, event, prefix)) {
+            invokeTarget(wrapper, event)
+        }
+    }
+
+    private fun canPost(wrapper: ListenerMethod, event: Any, prefix: String): Boolean {
+        var elFlag = false
+        var clazzFlag = wrapper.filterClazz.isEmpty()
+        var prefixFlag = false
+        if (wrapper.filterEl.isBlank() ||
+            evaluateBooleanElExpression(
+                wrapper.filterEl,
+                wrapper.listener,
+                event
+            )
+        ) {
+            elFlag = true
+        }
+        if (wrapper.filterClazz.isNotEmpty()) {
+            for (i in wrapper.filterClazz) {
+                if (i == event::class || i.isSuperclassOf(event::class)) {
+                    clazzFlag = true
+                    break
+                }
             }
         }
+        if (prefix.isBlank() || wrapper.eventPrefix.isBlank() || wrapper.eventPrefix == prefix) {
+            prefixFlag = true
+        }
+        return elFlag && clazzFlag && prefixFlag
     }
 
     private fun invokeTarget(wrapper: ListenerMethod, event: Any) {
@@ -71,7 +96,7 @@ object EventBus {
         val eventClass = eventMap[listener] ?: return
         eventClass.forEach {
             val listenerList = listenerMap[it] ?: return
-            listenerList.removeIf {l-> l.listener == listener }
+            listenerList.removeIf { l -> l.listener == listener }
             listenerMap[it] = listenerList
         }
         eventMap.remove(listener)
@@ -89,26 +114,28 @@ object EventBus {
         val methodList = getMethodsAnnotatedWith(EventListener::class, listener::class)
             .filter { it.parameters.size == 2 }
             .map {
-                val annotation = getMethodAnnotation(EventListener::class, it).first() as EventListener
+                val annotation = getMethodAnnotation<EventListener>(it).first()
                 ListenerMethod(
                     listener,
                     it,
                     null,
                     it.parameters[1].type.classifier as KClass<*>,
                     annotation.filter,
+                    annotation.filterClazz,
                     annotation.eventPrefix,
                     annotation.order
                 )
             }
         val propertyList = getMutablePropertiesAnnotateWith(EventListener::class, listener::class)
             .map {
-                val annotation = getPropertyAnnotation(EventListener::class, it).first() as EventListener
+                val annotation = getPropertyAnnotation<EventListener>(it)
                 ListenerMethod(
                     listener,
                     null,
                     it,
                     it.setter.parameters[1].type.classifier as KClass<*>,
                     annotation.filter,
+                    annotation.filterClazz,
                     annotation.eventPrefix,
                     annotation.order
                 )

@@ -1,10 +1,13 @@
 package com.github.tnoalex.foundation
 
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
+import com.github.tnoalex.foundation.bean.inject.InjectBean
 import com.github.tnoalex.foundation.bean.register.DefaultBeanRegister
 import com.github.tnoalex.parser.CliCompilerEnvironmentContext
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.specs.KotlinCompilerSpec
+import com.github.tnoalex.utils.getMutablePropertiesAnnotateWith
+import com.github.tnoalex.utils.getPropertyAnnotation
 import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
@@ -16,20 +19,35 @@ import java.util.stream.Stream
 import kotlin.reflect.KClass
 
 class EligosTestArgumentsProvider : ArgumentsProvider {
+    private val beanRegister = DefaultBeanRegister()
+
     @Suppress("UNCHECKED_CAST")
     override fun provideArguments(context: ExtensionContext): Stream<out Arguments> {
         val testMethod = context.requiredTestMethod
         val testAnnotation = testMethod.getAnnotation(RequireTestProcessor::class.java)
         val testResource = resolveTestResources(testAnnotation.testResourcePath)
+        val injectedBeans = testAnnotation.injectedBeans
         require(testMethod.parameters.size == 1)
-        val requiredProcessor = testMethod.parameters[0].type.kotlin as KClass<PsiProcessor>
+        val requiredProcessor = testMethod.parameters[0].type.kotlin as KClass<IssueProcessor>
+        createDependenciesForRequiredProcessor(injectedBeans)
         createMockCompilerEnv(testResource)
-        creatMockContext(requiredProcessor)
+        createMockContext(requiredProcessor)
         return Stream.of(Arguments.of(ApplicationContext.getExactBean(requiredProcessor.java)))
     }
 
-    private fun creatMockContext(processorClazz: KClass<out PsiProcessor>) {
-        DefaultBeanRegister().registerBean(
+    private fun createDependenciesForRequiredProcessor(injectedBeans: Array<KClass<*>>) {
+        if (injectedBeans.isEmpty()) return
+        injectedBeans.forEach {
+            beanRegister.registerBean(
+                it.simpleName!!,
+                it.java,
+                SimpleSingletonBeanContainer
+            )
+        }
+    }
+
+    private fun createMockContext(processorClazz: KClass<out IssueProcessor>) {
+        beanRegister.registerBean(
             processorClazz.simpleName!!,
             processorClazz.java,
             SimpleSingletonBeanContainer

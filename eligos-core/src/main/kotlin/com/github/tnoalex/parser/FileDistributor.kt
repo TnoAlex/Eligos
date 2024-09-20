@@ -1,6 +1,6 @@
 package com.github.tnoalex.parser
 
-import com.github.tnoalex.foundation.LanguageSupportInfo
+import com.github.tnoalex.foundation.language.LanguageSupportInfo
 import com.github.tnoalex.foundation.LaunchEnvironment
 
 interface FileDistributor : LanguageSupportInfo {

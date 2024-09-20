@@ -4,31 +4,36 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.InternalExposedIssue
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.kotlinOriginCanNotResolveWarn
 import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.intellij.lang.jvm.JvmModifier
 import com.intellij.psi.JavaRecursiveElementVisitor
 import com.intellij.psi.PsiClass
+import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.psi.KtFile
 import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class InternalExposedProcessor : PsiProcessor {
+class InternalExposedProcessor : IssueProcessor {
     override val severity: Severity
         get() = Severity.CODE_SMELL
-    override val supportLanguage: List<String>
-        get() = listOf("kotlin", "java")
+    override val supportLanguage: List<Language>
+        get() = listOf(JavaLanguage, KotlinLanguage)
 
-    @EventListener
-    fun process(psiFile: PsiJavaFile) {
+    @EventListener(filterClazz = [PsiJavaFile::class])
+    override fun process(psiFile: PsiFile) {
         psiFile.accept(javaClassVisitor)
     }
 

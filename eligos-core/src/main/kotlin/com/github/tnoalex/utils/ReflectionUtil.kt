@@ -24,12 +24,12 @@ fun getMethodsAnnotatedWith(annotationKClass: KClass<out Annotation>, targetClas
     return targetClass.functions.filter { it.annotations.find { a -> a.annotationClass == annotationKClass } != null }
 }
 
-fun getMethodAnnotation(annotationKClass: KClass<out Annotation>, method: KFunction<*>): List<Annotation> {
-    return method.annotations.filter { it.annotationClass == annotationKClass }
+inline fun <reified T> getMethodAnnotation(method: KFunction<*>): List<T> {
+    return method.annotations.filter { it.annotationClass == T::class }.map { it as T }
 }
 
-fun getPropertyAnnotation(annotationKClass: KClass<out Annotation>, property: KProperty<*>): List<Annotation> {
-    return property.annotations.filter { it.annotationClass == annotationKClass }
+inline fun <reified T> getPropertyAnnotation(property: KProperty<*>): T {
+    return property.annotations.first { it.annotationClass == T::class } as T
 }
 
 fun getClassPropertyByName(clazz: KClass<*>, name: String): List<KProperty<*>> {

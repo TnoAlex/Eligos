@@ -1,40 +1,44 @@
 package com.github.tnoalex.processor.kotlin
 
-import com.github.tnoalex.config.WiredConfig
+import com.github.tnoalex.config.InjectConfig
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.ComplexKotlinFunctionIssue
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.startLine
+import com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class KotlinMccabeComplexityProcessor : PsiProcessor {
+class KotlinMccabeComplexityProcessor : IssueProcessor {
     override val severity: Severity
         get() = Severity.CODE_SMELL
-    override val supportLanguage: List<String>
-        get() = listOf("kotlin")
+    override val supportLanguage: List<Language>
+        get() = listOf(KotlinLanguage)
 
-    @WiredConfig("function.maxCyclomaticComplexity")
+    @InjectConfig("function.maxCyclomaticComplexity")
     private var maxCyclomaticComplexity = 0
     private var currentComplexity = 1
 
-    @EventListener
-    fun process(ktFile: KtFile) {
-        ktFile.accept(object : KtTreeVisitorVoid() {
+    @EventListener(filterClazz = [KtFile::class])
+    override fun process(psiFile: PsiFile) {
+        psiFile.accept(object : KtTreeVisitorVoid() {
             override fun visitNamedFunction(function: KtNamedFunction) {
                 function.accept(ktCComplexityVisitor)
                 if (currentComplexity >= maxCyclomaticComplexity) {
                     context.reportIssue(
                         ComplexKotlinFunctionIssue(
-                            ktFile.virtualFilePath,
+                            function.containingKtFile.virtualFilePath,
                             function.fqName?.asString() ?: let {
                               logger.nameCanNotResolveWarn("function",function)
                                 "unknown func"

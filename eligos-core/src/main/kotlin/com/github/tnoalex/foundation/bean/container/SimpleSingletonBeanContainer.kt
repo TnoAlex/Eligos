@@ -28,7 +28,7 @@ object SimpleSingletonBeanContainer : BeanContainer {
         return bean
     }
 
-    override fun removeBean(beanType: Class<*>): List<Any> {
+    override fun removeBeanOfType(beanType: Class<*>): List<Any> {
         val it = container.iterator()
         val removed = ArrayList<Any>()
         while (it.hasNext()) {
@@ -49,7 +49,7 @@ object SimpleSingletonBeanContainer : BeanContainer {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> getBean(beanType: Class<T>): List<T> {
+    override fun <T> getBeanOfType(beanType: Class<T>): List<T> {
         val list = ArrayList<T>()
         container.forEach { (_, v) ->
             if (beanType.isAssignableFrom(v.javaClass))

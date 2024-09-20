@@ -5,22 +5,29 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.processor.BaseProcessor
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
+import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.lineCount
 import com.github.tnoalex.statistics.KotlinStatistics
+import com.intellij.psi.PsiFile
 import org.jetbrains.kotlin.psi.*
 
 
 @Component(order = -1)
 @Suitable(LaunchEnvironment.CLI)
-class KotlinStatisticsProcessor : BaseProcessor {
+class KotlinStatisticsProcessor : PsiProcessor {
     private var stats = KotlinStatistics()
+    override val supportLanguage: List<Language>
+        get() = listOf(KotlinLanguage)
 
-    @EventListener(order = -1)
-    fun process(ktFile: KtFile) {
+    @EventListener(order = -1, filterClazz = [KtFile::class])
+    override fun process(psiFile: PsiFile) {
+        psiFile as KtFile
         stats.fileNumber++
-        stats.lineNumber += ktFile.lineCount
-        ktFile.accept(ktVisitor)
+        stats.lineNumber += psiFile.lineCount
+        psiFile.accept(ktVisitor)
     }
 
     @EventListener(order = -1)

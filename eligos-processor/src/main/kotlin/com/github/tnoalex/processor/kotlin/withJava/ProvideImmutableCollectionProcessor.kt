@@ -4,19 +4,20 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.ProvideImmutableCollectionIssue
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.*
-import com.intellij.psi.JavaRecursiveElementVisitor
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiJavaFile
-import com.intellij.psi.PsiMethodCallExpression
+import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
+import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.types.KotlinType
@@ -24,15 +25,15 @@ import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class ProvideImmutableCollectionProcessor : PsiProcessor {
+class ProvideImmutableCollectionProcessor : IssueProcessor {
     override val severity: Severity
         get() = Severity.CODE_SMELL
-    override val supportLanguage: List<String>
-        get() = listOf("java", "kotlin")
+    override val supportLanguage: List<Language>
+        get() = listOf(JavaLanguage, KotlinLanguage)
 
-    @EventListener
-    fun process(javaFile: PsiJavaFile) {
-        javaFile.accept(javaFileVisitorVoid)
+    @EventListener(filterClazz = [PsiJavaFile::class])
+    override fun process(psiFile: PsiFile) {
+        psiFile.accept(javaFileVisitorVoid)
     }
 
     private val javaFileVisitorVoid = object : JavaRecursiveElementVisitor() {

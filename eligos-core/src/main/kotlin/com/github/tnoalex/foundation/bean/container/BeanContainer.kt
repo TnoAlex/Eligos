@@ -9,11 +9,11 @@ interface BeanContainer {
 
     fun addBean(beanName: String, bean: Any)
     fun removeBean(beanName: String): Any?
-    fun removeBean(beanType: Class<*>): List<Any>
+    fun removeBeanOfType(beanType: Class<*>): List<Any>
     fun getBean(beanName: String): Any?
 
     fun visitBeans(visitor: (String, Any) -> Unit)
-    fun <T> getBean(beanType: Class<T>): List<T>?
+    fun <T> getBeanOfType(beanType: Class<T>): List<T>?
 
     fun <T> getExactBean(beanType: Class<T>): T?
     fun containsBean(beanName: String): Boolean {

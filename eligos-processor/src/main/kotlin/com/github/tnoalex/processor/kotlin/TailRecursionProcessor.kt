@@ -4,12 +4,16 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.OptimizedTailRecursionIssue
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.referenceExpressionSelfOrInChildren
 import com.github.tnoalex.processor.utils.startLine
+import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
@@ -18,22 +22,22 @@ import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class TailRecursionProcessor : PsiProcessor {
+class TailRecursionProcessor : IssueProcessor {
     override val severity: Severity
         get() = Severity.SUGGESTION
-    override val supportLanguage: List<String>
-        get() = listOf("kotlin")
+    override val supportLanguage: List<Language>
+        get() = listOf(KotlinLanguage)
 
-    @EventListener
-    fun process(ktFile: KtFile) {
-        ktFile.accept(object : KtTreeVisitorVoid() {
+    @EventListener(filterClazz = [KtFile::class])
+    override fun process(psiFile: PsiFile) {
+        (psiFile as KtFile).accept(object : KtTreeVisitorVoid() {
             override fun visitNamedFunction(function: KtNamedFunction) {
                 if (function.hasModifier(KtTokens.TAILREC_KEYWORD)) return  super.visitNamedFunction(function)
                 val isTailRecursion = findRecursion(function)
                 if (isTailRecursion) {
                     context.reportIssue(
                         OptimizedTailRecursionIssue(
-                            ktFile.virtualFilePath,
+                            psiFile.virtualFilePath,
                             function.fqName?.asString() ?: let {
                                 logger.nameCanNotResolveWarn("function",function)
                                 "unknown func"
