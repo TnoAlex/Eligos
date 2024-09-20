@@ -18,6 +18,7 @@ import com.github.tnoalex.processor.utils.*
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifierListOwner
+import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -62,6 +63,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
             if (calleeTarget is KtElement) return
             if (calleeTarget !is PsiMethod) return
             val args = expression.valueArguments
+            val typeParams = calleeTarget.typeParameters
             if (calleeTarget.parameters.size != args.size) return
             for ((index, pair) in args.zip(calleeTarget.parameters).withIndex()) {
                 val (actualArg, needArg) = pair
@@ -74,6 +76,8 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                     qn.contains("NotNull") || qn.contains("Nullable")
                 }
                 if (isNotPlatformType) continue
+                val needType = needArg.type
+                if (needType is PsiClassReferenceType && needType.reference.resolve() in typeParams) continue
                 context.reportIssue(
                     NullablePassedToPlatformTypeParamIssue(
                         expression.filePath,
