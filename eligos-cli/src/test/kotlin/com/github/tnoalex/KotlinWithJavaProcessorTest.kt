@@ -153,9 +153,11 @@ class KotlinWithJavaProcessorTest {
             }
         }
         val callerPlatformType = issue<UncertainNullablePlatformCallerIssue>()
-        assertEquals(1, callerPlatformType.size)
+        assertEquals(2, callerPlatformType.size)
         val issue = callerPlatformType[0]
         assertEquals(5, issue.startLine)
+        val issue1 = callerPlatformType[1]
+        assertEquals(6, issue1.startLine)
     }
 
     @RequireTestProcessor("resources@nullablePassedToPlatformTypeParam")
