@@ -9,12 +9,15 @@ import com.github.tnoalex.foundation.language.JavaLanguage
 import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
+import com.github.tnoalex.issues.kotlin.withJava.NullablePassedToPlatformTypeParamIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformCallerIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpressionUsageIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeInPropertyIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.*
 import com.intellij.psi.PsiFile
+import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiModifierListOwner
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -40,11 +43,49 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
     }
 
     private val kotlinPropertyVisitor = object : KtTreeVisitorVoid() {
+        override fun visitCallExpression(expression: KtCallExpression) {
+            checkParameter(expression)
+            super.visitCallExpression(expression)
+        }
+
         override fun visitExpression(expression: KtExpression) {
             val bindingContext = expression.bindingContext
             checkExpected(bindingContext, expression)
             checkCaller(bindingContext, expression)
             super.visitExpression(expression)
+        }
+
+        private fun checkParameter(expression: KtCallExpression) {
+            val bindingContext = expression.bindingContext
+            val callee = expression.calleeExpression ?: return
+            val calleeTarget = callee.mainReference?.resolve() ?: return
+            if (calleeTarget is KtElement) return
+            if (calleeTarget !is PsiMethod) return
+            val args = expression.valueArguments
+            if (calleeTarget.parameters.size != args.size) return
+            for ((index, pair) in args.zip(calleeTarget.parameters).withIndex()) {
+                val (actualArg, needArg) = pair
+                val argumentExpression = actualArg.getArgumentExpression() ?: continue
+                val actualType = bindingContext.getType(argumentExpression) ?: continue
+                if (!actualType.isMarkedNullable) continue
+                if (needArg !is PsiModifierListOwner) continue
+                val isNotPlatformType = needArg.annotations.any {
+                    val qn = (it.qualifiedName ?: return@any false).split(".")
+                    qn.contains("NotNull") || qn.contains("Nullable")
+                }
+                if (isNotPlatformType) continue
+                context.reportIssue(
+                    NullablePassedToPlatformTypeParamIssue(
+                        expression.filePath,
+                        expression.text!!,
+                        expression.startLine,
+                        calleeTarget.filePath,
+                        calleeTarget.name,
+                        calleeTarget.startLine,
+                        index
+                    )
+                )
+            }
         }
 
         private fun checkCaller(bindingContext: BindingContext, expression: KtExpression) {
@@ -59,7 +100,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
             if (nullability != Nullability.NOT_NULL && callerType.isFlexibleRecursive()) {
                 context.reportIssue(
                     UncertainNullablePlatformCallerIssue(
-                        callerExpr.containingFile.virtualFile.path,
+                        callerExpr.filePath,
                         callerExpr.text!!,
                         callerExpr.startLine,
                         nullability?.toString() ?: "no smart cast"
@@ -82,7 +123,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                 if (target !is KtProperty) {
                     context.reportIssue(
                         UncertainNullablePlatformExpressionUsageIssue(
-                            expression.containingFile.virtualFile.path,
+                            expression.filePath,
                             expression.parent.text!!,
                             expression.startLine,
                             expectedType.toString(),

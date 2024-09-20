@@ -157,4 +157,19 @@ class KotlinWithJavaProcessorTest {
         val issue = callerPlatformType[0]
         assertEquals(5, issue.startLine)
     }
+
+    @RequireTestProcessor("resources@nullablePassedToPlatformTypeParam")
+    fun testNullablePassedToPlatformTypeParam(processor: UncertainNullablePlatformTypeProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is KtFile) {
+                processor.process(psiFile)
+            }
+        }
+        val callerPlatformType = issue<NullablePassedToPlatformTypeParamIssue>()
+        assertEquals(1, callerPlatformType.size)
+        val issue = callerPlatformType[0]
+        assertEquals(4, issue.startLine)
+        assertEquals(9, issue.calledFunctionStartLine)
+        assertEquals("func1", issue.calledFunctionName)
+    }
 }
