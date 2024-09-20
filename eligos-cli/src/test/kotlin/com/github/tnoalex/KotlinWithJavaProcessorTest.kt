@@ -144,4 +144,17 @@ class KotlinWithJavaProcessorTest {
         assertEquals(2, expressionPlatformType.size)
         assertEquals(2, callerPlatformType.size)
     }
+
+    @RequireTestProcessor("resources@unclearPlantformCaller")
+    fun testUncertainNullablePlatformCaller(processor: UncertainNullablePlatformTypeProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is KtFile) {
+                processor.process(psiFile)
+            }
+        }
+        val callerPlatformType = issue<UncertainNullablePlatformCallerIssue>()
+        assertEquals(1, callerPlatformType.size)
+        val issue = callerPlatformType[0]
+        assertEquals(5, issue.startLine)
+    }
 }
