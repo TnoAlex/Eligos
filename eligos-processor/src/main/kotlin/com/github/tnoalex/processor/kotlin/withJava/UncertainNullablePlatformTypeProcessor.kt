@@ -5,12 +5,16 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
+import com.github.tnoalex.foundation.language.JavaLanguage
+import com.github.tnoalex.foundation.language.KotlinLanguage
+import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformCallerIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpressionUsageIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeInPropertyIssue
-import com.github.tnoalex.processor.PsiProcessor
+import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.*
+import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -26,16 +30,16 @@ import org.slf4j.LoggerFactory
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
-class UncertainNullablePlatformTypeProcessor : PsiProcessor {
+class UncertainNullablePlatformTypeProcessor : IssueProcessor {
     override val severity: Severity
         get() = Severity.CODE_SMELL
-    override val supportLanguage: List<String>
-        get() = listOf("java", "kotlin")
-    val dataFlowValueFactory = ApplicationContext.getBean(DataFlowValueFactory::class.java).first()
+    override val supportLanguage: List<Language>
+        get() = listOf(JavaLanguage, KotlinLanguage)
+    val dataFlowValueFactory = ApplicationContext.getBeanOfType(DataFlowValueFactory::class.java).first()
 
-    @EventListener
-    fun process(ktFile: KtFile) {
-        ktFile.accept(kotlinPropertyVisitor)
+    @EventListener(filterClazz = [KtFile::class])
+    override fun process(psiFile: PsiFile) {
+        psiFile.accept(kotlinPropertyVisitor)
     }
 
     private val kotlinPropertyVisitor = object : KtTreeVisitorVoid() {
@@ -65,7 +69,6 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
                     )
                 )
             }
-            println()
         }
 
         private fun checkExpected(bindingContext: BindingContext, expression: KtExpression) {

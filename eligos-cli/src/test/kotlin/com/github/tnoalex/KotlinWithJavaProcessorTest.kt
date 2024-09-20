@@ -139,7 +139,9 @@ class KotlinWithJavaProcessorTest {
         }
         val propertyPlatformType = issue<UncertainNullablePlatformTypeInPropertyIssue>()
         val expressionPlatformType = issue<UncertainNullablePlatformExpressionUsageIssue>()
+        val callerPlatformType = issue<UncertainNullablePlatformCallerIssue>()
         assertEquals(5, propertyPlatformType.size)
         assertEquals(2, expressionPlatformType.size)
+        assertEquals(2, callerPlatformType.size)
     }
 }
