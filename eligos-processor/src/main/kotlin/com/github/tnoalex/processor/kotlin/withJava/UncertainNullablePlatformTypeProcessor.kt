@@ -6,12 +6,14 @@ import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.issues.Severity
+import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformCallerIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpressionUsageIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeInPropertyIssue
 import com.github.tnoalex.processor.PsiProcessor
 import com.github.tnoalex.processor.utils.*
-import org.jetbrains.kotlin.cfg.containingDeclarationForPseudocode
+import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.kotlin.idea.references.mainReference
+import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtProperty
@@ -20,7 +22,6 @@ import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
 import org.jetbrains.kotlin.resolve.calls.smartcasts.Nullability
 import org.jetbrains.kotlin.types.*
-import org.jetbrains.kotlin.util.javaslang.getOrNull
 import org.slf4j.LoggerFactory
 
 @Component
@@ -40,23 +41,43 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
     private val kotlinPropertyVisitor = object : KtTreeVisitorVoid() {
         override fun visitExpression(expression: KtExpression) {
             val bindingContext = expression.bindingContext
-            val expectedType = bindingContext[BindingContext.EXPECTED_EXPRESSION_TYPE, expression]
-                ?: return super.visitExpression(expression)
-            if (expectedType.isNullable() || expectedType.isFlexibleRecursive()) {
-                return super.visitExpression(expression)
+            checkExpected(bindingContext, expression)
+            checkCaller(bindingContext, expression)
+            super.visitExpression(expression)
+        }
+
+        private fun checkCaller(bindingContext: BindingContext, expression: KtExpression) {
+            val prevSibling = expression.prevSibling
+            if (prevSibling !is LeafPsiElement) return
+            if (prevSibling.elementType != KtTokens.DOT) return
+            val callerExpr = prevSibling.prevSibling ?: return
+            if (callerExpr !is KtExpression) return
+            val callerType = bindingContext.getType(callerExpr) ?: return
+            if (callerType.isDynamic()) return
+            val nullability = getNullability(bindingContext, expression, dataFlowValueFactory, callerType)
+            if (nullability != Nullability.NOT_NULL && callerType.isFlexibleRecursive()) {
+                context.reportIssue(
+                    UncertainNullablePlatformCallerIssue(
+                        callerExpr.containingFile.virtualFile.path,
+                        callerExpr.text!!,
+                        callerExpr.startLine,
+                        nullability?.toString() ?: "no smart cast"
+                    )
+                )
             }
-            val type = bindingContext.getType(expression) ?: return super.visitExpression(expression)
-            if (type.isDynamic()) return super.visitExpression(expression)
-            val typeInfo = bindingContext[BindingContext.EXPRESSION_TYPE_INFO, expression]
-            val dataFlowInfo = typeInfo?.dataFlowInfo ?: return super.visitExpression(expression)
-            val completeNullabilityInfo = dataFlowInfo.completeNullabilityInfo
-            val declarationDescriptor =
-                expression.containingDeclarationForPseudocode?.resolveToDescriptorIfAny()
-                    ?: return super.visitExpression(expression)
-            val dataFlowValue =
-                dataFlowValueFactory.createDataFlowValue(expression, type, bindingContext, declarationDescriptor)
-            val nullabilities = completeNullabilityInfo[dataFlowValue].getOrNull()
-            if (nullabilities != Nullability.NOT_NULL && type.isFlexibleRecursive()) {
+            println()
+        }
+
+        private fun checkExpected(bindingContext: BindingContext, expression: KtExpression) {
+            val expectedType = bindingContext[BindingContext.EXPECTED_EXPRESSION_TYPE, expression]
+                ?: return
+            if (expectedType.isNullable() || expectedType.isFlexibleRecursive()) {
+                return
+            }
+            val type = bindingContext.getType(expression) ?: return
+            if (type.isDynamic()) return
+            val nullability = getNullability(bindingContext, expression, dataFlowValueFactory, type)
+            if (nullability != Nullability.NOT_NULL && type.isFlexibleRecursive()) {
                 val target = expression.mainReference?.resolve()
                 if (target !is KtProperty) {
                     context.reportIssue(
@@ -66,14 +87,13 @@ class UncertainNullablePlatformTypeProcessor : PsiProcessor {
                             expression.startLine,
                             expectedType.toString(),
                             type.toString(),
-                            nullabilities?.toString() ?: "no smart cast"
+                            nullability?.toString() ?: "no smart cast"
                         )
                     )
                 } else {
                     reportProperty(target)
                 }
             }
-            super.visitExpression(expression)
         }
 
 
