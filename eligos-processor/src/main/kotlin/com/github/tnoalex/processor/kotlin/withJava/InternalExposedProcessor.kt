@@ -12,10 +12,10 @@ import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaExtendOrImpl
 import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaParameterInternalKotlinIssue
 import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaReturnInternalKotlinIssue
 import com.github.tnoalex.processor.IssueProcessor
+import com.github.tnoalex.processor.utils.*
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.kotlinOriginCanNotResolveWarn
 import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
-import com.github.tnoalex.processor.utils.startLine
 import com.intellij.lang.jvm.JvmModifier
 import com.intellij.psi.*
 import com.intellij.psi.impl.source.PsiClassReferenceType
@@ -61,17 +61,7 @@ class InternalExposedProcessor : IssueProcessor {
             return psiClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)
         }
 
-        fun checkExposedType(type: PsiClassType, result: MutableList<PsiClass>) {
-            val typeClass = type.resolve()
-            if (typeClass != null && isKtInternal(typeClass)) {
-                result.add(typeClass)
-            }
-            for (typeParamInClass in type.parameters) {
-                if (typeParamInClass is PsiClassType) {
-                    checkExposedType(typeParamInClass, result)
-                }
-            }
-        }
+
 
         fun checkMethodParameters(method: PsiMethod) {
             val parameters = method.parameters
@@ -80,7 +70,7 @@ class InternalExposedProcessor : IssueProcessor {
                 val paramType = param.type
                 val exposedTypes = mutableListOf<PsiClass>()
                 if (paramType is PsiClassType) {
-                    checkExposedType(paramType, exposedTypes)
+                    collectRecursively(paramType, exposedTypes, ::isKtInternal)
                 }
                 if (exposedTypes.isNotEmpty()) {
                     exposedParameters.add(index to exposedTypes)
@@ -117,7 +107,7 @@ class InternalExposedProcessor : IssueProcessor {
             val returnType = method.returnType ?: return
             if (returnType !is PsiClassType) return
             val exposedTypes = mutableListOf<PsiClass>()
-            checkExposedType(returnType, exposedTypes)
+            collectRecursively(returnType, exposedTypes, ::isKtInternal)
             if (exposedTypes.isNotEmpty()) {
                 context.reportIssue(
                     JavaReturnInternalKotlinIssue(
