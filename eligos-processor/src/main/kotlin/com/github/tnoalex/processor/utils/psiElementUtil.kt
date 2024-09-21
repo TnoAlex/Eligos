@@ -3,7 +3,7 @@ package com.github.tnoalex.processor.utils
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.*
 
 internal val PsiElement.filePath
     get() = this.containingFile.virtualFile.path
@@ -30,8 +30,13 @@ fun collectRecursively(type: KotlinType, result: MutableList<KotlinType>, condit
 }
 
 fun checkAnyRecursively(type: KotlinType, condition: (KotlinType) -> Boolean): Boolean {
-    if (condition(type)) {
+    if (!type.constructor.isDenotable) {
+        // for intersection type
+        if (type.constructor.supertypes.any { checkAnyRecursively(it, condition) }) {
+            return true
+        }
+    } else if (condition(type)) {
         return true
     }
-    return type.arguments.any { checkAnyRecursively(it.type, condition) }
+    return type.arguments.any { (it !is StarProjectionImpl) && checkAnyRecursively(it.type, condition) }
 }

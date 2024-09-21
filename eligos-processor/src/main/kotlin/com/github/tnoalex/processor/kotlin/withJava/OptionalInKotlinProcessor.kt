@@ -20,8 +20,7 @@ import org.jetbrains.kotlin.descriptors.ValueDescriptor
 import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClass
-import org.jetbrains.kotlin.types.KotlinType
-import org.jetbrains.kotlin.types.isDynamic
+import org.jetbrains.kotlin.types.*
 import org.slf4j.LoggerFactory
 
 @Component
