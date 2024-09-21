@@ -107,7 +107,8 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                         callerExpr.filePath,
                         callerExpr.text!!,
                         callerExpr.startLine,
-                        nullability?.toString() ?: "no smart cast"
+                        nullability?.toString() ?: "no smart cast",
+                        callerExpr.text!!
                     )
                 )
             }
