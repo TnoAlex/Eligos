@@ -55,14 +55,14 @@ class KotlinWithJavaProcessorTest {
                 processor.process(psiFile)
             }
         }
-        val internalExposedIssue = issue<InternalExposedIssue>()
+        val internalExposedIssue = issue<JavaExtendOrImplInternalKotlinIssue>()
         assertEquals(3, internalExposedIssue.size)
         assertArrayEquals(
             arrayOf("internaltest.java.UseInternalInJava0", "internaltest.kotlin.InternalOpenClassInKotlin", true),
             internalExposedIssue.firstOrNull {
                 it.affectedFiles.find { f -> f.endsWith("UseInternalInJava0.java") } != null
             }?.let {
-                arrayOf(it.javaClassFqName, it.kotlinClassFqName, it.isExtend)
+                arrayOf(it.javaClassFqName, it.kotlinClassFqName, it.kotlinClassFqName != null)
             }
         )
         assertArrayEquals(
@@ -74,7 +74,7 @@ class KotlinWithJavaProcessorTest {
             internalExposedIssue.firstOrNull {
                 it.affectedFiles.find { f -> f.endsWith("UseInternalInJava2.java") } != null
             }?.let {
-                arrayOf(it.javaClassFqName, it.kotlinInterfacesFqNames, it.isExtend)
+                arrayOf(it.javaClassFqName, it.kotlinInterfacesFqNames, it.kotlinClassFqName != null)
             }
         )
     }

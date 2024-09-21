@@ -8,7 +8,7 @@ import com.github.tnoalex.foundation.language.JavaLanguage
 import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
-import com.github.tnoalex.issues.kotlin.withJava.InternalExposedIssue
+import com.github.tnoalex.issues.kotlin.withJava.JavaExtendOrImplInternalKotlinIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.kotlinOriginCanNotResolveWarn
@@ -21,7 +21,6 @@ import com.intellij.psi.PsiJavaFile
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.psi.KtFile
 import org.slf4j.LoggerFactory
 
 @Component
@@ -39,20 +38,24 @@ class InternalExposedProcessor : IssueProcessor {
 
     private val javaClassVisitor = object : JavaRecursiveElementVisitor() {
         override fun visitClass(aClass: PsiClass) {
-            if (aClass.superClass == null) return super.visitClass(aClass)
-            val superClass = aClass.superClass ?: return super.visitClass(aClass)
+            checkExtendOrImpl(aClass)
+            super.visitClass(aClass)
+        }
+
+        fun checkExtendOrImpl(aClass: PsiClass) {
+            if (aClass.superClass == null) return 
+            val superClass = aClass.superClass ?: return
             val interfaces = aClass.interfaces.filterIsInstance<KtLightClass>()
                 .filter { it.kotlinOrigin != null && it.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD) }
-            if (superClass !is KtLightClass && interfaces.isEmpty()) return super.visitClass(aClass)
+            if (superClass !is KtLightClass && interfaces.isEmpty()) return
             if (superClass is KtLightClass) {
                 superClass.kotlinOrigin ?: let {
                     logger.kotlinOriginCanNotResolveWarn("class", aClass)
-                    return super.visitClass(aClass)
+                    return 
                 }
-                if (!superClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)) return super.visitClass(aClass)
+                if (!superClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)) return 
             }
-            if (!aClass.hasModifier(JvmModifier.PUBLIC)) return super.visitClass(aClass)
-            if (!isAllPublic(aClass)) return super.visitClass(aClass)
+            if (!isAllPublic(aClass)) return
 
             val filePaths = hashSetOf(aClass.containingFile.virtualFile.path)
             var superClassName: String? = null
@@ -62,7 +65,7 @@ class InternalExposedProcessor : IssueProcessor {
             }
 
             context.reportIssue(
-                InternalExposedIssue(
+                JavaExtendOrImplInternalKotlinIssue(
                     (filePaths + interfaces.map {
                         it.kotlinOrigin?.filePath ?: let {
                             logger.kotlinOriginCanNotResolveWarn("class", aClass)
@@ -83,11 +86,11 @@ class InternalExposedProcessor : IssueProcessor {
                     }.takeIf { it.isNotEmpty() }
                 )
             )
-            super.visitClass(aClass)
         }
     }
 
     private fun isAllPublic(psiClass: PsiClass): Boolean {
+        if (!psiClass.hasModifier(JvmModifier.PUBLIC)) return false
         val parent = PsiTreeUtil.getParentOfType(psiClass, PsiClass::class.java)
         return if (parent == null) true
         else {
