@@ -9,7 +9,7 @@ import com.github.tnoalex.foundation.language.JavaLanguage
 import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
-import com.github.tnoalex.issues.kotlin.withJava.NullablePassedToPlatformTypeParamIssue
+import com.github.tnoalex.issues.kotlin.withJava.NullablePassedToPlatformParamIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformCallerIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpressionUsageIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeInPropertyIssue
@@ -79,7 +79,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                 val needType = needArg.type
                 if (needType is PsiClassReferenceType && needType.reference.resolve() in typeParams) continue
                 context.reportIssue(
-                    NullablePassedToPlatformTypeParamIssue(
+                    NullablePassedToPlatformParamIssue(
                         expression.filePath,
                         expression.text!!,
                         expression.startLine,

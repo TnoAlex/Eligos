@@ -5,7 +5,7 @@ import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.issues.Severity
 
-class NullablePassedToPlatformTypeParamIssue(
+class NullablePassedToPlatformParamIssue(
     affectedFile: String,
     content: String,
     val startLine: Int,
@@ -14,7 +14,7 @@ class NullablePassedToPlatformTypeParamIssue(
     val calledFunctionStartLine: Int,
     val parameterIndex: Int
 ) : Issue(
-    EligosIssueBundle.message("issue.name.NullablePassedToPlatformTypeParamIssue"),
+    EligosIssueBundle.message("issue.name.NullablePassedToPlatformParamIssue"),
     Severity.CODE_SMELL,
     AnalysisHierarchyEnum.EXPRESSION,
     hashSetOf(affectedFile),
@@ -25,7 +25,7 @@ class NullablePassedToPlatformTypeParamIssue(
         if (javaClass != other?.javaClass) return false
         if (!super.equals(other)) return false
 
-        other as NullablePassedToPlatformTypeParamIssue
+        other as NullablePassedToPlatformParamIssue
 
         if (startLine != other.startLine) return false
         if (calledFunctionFile != other.calledFunctionFile) return false

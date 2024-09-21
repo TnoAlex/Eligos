@@ -274,7 +274,7 @@ class KotlinWithJavaProcessorTest {
                 processor.process(psiFile)
             }
         }
-        val callerPlatformType = issue<NullablePassedToPlatformTypeParamIssue>()
+        val callerPlatformType = issue<NullablePassedToPlatformParamIssue>()
         assertEquals(1, callerPlatformType.size)
         val issue = callerPlatformType[0]
         assertEquals(4, issue.startLine)

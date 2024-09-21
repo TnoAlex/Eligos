@@ -42,7 +42,7 @@ In the current version, we can detect the following 13 code smell:
     <tr >
         <td>Internal Exposed</td>
         <td>🟩</td>
-        <td>Java inherits or implements an abstract class or interface for Internal in kotlin and extends its access to public</td>
+        <td>Java expose Kotlin internal declaration to public.</td>
     </tr>
     <tr>
         <td>Uncertain Nullable Platform Expression Usage</td>
@@ -55,9 +55,9 @@ In the current version, we can detect the following 13 code smell:
         <td>Call a method or access a property whose caller expression type is platform type in Kotlin.</td>
     </tr>
     <tr>
-        <td>Nullable Passed To Platform Type Parameter</td>
+        <td>Nullable Passed To Platform Parameter</td>
         <td>🟩</td>
-        <td>Kotlin passed a nullable parameter to a Java method which takes platform type parameter.</td>
+        <td>Kotlin passed a nullable parameter to a Java method which takes platform parameter.</td>
     </tr>
    <tr>
        <td>Uncertain Nullable Platform Type In Property</td>
