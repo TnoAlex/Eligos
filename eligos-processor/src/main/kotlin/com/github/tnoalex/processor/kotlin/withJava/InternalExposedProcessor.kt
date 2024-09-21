@@ -9,6 +9,7 @@ import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.JavaExtendOrImplInternalKotlinIssue
+import com.github.tnoalex.issues.kotlin.withJava.JavaParameterInternalKotlinIssue
 import com.github.tnoalex.issues.kotlin.withJava.JavaReturnInternalKotlinIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
@@ -39,12 +40,51 @@ class InternalExposedProcessor : IssueProcessor {
     private val javaClassVisitor = object : JavaRecursiveElementVisitor() {
         override fun visitMethod(method: PsiMethod?) {
             checkMethodReturnType(method ?: return)
+            checkMethodParameters(method)
             super.visitMethod(method)
         }
 
         override fun visitClass(aClass: PsiClass?) {
             checkExtendOrImpl(aClass ?: return)
             super.visitClass(aClass)
+        }
+
+        fun checkMethodParameters(method: PsiMethod) {
+            val parameters = method.parameters
+            val exposedParameters = arrayListOf<Pair<Int, PsiClass>>()
+            for ((index, param) in parameters.withIndex()) {
+                val paramType = param.type
+                if (paramType !is PsiClassReferenceType) continue
+                val paramTypeClass = paramType.resolve() ?: continue
+                if (paramTypeClass !is KtLightClass) continue
+                paramTypeClass.kotlinOrigin ?: let {
+                    logger.kotlinOriginCanNotResolveWarn("class", paramTypeClass)
+                    return
+                }
+                val hasModifier = paramTypeClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)
+                if (hasModifier) {
+                    exposedParameters.add(index to paramTypeClass)
+                }
+            }
+            if (exposedParameters.isEmpty()) return
+            context.reportIssue(
+                JavaParameterInternalKotlinIssue(
+                    hashSetOf(
+                        method.containingFile?.virtualFile?.path ?: "unknown java file",
+                    ).apply {
+                        addAll(
+                            exposedParameters.map {
+                                it.second.containingFile?.virtualFile?.path ?: "unknown kotlin file"
+                            }
+                        )
+                    },
+                    method.containingClass?.qualifiedName ?: "anonymous java class name",
+                    method.name,
+                    method.startLine,
+                    exposedParameters.map { it.first },
+                    exposedParameters.map { it.second.qualifiedName ?: "anonymous kotlin class name" }
+                )
+            )
         }
 
         fun checkMethodReturnType(method: PsiMethod) {

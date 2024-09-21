@@ -6,8 +6,7 @@ import com.github.tnoalex.issues.kotlin.withJava.*
 import com.github.tnoalex.processor.kotlin.withJava.*
 import com.intellij.psi.PsiJavaFile
 import org.jetbrains.kotlin.psi.KtFile
-import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -77,6 +76,43 @@ class KotlinWithJavaProcessorTest {
                 arrayOf(it.javaClassFqName, it.kotlinInterfacesFqNames, it.kotlinClassFqName != null)
             }
         )
+    }
+
+    @RequireTestProcessor("resources@javaParameterInternalKotlin")
+    fun testJavaParameterInternalKotlin(processor: InternalExposedProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is PsiJavaFile) {
+                processor.process(psiFile)
+            }
+        }
+        val issues = issue<JavaParameterInternalKotlinIssue>()
+        assertEquals(2, issues.size)
+        assertTrue(issues.all { it.affectedFiles.size == 2 && it.javaClassFqName == "JavaClass" })
+        val issue0 = issues[0]
+        val issue1 = issues[1]
+        fun assertFunc(issue: JavaParameterInternalKotlinIssue) {
+            assertEquals("func", issue.javaMethodName)
+            assertEquals("KtInternal", issue.kotlinClassNames.single())
+            assertEquals(0, issue.parameterIndices.single())
+            assertEquals(2, issue.startLine)
+        }
+        fun assertFunc2(issue: JavaParameterInternalKotlinIssue) {
+            assertEquals("func2", issue.javaMethodName)
+            assertEquals(2, issue.kotlinClassNames.size)
+            assertEquals("KtInternal", issue.kotlinClassNames[0])
+            assertEquals("KtInternal2", issue.kotlinClassNames[1])
+            assertEquals(2, issue.parameterIndices.size)
+            assertEquals(1, issue.parameterIndices[0])
+            assertEquals(3, issue.parameterIndices[1])
+            assertEquals(8, issue.startLine)
+        }
+        if (issue0.javaMethodName == "func") {
+            assertFunc(issue0)
+            assertFunc2(issue1)
+        } else {
+            assertFunc(issue1)
+            assertFunc2(issue0)
+        }
     }
 
     @RequireTestProcessor("resources@javaReturnInternalKotlin")
