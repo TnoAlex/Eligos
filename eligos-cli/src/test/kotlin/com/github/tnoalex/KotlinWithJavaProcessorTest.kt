@@ -3,6 +3,9 @@ package com.github.tnoalex
 import com.github.tnoalex.foundation.EligosBeforeAllTestExtension
 import com.github.tnoalex.foundation.RequireTestProcessor
 import com.github.tnoalex.issues.kotlin.withJava.*
+import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaExtendOrImplInternalKotlinIssue
+import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaParameterInternalKotlinIssue
+import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaReturnInternalKotlinIssue
 import com.github.tnoalex.processor.kotlin.withJava.*
 import com.intellij.psi.PsiJavaFile
 import org.jetbrains.kotlin.psi.KtFile

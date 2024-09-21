@@ -1,4 +1,4 @@
-package com.github.tnoalex.issues.kotlin.withJava
+package com.github.tnoalex.issues.kotlin.withJava.internalExpose
 
 class JavaExtendOrImplInternalKotlinIssue(
     affectedFiles: HashSet<String>,

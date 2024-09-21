@@ -1,4 +1,4 @@
-package com.github.tnoalex.issues.kotlin.withJava
+package com.github.tnoalex.issues.kotlin.withJava.internalExpose
 
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.issues.EligosIssueBundle

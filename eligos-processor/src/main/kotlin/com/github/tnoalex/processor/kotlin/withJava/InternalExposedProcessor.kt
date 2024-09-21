@@ -8,9 +8,9 @@ import com.github.tnoalex.foundation.language.JavaLanguage
 import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
-import com.github.tnoalex.issues.kotlin.withJava.JavaExtendOrImplInternalKotlinIssue
-import com.github.tnoalex.issues.kotlin.withJava.JavaParameterInternalKotlinIssue
-import com.github.tnoalex.issues.kotlin.withJava.JavaReturnInternalKotlinIssue
+import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaExtendOrImplInternalKotlinIssue
+import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaParameterInternalKotlinIssue
+import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaReturnInternalKotlinIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.kotlinOriginCanNotResolveWarn
