@@ -15,9 +15,6 @@ import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpres
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeInPropertyIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.*
-import com.intellij.codeInsight.Nullability.NOT_NULL
-import com.intellij.codeInsight.Nullability.NULLABLE
-import com.intellij.codeInsight.NullableNotNullManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifierListOwner
@@ -68,19 +65,17 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
             val args = expression.valueArguments
             val typeParams = calleeTarget.typeParameters
             if (calleeTarget.parameters.size != args.size) return
-            val nullManager = NullableNotNullManager.getInstance(expression.project)
             for ((index, pair) in args.zip(calleeTarget.parameters).withIndex()) {
                 val (actualArg, needArg) = pair
                 val argumentExpression = actualArg.getArgumentExpression() ?: continue
                 val actualType = bindingContext.getType(argumentExpression) ?: continue
                 if (!actualType.isMarkedNullable) continue
                 if (needArg !is PsiModifierListOwner) continue
-                val needNullable = nullManager.findExplicitNullabilityAnnotation(needArg, setOf(NULLABLE))
-                if (needNullable != null) continue
-                val needNotNull = nullManager.findExplicitNullabilityAnnotation(needArg, setOf(NOT_NULL))
-                if (needNotNull != null) continue
-                // neither explicit Nullable nor explicit NotNull exists,
-                // the type of needArgument is platform type
+                val isNotPlatformType = needArg.annotations.any {
+                    val qn = (it.qualifiedName ?: return@any false).split(".")
+                    qn.contains("NotNull") || qn.contains("Nullable")
+                }
+                if (isNotPlatformType) continue
                 val needType = needArg.type
                 if (needType is PsiClassReferenceType && needType.reference.resolve() in typeParams) continue
                 context.reportIssue(
@@ -112,8 +107,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                         callerExpr.filePath,
                         callerExpr.text!!,
                         callerExpr.startLine,
-                        nullability?.toString() ?: "no smart cast",
-                        callerExpr.text!!
+                        nullability?.toString() ?: "no smart cast"
                     )
                 )
             }
