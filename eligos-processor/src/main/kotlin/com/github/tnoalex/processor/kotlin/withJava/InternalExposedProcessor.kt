@@ -49,21 +49,41 @@ class InternalExposedProcessor : IssueProcessor {
             super.visitClass(aClass)
         }
 
+        /**
+         * check if a [PsiClass] which resolved **from [PsiClassReferenceType]** is a Kotlin internal class.
+         */
+        fun isKtInternal(psiClass: PsiClass): Boolean {
+            if (psiClass !is KtLightClass) return false
+            psiClass.kotlinOrigin ?: let {
+                logger.kotlinOriginCanNotResolveWarn("class", psiClass)
+                return false
+            }
+            return psiClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)
+        }
+
+        fun checkParam(paramType: PsiClassType, result: MutableList<PsiClass>) {
+            val paramTypeClass = paramType.resolve()
+            if (paramTypeClass != null && isKtInternal(paramTypeClass)) {
+                result.add(paramTypeClass)
+            }
+            for (typeParamInParam in paramType.parameters) {
+                if (typeParamInParam is PsiClassType) {
+                    checkParam(typeParamInParam, result)
+                }
+            }
+        }
+
         fun checkMethodParameters(method: PsiMethod) {
             val parameters = method.parameters
-            val exposedParameters = arrayListOf<Pair<Int, PsiClass>>()
+            val exposedParameters = arrayListOf<Pair<Int, List<PsiClass>>>()
             for ((index, param) in parameters.withIndex()) {
                 val paramType = param.type
-                if (paramType !is PsiClassReferenceType) continue
-                val paramTypeClass = paramType.resolve() ?: continue
-                if (paramTypeClass !is KtLightClass) continue
-                paramTypeClass.kotlinOrigin ?: let {
-                    logger.kotlinOriginCanNotResolveWarn("class", paramTypeClass)
-                    return
+                val exposedTypes = mutableListOf<PsiClass>()
+                if (paramType is PsiClassType) {
+                    checkParam(paramType, exposedTypes)
                 }
-                val hasModifier = paramTypeClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)
-                if (hasModifier) {
-                    exposedParameters.add(index to paramTypeClass)
+                if (exposedTypes.isNotEmpty()) {
+                    exposedParameters.add(index to exposedTypes)
                 }
             }
             if (exposedParameters.isEmpty()) return
@@ -73,8 +93,10 @@ class InternalExposedProcessor : IssueProcessor {
                         method.containingFile?.virtualFile?.path ?: "unknown java file",
                     ).apply {
                         addAll(
-                            exposedParameters.map {
-                                it.second.containingFile?.virtualFile?.path ?: "unknown kotlin file"
+                            exposedParameters.flatMap {
+                                it.second.map { it1 ->
+                                    it1.containingFile?.virtualFile?.path ?: "unknown kotlin file"
+                                }
                             }
                         )
                     },
@@ -82,7 +104,11 @@ class InternalExposedProcessor : IssueProcessor {
                     method.name,
                     method.startLine,
                     exposedParameters.map { it.first },
-                    exposedParameters.map { it.second.qualifiedName ?: "anonymous kotlin class name" }
+                    exposedParameters.flatMap {
+                        it.second.map { it1 ->
+                            it1.qualifiedName ?: "anonymous kotlin class name"
+                        }
+                    }
                 )
             )
         }

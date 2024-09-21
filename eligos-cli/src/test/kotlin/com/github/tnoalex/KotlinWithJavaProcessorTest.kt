@@ -78,8 +78,26 @@ class KotlinWithJavaProcessorTest {
         )
     }
 
-    @RequireTestProcessor("resources@javaParameterInternalKotlin")
-    fun testJavaParameterInternalKotlin(processor: InternalExposedProcessor) {
+    private fun assertJavaParameterInternalKotlinIssue1(issue: JavaParameterInternalKotlinIssue) {
+        assertEquals("func", issue.javaMethodName)
+        assertEquals("KtInternal", issue.kotlinClassNames.single())
+        assertEquals(0, issue.parameterIndices.single())
+        assertEquals(2, issue.startLine)
+    }
+
+    private fun assertJavaParameterInternalKotlinIssue2(issue: JavaParameterInternalKotlinIssue) {
+        assertEquals("func2", issue.javaMethodName)
+        assertEquals(2, issue.kotlinClassNames.size)
+        assertEquals("KtInternal", issue.kotlinClassNames[0])
+        assertEquals("KtInternal2", issue.kotlinClassNames[1])
+        assertEquals(2, issue.parameterIndices.size)
+        assertEquals(1, issue.parameterIndices[0])
+        assertEquals(3, issue.parameterIndices[1])
+        assertEquals(8, issue.startLine)
+    }
+
+    @RequireTestProcessor("resources@javaParameterInternalKotlin/nestedGeneric")
+    fun testJavaParameterInternalKotlinNestedGeneric(processor: InternalExposedProcessor) {
         psiFiles().forEach { psiFile ->
             if (psiFile is PsiJavaFile) {
                 processor.process(psiFile)
@@ -90,28 +108,54 @@ class KotlinWithJavaProcessorTest {
         assertTrue(issues.all { it.affectedFiles.size == 2 && it.javaClassFqName == "JavaClass" })
         val issue0 = issues[0]
         val issue1 = issues[1]
-        fun assertFunc(issue: JavaParameterInternalKotlinIssue) {
-            assertEquals("func", issue.javaMethodName)
-            assertEquals("KtInternal", issue.kotlinClassNames.single())
-            assertEquals(0, issue.parameterIndices.single())
-            assertEquals(2, issue.startLine)
-        }
-        fun assertFunc2(issue: JavaParameterInternalKotlinIssue) {
-            assertEquals("func2", issue.javaMethodName)
-            assertEquals(2, issue.kotlinClassNames.size)
-            assertEquals("KtInternal", issue.kotlinClassNames[0])
-            assertEquals("KtInternal2", issue.kotlinClassNames[1])
-            assertEquals(2, issue.parameterIndices.size)
-            assertEquals(1, issue.parameterIndices[0])
-            assertEquals(3, issue.parameterIndices[1])
-            assertEquals(8, issue.startLine)
-        }
         if (issue0.javaMethodName == "func") {
-            assertFunc(issue0)
-            assertFunc2(issue1)
+            assertJavaParameterInternalKotlinIssue1(issue0)
+            assertJavaParameterInternalKotlinIssue2(issue1)
         } else {
-            assertFunc(issue1)
-            assertFunc2(issue0)
+            assertJavaParameterInternalKotlinIssue1(issue1)
+            assertJavaParameterInternalKotlinIssue2(issue0)
+        }
+    }
+
+    @RequireTestProcessor("resources@javaParameterInternalKotlin/generic")
+    fun testJavaParameterInternalKotlinGeneric(processor: InternalExposedProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is PsiJavaFile) {
+                processor.process(psiFile)
+            }
+        }
+        val issues = issue<JavaParameterInternalKotlinIssue>()
+        assertEquals(2, issues.size)
+        assertTrue(issues.all { it.affectedFiles.size == 2 && it.javaClassFqName == "JavaClass" })
+        val issue0 = issues[0]
+        val issue1 = issues[1]
+        if (issue0.javaMethodName == "func") {
+            assertJavaParameterInternalKotlinIssue1(issue0)
+            assertJavaParameterInternalKotlinIssue2(issue1)
+        } else {
+            assertJavaParameterInternalKotlinIssue1(issue1)
+            assertJavaParameterInternalKotlinIssue2(issue0)
+        }
+    }
+
+    @RequireTestProcessor("resources@javaParameterInternalKotlin/normal")
+    fun testJavaParameterInternalKotlinNormal(processor: InternalExposedProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is PsiJavaFile) {
+                processor.process(psiFile)
+            }
+        }
+        val issues = issue<JavaParameterInternalKotlinIssue>()
+        assertEquals(2, issues.size)
+        assertTrue(issues.all { it.affectedFiles.size == 2 && it.javaClassFqName == "JavaClass" })
+        val issue0 = issues[0]
+        val issue1 = issues[1]
+        if (issue0.javaMethodName == "func") {
+            assertJavaParameterInternalKotlinIssue1(issue0)
+            assertJavaParameterInternalKotlinIssue2(issue1)
+        } else {
+            assertJavaParameterInternalKotlinIssue2(issue1)
+            assertJavaParameterInternalKotlinIssue2(issue0)
         }
     }
 
