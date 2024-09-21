@@ -1,12 +1,12 @@
 # <conter class="img"><img src="./doc/imgs/icon.svg"/></center> Eligos
 
-![GitHub License](https://img.shields.io/github/license/TnoAlex/Eligos) 
+![GitHub License](https://img.shields.io/github/license/TnoAlex/Eligos)
 
 Eligos, a static code analysis tool for the [_Kotlin_ programming language](https://kotlinlang.org/).
 
 #### Support Code Smells
 
-In the current version, we can detect the following 11 code smell:
+In the current version, we can detect the following 13 code smell:
 
 <table>
     <tr align="center">
@@ -48,6 +48,16 @@ In the current version, we can detect the following 11 code smell:
         <td>Uncertain Nullable Platform Expression Usage</td>
         <td>🟩</td>
         <td>Kotlin locally calls a Java method that returns a null-agnostic type, and uses this result directly in a Kotlin method that expects completely non-null arguments</td>
+    </tr>
+    <tr>
+        <td>Uncertain Nullable Platform Caller</td>
+        <td>🟩</td>
+        <td>Call a method or access a property whose caller expression type is platform type in Kotlin.</td>
+    </tr>
+    <tr>
+        <td>Nullable Passed To Platform Type Parameter</td>
+        <td>🟩</td>
+        <td>Kotlin passed a nullable parameter to a Java method which takes platform type parameter.</td>
     </tr>
    <tr>
        <td>Uncertain Nullable Platform Type In Property</td>
@@ -97,14 +107,17 @@ In the current version, we can detect the following 11 code smell:
 </table>
 
 
-In the table, yellow is common to Java Kotlin, green is generated when Koltin Java calls each other, and purple is unique to Kotlin.
+In the table, yellow is common to Java Kotlin, green is generated when Koltin Java calls each other, and purple is
+unique to Kotlin.
 
 ### Quick Start ...
 
-1. Clone  this Repo
+1. Clone this Repo
+
 ```bash
    git clone https://github.com/TnoAlex/Eligos.git
 ```
+
 2. Prepare the environment
    Gradle 6.8.3+ is the minimum requirement. However, the recommended versions together with the other tools recommended
    versions are:
@@ -112,13 +125,17 @@ In the table, yellow is common to Java Kotlin, green is generated when Koltin Ja
 | Gradle | Kotlin   | Java Target Level | JDK Min Version |
 |--------|----------|-------------------|-----------------|
 | `8.0+` | `1.9.10` | `17`              | `17`            |
+
 3. Compiler & Build
+
 ```bash
     ./gradlew build #on linux 
     ./gradlew.bat build #on windows
 ```
+
 4. Find the libs
-	You can find the executable cli jar at `eligos-cli/build/libs` and Installable plugin at `eligos-plugin/build/distributions`. 
+   You can find the executable cli jar at `eligos-cli/build/libs` and Installable plugin
+   at `eligos-plugin/build/distributions`.
 
 ### From Docker
 
@@ -140,7 +157,9 @@ In the table, yellow is common to Java Kotlin, green is generated when Koltin Ja
    	docker run -v $PROJECT:/dist/project -v $RESULT:/dist/result eligos:1.0 kotlin ./project ./result --with java
    ```
 
-   In the above command, `$PRJECT` refers to the local location of the item to be analyzed, `$RESULT` the location where the local results are stored，**Make sure they are all present before using this command**. The two folders located after the Kotlin parameter are the internal Docker mappings, which are fixed.
+   In the above command, `$PRJECT` refers to the local location of the item to be analyzed, `$RESULT` the location where
+   the local results are stored，**Make sure they are all present before using this command**. The two folders located
+   after the Kotlin parameter are the internal Docker mappings, which are fixed.
 
 ### Arguments & Options
 
@@ -177,13 +196,14 @@ Arguments:
   <result output path>  The path to out put result
 ```
 
-If yob use Third-party libraries, or use build tools like `Maven` or `Gradlle`, please set the correct `classpath` so that the tool can find these dependencies and avoid the problem that some external dependencies cannot be resolved. 
+If yob use Third-party libraries, or use build tools like `Maven` or `Gradlle`, please set the correct `classpath` so
+that the tool can find these dependencies and avoid the problem that some external dependencies cannot be resolved.
 
 ### How to add more rules
 
-We provide a simple mechanism to extend eligos. The following steps allow you to create a rule that belongs to you: 
+We provide a simple mechanism to extend eligos. The following steps allow you to create a rule that belongs to you:
 
-1. Create a Psi file processor which implement `PsiProcessor`, and define a issue which is extend `Issue` 
+1. Create a Psi file processor which implement `PsiProcessor`, and define a issue which is extend `Issue`
 
 2. Add an Psi file listener with `@EventListener` annotation and report the issue like this:
 
@@ -223,9 +243,9 @@ We provide a simple mechanism to extend eligos. The following steps allow you to
    }
    ```
 
-   
 
-5. That's All😝. If you want to customize Eligos in more detail, please refer to the [Eligos Architecture Diagram](./doc/architecture.md) , [Execution Process](./doc/execution_process.md).
+5. That's All😝. If you want to customize Eligos in more detail, please refer to
+   the [Eligos Architecture Diagram](./doc/architecture.md) , [Execution Process](./doc/execution_process.md).
 
    
 
