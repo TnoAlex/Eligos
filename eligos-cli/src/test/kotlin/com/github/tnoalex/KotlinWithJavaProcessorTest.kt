@@ -79,6 +79,21 @@ class KotlinWithJavaProcessorTest {
         )
     }
 
+    @RequireTestProcessor("resources@javaReturnInternalKotlin")
+    fun testJavaReturnInternalKotlin(processor: InternalExposedProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is PsiJavaFile) {
+                processor.process(psiFile)
+            }
+        }
+        val javaReturnKotlinIssues = issue<JavaReturnInternalKotlinIssue>()
+        val issue = javaReturnKotlinIssues.single()
+        assertEquals("KtInternal", issue.kotlinClassFqName)
+        assertEquals("func", issue.javaMethodName)
+        assertEquals("JavaReturn", issue.javaClassFqName)
+        assertEquals(2, issue.startLine)
+    }
+
     @RequireTestProcessor("resources@nonJvmFieldCompanionValue")
     fun testNonJVMFieldCompanionValue(processor: NonJVMFieldCompanionValueProcessor) {
         psiFiles().forEach { psiFile ->

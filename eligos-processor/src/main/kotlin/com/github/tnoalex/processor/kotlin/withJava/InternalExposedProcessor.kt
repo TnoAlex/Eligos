@@ -9,15 +9,15 @@ import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.JavaExtendOrImplInternalKotlinIssue
+import com.github.tnoalex.issues.kotlin.withJava.JavaReturnInternalKotlinIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.kotlinOriginCanNotResolveWarn
 import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
+import com.github.tnoalex.processor.utils.startLine
 import com.intellij.lang.jvm.JvmModifier
-import com.intellij.psi.JavaRecursiveElementVisitor
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
+import com.intellij.psi.*
+import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -37,13 +37,44 @@ class InternalExposedProcessor : IssueProcessor {
     }
 
     private val javaClassVisitor = object : JavaRecursiveElementVisitor() {
-        override fun visitClass(aClass: PsiClass) {
-            checkExtendOrImpl(aClass)
+        override fun visitMethod(method: PsiMethod?) {
+            checkMethodReturnType(method ?: return)
+            super.visitMethod(method)
+        }
+
+        override fun visitClass(aClass: PsiClass?) {
+            checkExtendOrImpl(aClass ?: return)
             super.visitClass(aClass)
         }
 
+        fun checkMethodReturnType(method: PsiMethod) {
+            val returnType = method.returnType ?: return
+            if (returnType !is PsiClassReferenceType) return
+            val psiClass = returnType.resolve() ?: return
+            if (psiClass !is KtLightClass) return
+            psiClass.kotlinOrigin ?: let {
+                logger.kotlinOriginCanNotResolveWarn("class", psiClass)
+                return
+            }
+            val hasModifier = psiClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)
+            if (hasModifier) {
+                context.reportIssue(
+                    JavaReturnInternalKotlinIssue(
+                        hashSetOf(
+                            method.containingFile?.virtualFile?.path ?: "unknown java file",
+                            psiClass.containingFile?.virtualFile?.path ?: "unknown kotlin file"
+                        ),
+                        method.containingClass?.qualifiedName ?: "anonymous java class name",
+                        method.name,
+                        method.startLine,
+                        psiClass.qualifiedName ?: "anonymous kotlin class name"
+                    )
+                )
+            }
+        }
+
         fun checkExtendOrImpl(aClass: PsiClass) {
-            if (aClass.superClass == null) return 
+            if (aClass.superClass == null) return
             val superClass = aClass.superClass ?: return
             val interfaces = aClass.interfaces.filterIsInstance<KtLightClass>()
                 .filter { it.kotlinOrigin != null && it.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD) }
@@ -51,9 +82,9 @@ class InternalExposedProcessor : IssueProcessor {
             if (superClass is KtLightClass) {
                 superClass.kotlinOrigin ?: let {
                     logger.kotlinOriginCanNotResolveWarn("class", aClass)
-                    return 
+                    return
                 }
-                if (!superClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)) return 
+                if (!superClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)) return
             }
             if (!isAllPublic(aClass)) return
 
