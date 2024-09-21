@@ -61,14 +61,14 @@ class InternalExposedProcessor : IssueProcessor {
             return psiClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)
         }
 
-        fun checkParam(paramType: PsiClassType, result: MutableList<PsiClass>) {
-            val paramTypeClass = paramType.resolve()
-            if (paramTypeClass != null && isKtInternal(paramTypeClass)) {
-                result.add(paramTypeClass)
+        fun checkExposedType(type: PsiClassType, result: MutableList<PsiClass>) {
+            val typeClass = type.resolve()
+            if (typeClass != null && isKtInternal(typeClass)) {
+                result.add(typeClass)
             }
-            for (typeParamInParam in paramType.parameters) {
-                if (typeParamInParam is PsiClassType) {
-                    checkParam(typeParamInParam, result)
+            for (typeParamInClass in type.parameters) {
+                if (typeParamInClass is PsiClassType) {
+                    checkExposedType(typeParamInClass, result)
                 }
             }
         }
@@ -80,7 +80,7 @@ class InternalExposedProcessor : IssueProcessor {
                 val paramType = param.type
                 val exposedTypes = mutableListOf<PsiClass>()
                 if (paramType is PsiClassType) {
-                    checkParam(paramType, exposedTypes)
+                    checkExposedType(paramType, exposedTypes)
                 }
                 if (exposedTypes.isNotEmpty()) {
                     exposedParameters.add(index to exposedTypes)
@@ -104,10 +104,10 @@ class InternalExposedProcessor : IssueProcessor {
                     method.name,
                     method.startLine,
                     exposedParameters.map { it.first },
-                    exposedParameters.flatMap {
+                    exposedParameters.map {
                         it.second.map { it1 ->
                             it1.qualifiedName ?: "anonymous kotlin class name"
-                        }
+                        }.toSet()
                     }
                 )
             )
@@ -115,25 +115,27 @@ class InternalExposedProcessor : IssueProcessor {
 
         fun checkMethodReturnType(method: PsiMethod) {
             val returnType = method.returnType ?: return
-            if (returnType !is PsiClassReferenceType) return
-            val psiClass = returnType.resolve() ?: return
-            if (psiClass !is KtLightClass) return
-            psiClass.kotlinOrigin ?: let {
-                logger.kotlinOriginCanNotResolveWarn("class", psiClass)
-                return
-            }
-            val hasModifier = psiClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)
-            if (hasModifier) {
+            if (returnType !is PsiClassType) return
+            val exposedTypes = mutableListOf<PsiClass>()
+            checkExposedType(returnType, exposedTypes)
+            if (exposedTypes.isNotEmpty()) {
                 context.reportIssue(
                     JavaReturnInternalKotlinIssue(
                         hashSetOf(
-                            method.containingFile?.virtualFile?.path ?: "unknown java file",
-                            psiClass.containingFile?.virtualFile?.path ?: "unknown kotlin file"
-                        ),
+                            method.containingFile?.virtualFile?.path ?: "unknown java file"
+                        ).apply {
+                            addAll(
+                                exposedTypes.map {
+                                    it.containingFile?.virtualFile?.path ?: "unknown kotlin file"
+                                }
+                            )
+                        },
                         method.containingClass?.qualifiedName ?: "anonymous java class name",
                         method.name,
                         method.startLine,
-                        psiClass.qualifiedName ?: "anonymous kotlin class name"
+                        exposedTypes.map {
+                            it.qualifiedName ?: "anonymous kotlin class name"
+                        }.toSet()
                     )
                 )
             }

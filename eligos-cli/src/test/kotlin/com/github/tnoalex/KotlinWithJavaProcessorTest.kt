@@ -80,7 +80,7 @@ class KotlinWithJavaProcessorTest {
 
     private fun assertJavaParameterInternalKotlinIssue1(issue: JavaParameterInternalKotlinIssue) {
         assertEquals("func", issue.javaMethodName)
-        assertEquals("KtInternal", issue.kotlinClassNames.single())
+        assertEquals("KtInternal", issue.kotlinClassNames.single().single())
         assertEquals(0, issue.parameterIndices.single())
         assertEquals(2, issue.startLine)
     }
@@ -88,8 +88,8 @@ class KotlinWithJavaProcessorTest {
     private fun assertJavaParameterInternalKotlinIssue2(issue: JavaParameterInternalKotlinIssue) {
         assertEquals("func2", issue.javaMethodName)
         assertEquals(2, issue.kotlinClassNames.size)
-        assertEquals("KtInternal", issue.kotlinClassNames[0])
-        assertEquals("KtInternal2", issue.kotlinClassNames[1])
+        assertEquals("KtInternal", issue.kotlinClassNames[0].single())
+        assertEquals("KtInternal2", issue.kotlinClassNames[1].single())
         assertEquals(2, issue.parameterIndices.size)
         assertEquals(1, issue.parameterIndices[0])
         assertEquals(3, issue.parameterIndices[1])
@@ -154,13 +154,13 @@ class KotlinWithJavaProcessorTest {
             assertJavaParameterInternalKotlinIssue1(issue0)
             assertJavaParameterInternalKotlinIssue2(issue1)
         } else {
-            assertJavaParameterInternalKotlinIssue2(issue1)
+            assertJavaParameterInternalKotlinIssue1(issue1)
             assertJavaParameterInternalKotlinIssue2(issue0)
         }
     }
 
-    @RequireTestProcessor("resources@javaReturnInternalKotlin")
-    fun testJavaReturnInternalKotlin(processor: InternalExposedProcessor) {
+    @RequireTestProcessor("resources@javaReturnInternalKotlin/generic")
+    fun testJavaReturnInternalKotlinGeneric(processor: InternalExposedProcessor) {
         psiFiles().forEach { psiFile ->
             if (psiFile is PsiJavaFile) {
                 processor.process(psiFile)
@@ -168,7 +168,22 @@ class KotlinWithJavaProcessorTest {
         }
         val javaReturnKotlinIssues = issue<JavaReturnInternalKotlinIssue>()
         val issue = javaReturnKotlinIssues.single()
-        assertEquals("KtInternal", issue.kotlinClassFqName)
+        assertEquals(hashSetOf("KtInternal"), issue.kotlinClassFqNames)
+        assertEquals("func", issue.javaMethodName)
+        assertEquals("JavaReturn", issue.javaClassFqName)
+        assertEquals(2, issue.startLine)
+    }
+
+    @RequireTestProcessor("resources@javaReturnInternalKotlin/normal")
+    fun testJavaReturnInternalKotlinNormal(processor: InternalExposedProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is PsiJavaFile) {
+                processor.process(psiFile)
+            }
+        }
+        val javaReturnKotlinIssues = issue<JavaReturnInternalKotlinIssue>()
+        val issue = javaReturnKotlinIssues.single()
+        assertEquals(hashSetOf("KtInternal"), issue.kotlinClassFqNames)
         assertEquals("func", issue.javaMethodName)
         assertEquals("JavaReturn", issue.javaClassFqName)
         assertEquals(2, issue.startLine)
@@ -249,10 +264,7 @@ class KotlinWithJavaProcessorTest {
         }
         val callerPlatformType = issue<UncertainNullablePlatformCallerIssue>()
         assertEquals(2, callerPlatformType.size)
-        val issue = callerPlatformType[0]
-        assertEquals(5, issue.startLine)
-        val issue1 = callerPlatformType[1]
-        assertEquals(6, issue1.startLine)
+        assertEquals(hashSetOf(5, 6), callerPlatformType.map { it.startLine }.toSet())
     }
 
     @RequireTestProcessor("resources@nullablePassedToPlatformTypeParam")

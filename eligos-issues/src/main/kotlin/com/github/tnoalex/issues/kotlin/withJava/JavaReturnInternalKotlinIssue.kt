@@ -5,7 +5,7 @@ class JavaReturnInternalKotlinIssue(
     javaClassFqName: String,
     val javaMethodName: String,
     val startLine: Int,
-    val kotlinClassFqName: String,
+    val kotlinClassFqNames: Set<String>,
 ) : InternalExposedIssue(affectedFiles, javaClassFqName) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -17,7 +17,7 @@ class JavaReturnInternalKotlinIssue(
         if (javaClassFqName != other.javaClassFqName) return false
         if (javaMethodName != other.javaMethodName) return false
         if (startLine != other.startLine) return false
-        if (kotlinClassFqName != other.kotlinClassFqName) return false
+        if (kotlinClassFqNames != other.kotlinClassFqNames) return false
 
         return true
     }
@@ -27,7 +27,7 @@ class JavaReturnInternalKotlinIssue(
         result = 31 * result + javaClassFqName.hashCode()
         result = 31 * result + javaMethodName.hashCode()
         result = 31 * result + startLine
-        result = 31 * result + kotlinClassFqName.hashCode()
+        result = 31 * result + kotlinClassFqNames.hashCode()
         return result
     }
 }

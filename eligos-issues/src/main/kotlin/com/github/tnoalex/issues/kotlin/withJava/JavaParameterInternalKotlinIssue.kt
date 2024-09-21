@@ -6,7 +6,7 @@ class JavaParameterInternalKotlinIssue(
     val javaMethodName: String,
     val startLine: Int,
     val parameterIndices: List<Int>,
-    val kotlinClassNames: List<String>,
+    val kotlinClassNames: List<Set<String>>,
 ) : InternalExposedIssue(affectedFiles, javaClassFqName) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
