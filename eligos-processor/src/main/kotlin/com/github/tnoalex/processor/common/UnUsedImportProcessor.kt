@@ -10,18 +10,13 @@ import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.common.UnusedImportIssue
-import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.ShareSpace
 import com.github.tnoalex.processor.common.providers.UnUsedImportProcessorProvider
-import com.github.tnoalex.processor.utils.refCanNotResolveWarn
-import com.github.tnoalex.processor.utils.referenceExpressionSelfOrInChildren
 import com.intellij.psi.*
 import com.intellij.psi.impl.compiled.ClsFileImpl
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.kotlin.analysis.decompiler.psi.file.KtDecompiledFile
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.isInImportDirective
-import org.slf4j.LoggerFactory
 import java.util.*
 
 @Component
@@ -32,11 +27,9 @@ class UnUsedImportProcessor : AbstractCommonProcessor() {
     @InjectBean(beanType = UnUsedImportProcessorProvider::class)
     override lateinit var processorProvider: AbstractSpecificProcessorProvider
 
-    override val severity: Severity
-        get() = Severity.CODE_SMELL
+    override val severity: Severity = Severity.CODE_SMELL
 
-    override val supportLanguage: List<Language>
-        get() = listOf(JavaLanguage, KotlinLanguage)
+    override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
 
     private val myShareSpace = UnUsedImportProcessorShareSpace()
 

@@ -17,7 +17,6 @@ import org.jetbrains.kotlin.asJava.elements.KtLightElement
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
 import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
-import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.types.KotlinType
@@ -26,10 +25,8 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class ProvideImmutableCollectionProcessor : IssueProcessor {
-    override val severity: Severity
-        get() = Severity.CODE_SMELL
-    override val supportLanguage: List<Language>
-        get() = listOf(JavaLanguage, KotlinLanguage)
+    override val severity: Severity = Severity.CODE_SMELL
+    override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
 
     @EventListener(filterClazz = [PsiJavaFile::class])
     override fun process(psiFile: PsiFile) {

@@ -26,11 +26,9 @@ import org.jgrapht.graph.builder.GraphTypeBuilder
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class CircularReferencesProcessor : AbstractCommonProcessor() {
-    override val severity: Severity
-        get() = Severity.CODE_SMELL
+    override val severity: Severity = Severity.CODE_SMELL
 
-    override val supportLanguage: List<Language>
-        get() = listOf(JavaLanguage, KotlinLanguage)
+    override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
 
     private var dependencyGraph = newEmptyGraph()
 
@@ -48,7 +46,7 @@ class CircularReferencesProcessor : AbstractCommonProcessor() {
     }
 
     @EventListener
-    fun resultGeneration(event: AllFileParsedEvent) {
+    fun resultGeneration(@Suppress("UNUSED_PARAMETER") event: AllFileParsedEvent) {
         val sccAlg = GabowStrongConnectivityInspector(dependencyGraph)
         val scc = sccAlg.stronglyConnectedComponents.filter { it.vertexSet().size > 1 } // Outliers also is scc
         scc.forEach {

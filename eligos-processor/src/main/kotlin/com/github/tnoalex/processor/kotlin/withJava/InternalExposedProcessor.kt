@@ -27,10 +27,8 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class InternalExposedProcessor : IssueProcessor {
-    override val severity: Severity
-        get() = Severity.CODE_SMELL
-    override val supportLanguage: List<Language>
-        get() = listOf(JavaLanguage, KotlinLanguage)
+    override val severity: Severity = Severity.CODE_SMELL
+    override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
 
     @EventListener(filterClazz = [PsiJavaFile::class])
     override fun process(psiFile: PsiFile) {

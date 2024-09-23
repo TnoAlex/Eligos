@@ -32,10 +32,8 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class UncertainNullablePlatformTypeProcessor : IssueProcessor {
-    override val severity: Severity
-        get() = Severity.CODE_SMELL
-    override val supportLanguage: List<Language>
-        get() = listOf(JavaLanguage, KotlinLanguage)
+    override val severity: Severity = Severity.CODE_SMELL
+    override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
     val dataFlowValueFactory = ApplicationContext.getBeanOfType(DataFlowValueFactory::class.java).first()
 
     @EventListener(filterClazz = [KtFile::class])

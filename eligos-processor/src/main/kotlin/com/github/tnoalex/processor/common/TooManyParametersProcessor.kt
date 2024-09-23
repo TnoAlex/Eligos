@@ -11,26 +11,17 @@ import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.common.ExcessiveParamsIssue
-import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.ShareSpace
 import com.github.tnoalex.processor.common.providers.TooManyParametersProcessorProvider
-import com.github.tnoalex.processor.utils.filePath
-import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
-import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.*
 import org.jetbrains.kotlin.psi.KtFile
-import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
-import org.slf4j.LoggerFactory
 import java.util.*
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class TooManyParametersProcessor : AbstractCommonProcessor() {
-    override val severity: Severity
-        get() = Severity.CODE_SMELL
-    override val supportLanguage: List<Language>
-        get() = listOf(JavaLanguage, KotlinLanguage)
+    override val severity: Severity = Severity.CODE_SMELL
+    override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
 
     @InjectConfig("function.arity")
     private var arity: Int = 0

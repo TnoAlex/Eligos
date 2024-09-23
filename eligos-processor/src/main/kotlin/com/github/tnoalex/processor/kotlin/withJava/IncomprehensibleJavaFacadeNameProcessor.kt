@@ -13,7 +13,6 @@ import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiJavaFile
 import org.jetbrains.kotlin.fileClasses.javaFileFacadeFqName
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
@@ -25,10 +24,8 @@ import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class IncomprehensibleJavaFacadeNameProcessor : IssueProcessor {
-    override val severity: Severity
-        get() = Severity.SUGGESTION
-    override val supportLanguage: List<Language>
-        get() = listOf(JavaLanguage, KotlinLanguage)
+    override val severity: Severity = Severity.SUGGESTION
+    override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
 
     @EventListener(filterClazz = [KtFile::class])
     override fun process(psiFile: PsiFile) {

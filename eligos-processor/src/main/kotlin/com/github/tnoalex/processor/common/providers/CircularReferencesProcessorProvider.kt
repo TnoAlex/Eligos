@@ -8,8 +8,6 @@ import com.github.tnoalex.processor.common.AbstractSpecificProcessorProvider
 
 @Component
 class CircularReferencesProcessorProvider : AbstractSpecificProcessorProvider() {
-    override val supportLanguage: List<Language>
-        get() = listOf(KotlinLanguage, JavaLanguage)
-    override val commonProcessorName: String
-        get() = "CircularReferencesProcessor"
+    override val supportLanguage: List<Language> = listOf(KotlinLanguage, JavaLanguage)
+    override val commonProcessorName: String = "CircularReferencesProcessor"
 }

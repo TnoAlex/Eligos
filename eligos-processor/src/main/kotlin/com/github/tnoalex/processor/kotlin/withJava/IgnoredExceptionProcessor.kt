@@ -28,10 +28,8 @@ import org.slf4j.LoggerFactory
 @Component
 @Suitable(LaunchEnvironment.CLI)
 class IgnoredExceptionProcessor : IssueProcessor {
-    override val severity: Severity
-        get() = Severity.CODE_SMELL
-    override val supportLanguage: List<Language>
-        get() = listOf(JavaLanguage, KotlinLanguage)
+    override val severity: Severity = Severity.CODE_SMELL
+    override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
 
     @EventListener(filterClazz = [KtFile::class,PsiJavaFile::class])
     override fun process(psiFile: PsiFile) {
