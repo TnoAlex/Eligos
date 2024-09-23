@@ -13,11 +13,12 @@ class UncertainNullablePlatformExpressionUsageIssue(
     val startLine: Int,
     val expectType: String,
     val actualType: String,
-    val smartCastedActualType: String
+    val smartCastedActualType: String,
+    confidenceLevel: ConfidenceLevel = ConfidenceLevel.MEDIUM
 ) : Issue(
     EligosIssueBundle.message("issue.name.UncertainNullablePlatformExpressionUsageIssue"),
     Severity.POSSIBLE_BUG,
-    ConfidenceLevel.MEDIUM,
+    confidenceLevel,
     AnalysisHierarchyEnum.EXPRESSION,
     hashSetOf(affectedFile),
     content

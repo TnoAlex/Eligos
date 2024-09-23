@@ -8,6 +8,7 @@ import com.github.tnoalex.foundation.eventbus.EventListener
 import com.github.tnoalex.foundation.language.JavaLanguage
 import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
+import com.github.tnoalex.issues.ConfidenceLevel
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.*
 import com.github.tnoalex.processor.IssueProcessor
@@ -62,6 +63,37 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                         expression.filePath,
                         expression.text.orEmpty(),
                         expression.startLine
+                    )
+                )
+            }
+        }
+
+        override fun visitBinaryWithTypeRHSExpression(expression: KtBinaryExpressionWithTypeRHS) {
+            checkCast(expression)
+            super.visitBinaryWithTypeRHSExpression(expression)
+        }
+
+        private fun checkCast(expression: KtBinaryExpressionWithTypeRHS) {
+            val expectedTypePsi = expression.right ?: return
+            val elementType = expression.operationReference.getReferencedNameElementType()
+            if (elementType != KtTokens.AS_KEYWORD) return
+            val bindingContext = expression.bindingContext
+            val expectedType = bindingContext[BindingContext.TYPE, expectedTypePsi] ?: return
+            val leftExpr = expression.left
+            val leftType = bindingContext.getType(leftExpr) ?: return
+            val nullability = getNullability(bindingContext, leftExpr, dataFlowValueFactory, leftType)
+            if (!expectedType.isMarkedNullable &&
+                nullability != Nullability.NOT_NULL && leftType.isFlexibleRecursive()
+            ) {
+                context.reportIssue(
+                    UncertainNullablePlatformExpressionUsageIssue(
+                        expression.filePath,
+                        expression.text ?: "",
+                        expression.startLine,
+                        expectedType.toString(),
+                        leftType.toString(),
+                        nullability?.toString() ?: "no smart cast",
+                        ConfidenceLevel.LOW
                     )
                 )
             }
