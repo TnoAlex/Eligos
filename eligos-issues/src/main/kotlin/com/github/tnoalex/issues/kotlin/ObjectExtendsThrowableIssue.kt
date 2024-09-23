@@ -1,6 +1,7 @@
 package com.github.tnoalex.issues.kotlin
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.ConfidenceLevel
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.issues.Severity
@@ -11,6 +12,7 @@ class ObjectExtendsThrowableIssue(
 ) : Issue(
     EligosIssueBundle.message("issue.name.ObjectExtendsThrowableIssue"),
     Severity.CODE_SMELL,
+    ConfidenceLevel.COMPLETELY_TRUSTWORTHY,
     AnalysisHierarchyEnum.CLASS,
     hashSetOf(affectedFile),
     null

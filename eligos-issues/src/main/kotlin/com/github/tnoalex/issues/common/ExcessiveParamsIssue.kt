@@ -1,10 +1,10 @@
 package com.github.tnoalex.issues.common
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.ConfidenceLevel
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.FunctionTypeIssue
 import com.github.tnoalex.issues.Severity
-import com.github.tnoalex.specs.FormatterSpec
 
 class ExcessiveParamsIssue(
     affectedFile: String,
@@ -15,6 +15,7 @@ class ExcessiveParamsIssue(
 ) : FunctionTypeIssue(
     EligosIssueBundle.message("issue.name.ExcessiveParamsIssue"),
     Severity.CODE_SMELL,
+    ConfidenceLevel.COMPLETELY_TRUSTWORTHY,
     AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile), null, functionFqName, valueParamList, startLine
 ) {

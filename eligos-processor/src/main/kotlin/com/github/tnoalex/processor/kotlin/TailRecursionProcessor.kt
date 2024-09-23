@@ -4,7 +4,6 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.foundation.language.JavaLanguage
 import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
@@ -32,7 +31,7 @@ class TailRecursionProcessor : IssueProcessor {
     override fun process(psiFile: PsiFile) {
         (psiFile as KtFile).accept(object : KtTreeVisitorVoid() {
             override fun visitNamedFunction(function: KtNamedFunction) {
-                if (function.hasModifier(KtTokens.TAILREC_KEYWORD)) return  super.visitNamedFunction(function)
+                if (function.hasModifier(KtTokens.TAILREC_KEYWORD)) return super.visitNamedFunction(function)
                 val isTailRecursion = findRecursion(function)
                 if (isTailRecursion) {
                     context.reportIssue(

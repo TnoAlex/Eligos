@@ -12,6 +12,7 @@ abstract class Issue(
     val issueName: String,
     @UnpackIgnore
     val severity: Severity,
+    val confidenceLevel: ConfidenceLevel,
     val layer: AnalysisHierarchyEnum,
     @UnpackIgnore
     val affectedFiles: HashSet<String>,

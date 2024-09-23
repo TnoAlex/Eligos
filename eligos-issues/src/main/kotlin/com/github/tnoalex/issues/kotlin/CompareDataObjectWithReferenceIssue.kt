@@ -1,6 +1,7 @@
 package com.github.tnoalex.issues.kotlin
 
 import com.github.tnoalex.AnalysisHierarchyEnum
+import com.github.tnoalex.issues.ConfidenceLevel
 import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.issues.Severity
@@ -14,6 +15,7 @@ class CompareDataObjectWithReferenceIssue(
 ) : Issue(
     EligosIssueBundle.message("issue.name.CompareDataObjectWithReferenceIssue"),
     Severity.CODE_SMELL,
+    ConfidenceLevel.COMPLETELY_TRUSTWORTHY,
     AnalysisHierarchyEnum.EXPRESSION,
     hashSetOf(affectedFile),
     content
