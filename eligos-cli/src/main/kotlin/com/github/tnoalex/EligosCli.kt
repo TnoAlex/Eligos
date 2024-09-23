@@ -99,7 +99,7 @@ class EligosCli : CliktCommand(name = "eligos-cli") {
         "-f",
         "--format",
         help = "The Presentation of results"
-    ).enum<FormatterTypeEnum> { it.name }.default(FormatterTypeEnum.JSON)
+    ).enum<FormatterTypeEnum>(ignoreCase = true) { it.name }.default(FormatterTypeEnum.JSON)
 
 
     private val extendRulePath by option("-r", "--rules", help = "Specify the rules to use").file(

@@ -9,10 +9,7 @@ import com.github.tnoalex.foundation.language.JavaLanguage
 import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
-import com.github.tnoalex.issues.kotlin.withJava.NullablePassedToPlatformParamIssue
-import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformCallerIssue
-import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpressionUsageIssue
-import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeInPropertyIssue
+import com.github.tnoalex.issues.kotlin.withJava.*
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.*
 import com.intellij.psi.PsiFile
@@ -45,6 +42,29 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
         override fun visitCallExpression(expression: KtCallExpression) {
             checkParameter(expression)
             super.visitCallExpression(expression)
+        }
+
+        override fun visitPostfixExpression(expression: KtPostfixExpression) {
+            checkNonNullAssertion(expression)
+            super.visitPostfixExpression(expression)
+        }
+
+        private fun checkNonNullAssertion(expression: KtPostfixExpression) {
+            if (expression.operationToken != KtTokens.EXCLEXCL) return
+            val baseExpr = expression.baseExpression ?: return
+            val bindingContext = expression.bindingContext
+            val type = bindingContext.getType(baseExpr) ?: return
+            if (type.isDynamic()) return
+            val nullability = getNullability(bindingContext, baseExpr, dataFlowValueFactory, type)
+            if (nullability != Nullability.NOT_NULL && type.isFlexibleRecursive()) {
+                context.reportIssue(
+                    NonNullAssertionOnPlatformTypeIssue(
+                        expression.filePath,
+                        expression.text.orEmpty(),
+                        expression.startLine
+                    )
+                )
+            }
         }
 
         override fun visitExpression(expression: KtExpression) {
@@ -98,7 +118,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
             if (callerExpr !is KtExpression) return
             val callerType = bindingContext.getType(callerExpr) ?: return
             if (callerType.isDynamic()) return
-            val nullability = getNullability(bindingContext, expression, dataFlowValueFactory, callerType)
+            val nullability = getNullability(bindingContext, callerExpr, dataFlowValueFactory, callerType)
             if (nullability != Nullability.NOT_NULL && callerType.isFlexibleRecursive()) {
                 context.reportIssue(
                     UncertainNullablePlatformCallerIssue(

@@ -291,4 +291,16 @@ class KotlinWithJavaProcessorTest {
         assertEquals(9, issue.calledFunctionStartLine)
         assertEquals("func1", issue.calledFunctionName)
     }
+
+    @RequireTestProcessor("resources@nonnullAssertionOnPlatformType")
+    fun testNonNullAssertionOnPlatformType(processor: UncertainNullablePlatformTypeProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is KtFile) {
+                processor.process(psiFile)
+            }
+        }
+        val issue = issue<NonNullAssertionOnPlatformTypeIssue>().single()
+        assertEquals(2, issue.startLine)
+        assertEquals("A.func()!!", issue.content)
+    }
 }
