@@ -39,7 +39,9 @@ class InternalExposedProcessor : IssueProcessor {
 
     private val javaClassVisitor = object : JavaRecursiveElementVisitor() {
         override fun visitMethod(method: PsiMethod?) {
-            checkMethodReturnType(method ?: return)
+            if (method == null) return
+            if (!isAllPublic(method)) return
+            checkMethodReturnType(method)
             checkMethodParameters(method)
             super.visitMethod(method)
         }
@@ -60,7 +62,6 @@ class InternalExposedProcessor : IssueProcessor {
             }
             return psiClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)
         }
-
 
 
         fun checkMethodParameters(method: PsiMethod) {
@@ -132,55 +133,36 @@ class InternalExposedProcessor : IssueProcessor {
         }
 
         fun checkExtendOrImpl(aClass: PsiClass) {
-            if (aClass.superClass == null) return
-            val superClass = aClass.superClass ?: return
-            val interfaces = aClass.interfaces.filterIsInstance<KtLightClass>()
-                .filter { it.kotlinOrigin != null && it.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD) }
-            if (superClass !is KtLightClass && interfaces.isEmpty()) return
-            if (superClass is KtLightClass) {
-                superClass.kotlinOrigin ?: let {
-                    logger.kotlinOriginCanNotResolveWarn("class", aClass)
-                    return
-                }
-                if (!superClass.kotlinOrigin!!.hasModifier(KtTokens.INTERNAL_KEYWORD)) return
-            }
             if (!isAllPublic(aClass)) return
-
-            val filePaths = hashSetOf(aClass.containingFile.virtualFile.path)
-            var superClassName: String? = null
-            if (superClass is KtLightClass) {
-                filePaths.add(superClass.containingFile.virtualFile.path)
-                superClassName = superClass.kotlinOrigin?.fqName?.asString() ?: "unknown kotlin class"
+            val exposedTypes = mutableListOf<PsiClass>()
+            val superTypes = aClass.superTypes
+            for (type in superTypes) {
+                collectRecursively(type, exposedTypes, ::isKtInternal)
             }
-
-            context.reportIssue(
-                JavaExtendOrImplInternalKotlinIssue(
-                    (filePaths + interfaces.map {
-                        it.kotlinOrigin?.filePath ?: let {
-                            logger.kotlinOriginCanNotResolveWarn("class", aClass)
-                            "unknown kotlin file"
-                        }
-                    }).toHashSet(),
-                    aClass.qualifiedName ?: let {
-                        logger.nameCanNotResolveWarn("class", aClass)
-                        "unknown java class"
-                    },
-                    superClassName,
-                    interfaces.map {
-                        val name = it.kotlinOrigin?.fqName?.asString()
-                        if (name == null) {
-                            logger.nameCanNotResolveWarn("interface", it)
-                            "unknown kotlin interface"
-                        } else name
-                    }.takeIf { it.isNotEmpty() }
+            val interfaces = aClass.implementsListTypes
+            for (type in interfaces) {
+                collectRecursively(type, exposedTypes, ::isKtInternal)
+            }
+            if (exposedTypes.isNotEmpty()) {
+                context.reportIssue(
+                    JavaExtendOrImplInternalKotlinIssue(
+                        hashSetOf(aClass.filePath).apply {
+                            addAll(exposedTypes.map { it.filePath })
+                        },
+                        aClass.qualifiedName ?: let {
+                            logger.nameCanNotResolveWarn("class", aClass)
+                            "unknown java class"
+                        },
+                        exposedTypes.map { it.qualifiedName ?: "anonymous kotlin class" }.toHashSet()
+                    )
                 )
-            )
+            }
         }
     }
 
-    private fun isAllPublic(psiClass: PsiClass): Boolean {
-        if (!psiClass.hasModifier(JvmModifier.PUBLIC)) return false
-        val parent = PsiTreeUtil.getParentOfType(psiClass, PsiClass::class.java)
+    private fun isAllPublic(element: PsiModifierListOwner): Boolean {
+        if (!element.hasModifier(JvmModifier.PUBLIC)) return false
+        val parent = PsiTreeUtil.getParentOfType(element, PsiClass::class.java)
         return if (parent == null) true
         else {
             parent.hasModifier(JvmModifier.PUBLIC) && isAllPublic(parent)

@@ -25,12 +25,9 @@ class KotlinWithJavaProcessorTest {
         }
         val ignoredExceptionIssue = issue<IgnoredExceptionIssue>()
         assertEquals(1, ignoredExceptionIssue.size)
-        assertArrayEquals(
-            arrayOf(8, "java.io.IOException", true),
-            ignoredExceptionIssue.firstOrNull()?.let {
-                arrayOf(it.startLine, it.ignoredExceptions, it.calledByJava)
-            }
-        )
+        assertArrayEquals(arrayOf(8, "java.io.IOException", true), ignoredExceptionIssue.firstOrNull()?.let {
+            arrayOf(it.startLine, it.ignoredExceptions, it.calledByJava)
+        })
     }
 
     @RequireTestProcessor("resources@incomprehensibleJavaFacadeName")
@@ -42,16 +39,30 @@ class KotlinWithJavaProcessorTest {
         }
         val incomprehensibleJavaFacadeNameIssue = issue<IncomprehensibleJavaFacadeNameIssue>()
         assertEquals(1, incomprehensibleJavaFacadeNameIssue.size)
-        assertArrayEquals(
-            arrayOf(true, true, "IncomprehensibleClassNameKt"),
+        assertArrayEquals(arrayOf(true, true, "IncomprehensibleClassNameKt"),
             incomprehensibleJavaFacadeNameIssue.firstOrNull()?.let {
                 arrayOf(it.hasTopLevelFunction, it.hasTopLevelProperty, it.javaFacadeName)
-            }
-        )
+            })
     }
 
-    @RequireTestProcessor("resources@internalExposed")
-    fun testInternalExposed(processor: InternalExposedProcessor) {
+    @RequireTestProcessor("resources@internalExposed/generic")
+    fun testInternalExposedGeneric(processor: InternalExposedProcessor) {
+        psiFiles().forEach { psiFile ->
+            if (psiFile is PsiJavaFile) {
+                processor.process(psiFile)
+            }
+        }
+        val issue = issue<JavaExtendOrImplInternalKotlinIssue>().single()
+        assertEquals(
+            hashSetOf("A.java", "KtInternal.kt"),
+            issue.affectedFiles.map { it.split("/").last() }.toHashSet()
+        )
+        assertEquals(hashSetOf("KtInternal", "IKtInternal0"), issue.exposedTypes)
+        assertEquals("A", issue.javaClassFqName)
+    }
+
+    @RequireTestProcessor("resources@internalExposed/normal")
+    fun testInternalExposedNormal(processor: InternalExposedProcessor) {
         psiFiles().forEach { psiFile ->
             if (psiFile is PsiJavaFile) {
                 processor.process(psiFile)
@@ -59,26 +70,24 @@ class KotlinWithJavaProcessorTest {
         }
         val internalExposedIssue = issue<JavaExtendOrImplInternalKotlinIssue>()
         assertEquals(3, internalExposedIssue.size)
-        assertArrayEquals(
-            arrayOf("internaltest.java.UseInternalInJava0", "internaltest.kotlin.InternalOpenClassInKotlin", true),
+        assertArrayEquals(arrayOf(
+            "internaltest.java.UseInternalInJava0",
+            "internaltest.kotlin.InternalOpenClassInKotlin"
+        ),
             internalExposedIssue.firstOrNull {
                 it.affectedFiles.find { f -> f.endsWith("UseInternalInJava0.java") } != null
             }?.let {
-                arrayOf(it.javaClassFqName, it.kotlinClassFqName, it.kotlinClassFqName != null)
-            }
-        )
-        assertArrayEquals(
-            arrayOf(
-                "internaltest.java.UseInternalInJava2",
-                listOf("internaltest.kotlin.InternalInterfaceInKotlin"),
-                false
-            ),
+                arrayOf(it.javaClassFqName, it.exposedTypes.single())
+            })
+        assertArrayEquals(arrayOf(
+            "internaltest.java.UseInternalInJava2",
+            "internaltest.kotlin.InternalInterfaceInKotlin"
+        ),
             internalExposedIssue.firstOrNull {
                 it.affectedFiles.find { f -> f.endsWith("UseInternalInJava2.java") } != null
             }?.let {
-                arrayOf(it.javaClassFqName, it.kotlinInterfacesFqNames, it.kotlinClassFqName != null)
-            }
-        )
+                arrayOf(it.javaClassFqName, it.exposedTypes.single())
+            })
     }
 
     private fun assertJavaParameterInternalKotlinIssue1(issue: JavaParameterInternalKotlinIssue) {
@@ -201,12 +210,10 @@ class KotlinWithJavaProcessorTest {
         }
         val nonJVMFieldCompanionValueIssue = issue<NonJVMFieldCompanionValueIssue>()
         assertEquals(1, nonJVMFieldCompanionValueIssue.size)
-        assertArrayEquals(
-            arrayOf("nonJvmFieldCompanionValue.Test.Companion.strts", 6),
+        assertArrayEquals(arrayOf("nonJvmFieldCompanionValue.Test.Companion.strts", 6),
             nonJVMFieldCompanionValueIssue.firstOrNull()?.let {
                 arrayOf(it.propertyName, it.startLine)
-            }
-        )
+            })
     }
 
     @RequireTestProcessor("resources@nonJVMStaticCompanionFunction")
@@ -218,12 +225,10 @@ class KotlinWithJavaProcessorTest {
         }
         val nonJVMStaticCompanionFunctionIssue = issue<NonJVMStaticCompanionFunctionIssue>()
         assertEquals(1, nonJVMStaticCompanionFunctionIssue.size)
-        assertArrayEquals(
-            arrayOf("nonJVMStaticCompanionFunction.Test.Companion.test()", 5),
+        assertArrayEquals(arrayOf("nonJVMStaticCompanionFunction.Test.Companion.test()", 5),
             nonJVMStaticCompanionFunctionIssue.firstOrNull()?.let {
                 arrayOf(it.functionSignature, it.startLine)
-            }
-        )
+            })
     }
 
     @RequireTestProcessor("resources@provideImmutableCollection")
@@ -235,12 +240,14 @@ class KotlinWithJavaProcessorTest {
         }
         val provideImmutableCollectionIssue = issue<ProvideImmutableCollectionIssue>()
         assertEquals(1, provideImmutableCollectionIssue.size)
-        assertArrayEquals(
-            arrayOf("provideImmutableCollection.kotlin.pInKotlin", "provideImmutableCollection.java.UseInJava", true),
+        assertArrayEquals(arrayOf(
+            "provideImmutableCollection.kotlin.pInKotlin",
+            "provideImmutableCollection.java.UseInJava",
+            true
+        ),
             provideImmutableCollectionIssue.firstOrNull()?.let {
                 arrayOf(it.providerKtElementFqName, it.useJavaClassFqName, it.isFunction)
-            }
-        )
+            })
     }
 
     @RequireTestProcessor("resources@unclearPlatformType")
