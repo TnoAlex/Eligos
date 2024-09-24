@@ -29,31 +29,33 @@ class TailRecursionProcessor : IssueProcessor {
 
     @EventListener(filterClazz = [KtFile::class])
     override fun process(psiFile: PsiFile) {
-        (psiFile as KtFile).accept(object : KtTreeVisitorVoid() {
-            override fun visitNamedFunction(function: KtNamedFunction) {
-                if (function.hasModifier(KtTokens.TAILREC_KEYWORD)) return super.visitNamedFunction(function)
-                val isTailRecursion = findRecursion(function)
-                if (isTailRecursion) {
-                    context.reportIssue(
-                        OptimizedTailRecursionIssue(
-                            psiFile.virtualFilePath,
-                            function.fqName?.asString() ?: let {
-                                logger.nameCanNotResolveWarn("function",function)
-                                "unknown func"
-                            },
-                            function.valueParameters.map {
-                                it.name ?: let {
-                                    logger.nameCanNotResolveWarn("parameter",function)
-                                    ""
-                                }
-                            },
-                            function.startLine
+        if (context.allowConfidenceLevel <= OptimizedTailRecursionIssue.normal) {
+            (psiFile as KtFile).accept(object : KtTreeVisitorVoid() {
+                override fun visitNamedFunction(function: KtNamedFunction) {
+                    if (function.hasModifier(KtTokens.TAILREC_KEYWORD)) return super.visitNamedFunction(function)
+                    val isTailRecursion = findRecursion(function)
+                    if (isTailRecursion) {
+                        context.reportIssue(
+                            OptimizedTailRecursionIssue(
+                                psiFile.virtualFilePath,
+                                function.fqName?.asString() ?: let {
+                                    logger.nameCanNotResolveWarn("function", function)
+                                    "unknown func"
+                                },
+                                function.valueParameters.map {
+                                    it.name ?: let {
+                                        logger.nameCanNotResolveWarn("parameter", function)
+                                        ""
+                                    }
+                                },
+                                function.startLine
+                            )
                         )
-                    )
+                    }
+                    super.visitNamedFunction(function)
                 }
-                super.visitNamedFunction(function)
-            }
-        })
+            })
+        }
     }
 
     private fun findRecursion(function: KtNamedFunction): Boolean {
@@ -72,8 +74,8 @@ class TailRecursionProcessor : IssueProcessor {
                 if (callExpressions.isNotEmpty()) {
                     var containsOtherCall = false
                     callExpressions.forEach loop@{
-                        it.referenceExpressionSelfOrInChildren().forEach { ref->
-                            ref.references.forEach innerLoop@ { r ->
+                        it.referenceExpressionSelfOrInChildren().forEach { ref ->
+                            ref.references.forEach innerLoop@{ r ->
                                 val resolve = r.resolve() ?: let {
                                     containsOtherCall = true
                                     return@innerLoop

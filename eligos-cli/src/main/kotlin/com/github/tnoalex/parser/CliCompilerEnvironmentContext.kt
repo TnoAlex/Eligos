@@ -147,7 +147,13 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
                 classpathFiles.add(it.toFile())
             }
             classpathFiles.add(srcPath.toFile())
-            classpathFiles.add(compilerSpec.kotlinStdLibPath.toFile())
+        }
+        classpathFiles.add(compilerSpec.kotlinStdLibPath.toFile())
+        System.getProperty("java.class.path")?.let {
+            val paths = it.split(";")
+            for (path in paths) {
+                classpathFiles.add(File(path))
+            }
         }
         val languageVersionSettings: LanguageVersionSettings =
             LanguageVersion.fromVersionString(compilerSpec.kotlinVersion)!!.let {

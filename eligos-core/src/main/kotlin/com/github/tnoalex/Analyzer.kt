@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory
 import kotlin.system.exitProcess
 
 class Analyzer(private val analyzerSpec: AnalyzerSpec) {
-    val context: Context = ApplicationContext.getExactBean(Context::class.java)!!
+    val context: Context = ApplicationContext.getExactBean(Context::class.java)!!.also {
+        it.allowConfidenceLevel = analyzerSpec.confidenceLevel
+    }
     private var analyzerInitialized = false
 
     fun analyze() {

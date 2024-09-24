@@ -11,6 +11,7 @@ import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.clikt.parameters.types.file
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.issues.ConfidenceLevel
 import com.github.tnoalex.issues.Severity
 import java.io.File
 import kotlin.io.path.Path
@@ -125,6 +126,12 @@ class EligosCli : CliktCommand(name = "eligos-cli") {
         "--enable-any-else",
         help = "Enable all processors except those specified"
     ).multiple()
+
+    private val confidenceLevel by option(
+        "-cl", "--confidence-level",
+        help = "Specify the level of confidence, " +
+                "Results with a confidence level greater than or equal to this level will be output"
+    ).enum<ConfidenceLevel>(ignoreCase = true) { it.name }.default(ConfidenceLevel.DEFAULT)
 
     override fun run() {
         val arguments =

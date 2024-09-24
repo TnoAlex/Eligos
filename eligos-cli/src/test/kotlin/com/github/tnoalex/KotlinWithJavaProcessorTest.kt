@@ -1,11 +1,15 @@
 package com.github.tnoalex
 
+import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.EligosBeforeAllTestExtension
 import com.github.tnoalex.foundation.RequireTestProcessor
+import com.github.tnoalex.issues.ConfidenceLevel
 import com.github.tnoalex.issues.kotlin.withJava.*
 import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaExtendOrImplInternalKotlinIssue
 import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaParameterInternalKotlinIssue
 import com.github.tnoalex.issues.kotlin.withJava.internalExpose.JavaReturnInternalKotlinIssue
+import com.github.tnoalex.issues.kotlin.withJava.nonnullAssertion.NonNullAssertionOnNullableTypeIssue
+import com.github.tnoalex.issues.kotlin.withJava.nonnullAssertion.NonNullAssertionOnPlatformTypeIssue
 import com.github.tnoalex.processor.kotlin.withJava.*
 import com.intellij.psi.PsiJavaFile
 import org.jetbrains.kotlin.psi.KtFile
@@ -300,6 +304,22 @@ class KotlinWithJavaProcessorTest {
             }
         }
         val issue = issue<NonNullAssertionOnPlatformTypeIssue>().single()
+        assertEquals(2, issue.startLine)
+        assertEquals("A.func()!!", issue.content)
+    }
+
+    @RequireTestProcessor("resources@nonnullAssertionOnNullableType")
+    fun testNonNullAssertionOnNullableType(processor: UncertainNullablePlatformTypeProcessor) {
+        ApplicationContext.getExactBean(Context::class.java)!!.setConfidenceLevel(
+            ConfidenceLevel.EXTREMELY_LOW
+        )
+        psiFiles().forEach { psiFile ->
+            if (psiFile is KtFile) {
+                processor.process(psiFile)
+            }
+        }
+        val issue = issue<NonNullAssertionOnNullableTypeIssue>().single()
+        assertEquals(0, issue<NonNullAssertionOnPlatformTypeIssue>().size)
         assertEquals(2, issue.startLine)
         assertEquals("A.func()!!", issue.content)
     }

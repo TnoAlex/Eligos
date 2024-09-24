@@ -1,10 +1,7 @@
 package com.github.tnoalex.issues.kotlin.withJava
 
 import com.github.tnoalex.AnalysisHierarchyEnum
-import com.github.tnoalex.issues.ConfidenceLevel
-import com.github.tnoalex.issues.EligosIssueBundle
-import com.github.tnoalex.issues.Issue
-import com.github.tnoalex.issues.Severity
+import com.github.tnoalex.issues.*
 
 class NullablePassedToPlatformParamIssue(
     affectedFile: String,
@@ -17,11 +14,16 @@ class NullablePassedToPlatformParamIssue(
 ) : Issue(
     EligosIssueBundle.message("issue.name.NullablePassedToPlatformParamIssue"),
     Severity.POSSIBLE_BUG,
-    ConfidenceLevel.MEDIUM,
+    normal,
     AnalysisHierarchyEnum.EXPRESSION,
     hashSetOf(affectedFile),
     content
 ) {
+    companion object {
+        @JvmStatic
+        val normal: ConfidenceLevel = ConfidenceLevel.MEDIUM
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

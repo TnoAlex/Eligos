@@ -1,10 +1,7 @@
 package com.github.tnoalex.issues.kotlin.withJava
 
 import com.github.tnoalex.AnalysisHierarchyEnum
-import com.github.tnoalex.issues.ConfidenceLevel
-import com.github.tnoalex.issues.EligosIssueBundle
-import com.github.tnoalex.issues.Issue
-import com.github.tnoalex.issues.Severity
+import com.github.tnoalex.issues.*
 
 
 class UncertainNullablePlatformExpressionUsageIssue(
@@ -14,7 +11,7 @@ class UncertainNullablePlatformExpressionUsageIssue(
     val expectType: String,
     val actualType: String,
     val smartCastedActualType: String,
-    confidenceLevel: ConfidenceLevel = ConfidenceLevel.MEDIUM
+    confidenceLevel: ConfidenceLevel = normal
 ) : Issue(
     EligosIssueBundle.message("issue.name.UncertainNullablePlatformExpressionUsageIssue"),
     Severity.POSSIBLE_BUG,
@@ -23,6 +20,13 @@ class UncertainNullablePlatformExpressionUsageIssue(
     hashSetOf(affectedFile),
     content
 ) {
+    companion object {
+        @JvmStatic
+        val cast: ConfidenceLevel = ConfidenceLevel.LOW
+        @JvmStatic
+        val normal: ConfidenceLevel = ConfidenceLevel.MEDIUM
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

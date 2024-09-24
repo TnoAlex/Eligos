@@ -1,26 +1,27 @@
-package com.github.tnoalex.issues.kotlin.withJava
+package com.github.tnoalex.issues.kotlin.withJava.nonnullAssertion
 
 import com.github.tnoalex.AnalysisHierarchyEnum
 import com.github.tnoalex.issues.ConfidenceLevel
-import com.github.tnoalex.issues.EligosIssueBundle
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.issues.Severity
 
-class NonNullAssertionOnPlatformTypeIssue(
+sealed class NonNullAssertionIssue(
+    issueName: String,
     affectedFile: String,
     content: String,
+    confidenceLevel: ConfidenceLevel,
     val startLine: Int
-): Issue(
-    EligosIssueBundle.message("issue.name.NonNullAssertionOnPlatformTypeIssue"),
+) : Issue(
+    issueName,
     Severity.POSSIBLE_BUG,
-    ConfidenceLevel.LOW,
+    confidenceLevel,
     AnalysisHierarchyEnum.EXPRESSION,
     hashSetOf(affectedFile),
     content
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is NonNullAssertionOnPlatformTypeIssue) return false
+        if (other !is NonNullAssertionIssue) return false
         if (!super.equals(other)) return false
 
         if (startLine != other.startLine) return false

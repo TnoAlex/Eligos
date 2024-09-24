@@ -30,6 +30,9 @@ class ProvideImmutableCollectionProcessor : IssueProcessor {
 
     @EventListener(filterClazz = [PsiJavaFile::class])
     override fun process(psiFile: PsiFile) {
+        if (context.allowConfidenceLevel > ProvideImmutableCollectionIssue.normal) {
+            return
+        }
         psiFile.accept(javaFileVisitorVoid)
     }
 

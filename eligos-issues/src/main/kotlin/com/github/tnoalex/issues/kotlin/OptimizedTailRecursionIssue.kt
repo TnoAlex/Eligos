@@ -1,10 +1,7 @@
 package com.github.tnoalex.issues.kotlin
 
 import com.github.tnoalex.AnalysisHierarchyEnum
-import com.github.tnoalex.issues.ConfidenceLevel
-import com.github.tnoalex.issues.EligosIssueBundle
-import com.github.tnoalex.issues.FunctionTypeIssue
-import com.github.tnoalex.issues.Severity
+import com.github.tnoalex.issues.*
 
 class OptimizedTailRecursionIssue(
     affectedFile: String,
@@ -14,11 +11,16 @@ class OptimizedTailRecursionIssue(
 ) : FunctionTypeIssue(
     EligosIssueBundle.message("issue.name.OptimizedTailRecursionIssue"),
     Severity.SUGGESTION,
-    ConfidenceLevel.HIGH,
+    normal,
     AnalysisHierarchyEnum.MEMBER,
     hashSetOf(affectedFile),
     null,
     functionFqName,
     valueParamList,
     startLine
-)
+) {
+    companion object {
+        @JvmStatic
+        val normal: ConfidenceLevel = ConfidenceLevel.HIGH
+    }
+}
