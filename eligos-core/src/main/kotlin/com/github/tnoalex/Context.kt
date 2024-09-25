@@ -8,14 +8,16 @@ import kotlin.reflect.KClass
 
 @Component
 class Context {
-    var allowConfidenceLevel: ConfidenceLevel = ConfidenceLevel.DEFAULT
-        internal set
+    /**
+     * Only allowed to set before analyze
+     */
+    var confidenceLevel: ConfidenceLevel = ConfidenceLevel.DEFAULT
     val issues = HashSet<Issue>()
     val stats = ArrayList<Statistics>()
 
     fun reportIssue(issue: Issue) {
         // check confidence level that needed
-        if (allowConfidenceLevel <= issue.confidenceLevel) {
+        if (confidenceLevel <= issue.confidenceLevel) {
             issues.add(issue)
         }
     }

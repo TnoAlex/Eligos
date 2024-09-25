@@ -130,6 +130,7 @@ class EligosProjectAnalyzeActions : AnAction() {
                 ),
                 launchEnvironment = LaunchEnvironment.IDE_PLUGIN,
                 severityLevel = settings.getSeverityLevel(),
+                confidenceLevel = settings.state.confidenceLevel,
                 debugSpec = DebugSpec()
             )
         )

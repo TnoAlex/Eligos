@@ -29,7 +29,7 @@ class TailRecursionProcessor : IssueProcessor {
 
     @EventListener(filterClazz = [KtFile::class])
     override fun process(psiFile: PsiFile) {
-        if (context.allowConfidenceLevel <= OptimizedTailRecursionIssue.normal) {
+        if (context.confidenceLevel <= OptimizedTailRecursionIssue.normal) {
             (psiFile as KtFile).accept(object : KtTreeVisitorVoid() {
                 override fun visitNamedFunction(function: KtNamedFunction) {
                     if (function.hasModifier(KtTokens.TAILREC_KEYWORD)) return super.visitNamedFunction(function)

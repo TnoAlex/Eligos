@@ -1,6 +1,7 @@
 package com.github.tnoalex.plugin.config
 
 import com.github.tnoalex.formatter.FormatterTypeEnum
+import com.github.tnoalex.issues.ConfidenceLevel
 import com.github.tnoalex.issues.Severity
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
@@ -34,6 +35,10 @@ internal class EligosSettings(private val project: Project) :
         return state.severityLevel
     }
 
+    fun setConfidenceLevel(level: ConfidenceLevel?) {
+        level?.let { state.confidenceLevel = it }
+    }
+
     companion object {
         fun getInstance(project: Project): EligosSettings = project.service()
     }
@@ -44,6 +49,8 @@ internal class EligosSettings(private val project: Project) :
         var resultOutputPath by string(null)
 
         var severityLevel by enum<Severity>(Severity.SUGGESTION)
+
+        var confidenceLevel by enum<ConfidenceLevel>(ConfidenceLevel.LOW)
     }
 }
 

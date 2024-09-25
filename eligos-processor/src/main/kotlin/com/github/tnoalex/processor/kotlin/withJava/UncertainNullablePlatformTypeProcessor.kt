@@ -44,15 +44,15 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
 
     private val kotlinPropertyVisitor = object : KtTreeVisitorVoid() {
         override fun visitCallExpression(expression: KtCallExpression) {
-            if (context.allowConfidenceLevel <= NullablePassedToPlatformParamIssue.normal) {
+            if (context.confidenceLevel <= NullablePassedToPlatformParamIssue.normal) {
                 checkParameter(expression)
             }
             super.visitCallExpression(expression)
         }
 
         override fun visitPostfixExpression(expression: KtPostfixExpression) {
-            if (context.allowConfidenceLevel <= NonNullAssertionOnPlatformTypeIssue.normal
-                || context.allowConfidenceLevel <= NonNullAssertionOnNullableTypeIssue.normal
+            if (context.confidenceLevel <= NonNullAssertionOnPlatformTypeIssue.normal
+                || context.confidenceLevel <= NonNullAssertionOnNullableTypeIssue.normal
             ) {
                 checkNonNullAssertion(expression)
             }
@@ -67,7 +67,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
             if (type.isDynamic()) return
             val nullability = getNullability(bindingContext, baseExpr, dataFlowValueFactory, type)
             if (nullability != Nullability.NOT_NULL) {
-                if (context.allowConfidenceLevel <= NonNullAssertionOnPlatformTypeIssue.normal
+                if (context.confidenceLevel <= NonNullAssertionOnPlatformTypeIssue.normal
                     && type.isFlexibleRecursive()
                 ) {
                     context.reportIssue(
@@ -77,7 +77,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                             expression.startLine
                         )
                     )
-                } else if (context.allowConfidenceLevel <= NonNullAssertionOnNullableTypeIssue.normal
+                } else if (context.confidenceLevel <= NonNullAssertionOnNullableTypeIssue.normal
                     && type.isNullableType()
                 ) {
                     context.reportIssue(
@@ -92,7 +92,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
         }
 
         override fun visitBinaryWithTypeRHSExpression(expression: KtBinaryExpressionWithTypeRHS) {
-            if (context.allowConfidenceLevel <= UncertainNullablePlatformExpressionUsageIssue.cast) {
+            if (context.confidenceLevel <= UncertainNullablePlatformExpressionUsageIssue.cast) {
                 checkCast(expression)
             }
             super.visitBinaryWithTypeRHSExpression(expression)
@@ -126,10 +126,10 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
 
         override fun visitExpression(expression: KtExpression) {
             val bindingContext = expression.bindingContext
-            if (context.allowConfidenceLevel <= UncertainNullablePlatformExpressionUsageIssue.normal) {
+            if (context.confidenceLevel <= UncertainNullablePlatformExpressionUsageIssue.normal) {
                 checkExpected(bindingContext, expression)
             }
-            if (context.allowConfidenceLevel <= UncertainNullablePlatformCallerIssue.normal) {
+            if (context.confidenceLevel <= UncertainNullablePlatformCallerIssue.normal) {
                 checkCaller(bindingContext, expression)
             }
             super.visitExpression(expression)

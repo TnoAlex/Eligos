@@ -310,9 +310,8 @@ class KotlinWithJavaProcessorTest {
 
     @RequireTestProcessor("resources@nonnullAssertionOnNullableType")
     fun testNonNullAssertionOnNullableType(processor: UncertainNullablePlatformTypeProcessor) {
-        ApplicationContext.getExactBean(Context::class.java)!!.setConfidenceLevel(
+        ApplicationContext.getExactBean(Context::class.java)!!.confidenceLevel =
             ConfidenceLevel.EXTREMELY_LOW
-        )
         psiFiles().forEach { psiFile ->
             if (psiFile is KtFile) {
                 processor.process(psiFile)

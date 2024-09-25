@@ -11,7 +11,7 @@ import kotlin.system.exitProcess
 
 class Analyzer(private val analyzerSpec: AnalyzerSpec) {
     val context: Context = ApplicationContext.getExactBean(Context::class.java)!!.also {
-        it.allowConfidenceLevel = analyzerSpec.confidenceLevel
+        it.confidenceLevel = analyzerSpec.confidenceLevel
     }
     private var analyzerInitialized = false
 
