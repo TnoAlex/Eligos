@@ -141,10 +141,13 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
                 .toList()
         }
 
-        val classpathFiles = ArrayList<File>()
+        val classpathFiles = HashSet<File>()
         with(compilerSpec) {
             classPath.forEach {
                 classpathFiles.add(it.toFile())
+                classpathFiles.addAll(it.toFile().walk()
+                    .filter { f -> f.isFile && f.extension.equals("jar", true) }
+                    .toList())
             }
             classpathFiles.add(srcPath.toFile())
         }
@@ -173,7 +176,7 @@ class CliCompilerEnvironmentContext(private val compilerSpec: KotlinCompilerSpec
             put(JVMConfigurationKeys.JVM_TARGET, JvmTarget.fromString(compilerSpec.jvmTarget)!!)
             addJavaSourceRoots(javaFiles)
             addKotlinSourceRoots(kotlinFiles)
-            addJvmClasspathRoots(classpathFiles)
+            addJvmClasspathRoots(classpathFiles.toList())
             addJvmClasspathRoot(File("."))
 
             put(JVMConfigurationKeys.JDK_HOME, compilerSpec.jdkHome.toFile())
