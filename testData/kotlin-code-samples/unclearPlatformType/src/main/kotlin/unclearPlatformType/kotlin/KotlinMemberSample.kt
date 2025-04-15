@@ -29,7 +29,7 @@ class KotlinMemberSample {
     }
 
     fun inKotlin(){
-        val x = JavaLibSample0.funcInJava1.name()
+        val x = JavaLibSample0.funcInJava1().name()
         test1(x)
     }
 }
