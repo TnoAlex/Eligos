@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.util.distsDirectory
 
 plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"

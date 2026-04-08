@@ -6,13 +6,12 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
 }
 
-
-tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>> {
-    kotlinOptions {
-        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-        freeCompilerArgs += "-Xcontext-receivers"
-        freeCompilerArgs += "-opt-in=org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals"
-    }
+kotlin.compilerOptions {
+    freeCompilerArgs.addAll(
+        "-opt-in=kotlin.RequiresOptIn",
+        "-Xcontext-receivers",
+        "-opt-in=org.jetbrains.kotlin.analysis.api.KtAnalysisApiInternals"
+    )
 }
 
 sourceSets {

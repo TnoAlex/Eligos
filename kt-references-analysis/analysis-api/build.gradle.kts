@@ -10,6 +10,6 @@ sourceSets {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
+kotlin.compilerOptions {
+    freeCompilerArgs.add("-Xcontext-receivers")
 }

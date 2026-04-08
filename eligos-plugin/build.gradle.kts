@@ -39,10 +39,7 @@ tasks {
         sourceCompatibility = "17"
         targetCompatibility = "17"
     }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
-    }
-
+    
     patchPluginXml {
         sinceBuild.set("231")
         untilBuild.set("241.*")
