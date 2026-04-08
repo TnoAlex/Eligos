@@ -10,6 +10,7 @@ dependencies {
     runtimeOnly(project(":eligos-processor"))
     implementation(project(":eligos-formatter"))
     api("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
+    implementation(project(":eligos-kotlin-analysis-api"))
     implementation(project(":kt-references-analysis:analysis-api"))
     implementation(project(":kt-references-analysis:analysis-api-fe10"))
     implementation(project(":kt-references-analysis:analysis-api-impl-base"))

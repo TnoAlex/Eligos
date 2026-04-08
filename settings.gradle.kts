@@ -22,3 +22,4 @@ include(
     ":kt-references-analysis:kt-references-fe10")
 include("eligos-issues")
 include("eligos-formatter")
+include("eligos-kotlin-analysis-api")
