@@ -35,7 +35,10 @@ import org.slf4j.LoggerFactory
 class UncertainNullablePlatformTypeProcessor : IssueProcessor {
     override val severity: Severity = Severity.CODE_SMELL
     override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
-    val dataFlowValueFactory = ApplicationContext.getBeanOfType(DataFlowValueFactory::class.java).first()
+    // todo fix no data flow in kaa
+    val dataFlowValueFactory by lazy {
+        ApplicationContext.getBeanOfType(DataFlowValueFactory::class.java).first()
+    }
 
     @EventListener(filterClazz = [KtFile::class])
     override fun process(psiFile: PsiFile) {

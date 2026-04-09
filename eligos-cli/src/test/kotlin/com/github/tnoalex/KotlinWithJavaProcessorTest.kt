@@ -29,8 +29,8 @@ class KotlinWithJavaProcessorTest {
         }
         val ignoredExceptionIssue = issue<IgnoredExceptionIssue>()
         assertEquals(1, ignoredExceptionIssue.size)
-        assertArrayEquals(arrayOf(8, "java.io.IOException", true), ignoredExceptionIssue.firstOrNull()?.let {
-            arrayOf(it.startLine, it.ignoredExceptions, it.calledByJava)
+        assertArrayEquals(arrayOf<Any?>(8, "java.io.IOException", true), ignoredExceptionIssue.firstOrNull()?.let {
+            arrayOf<Any?>(it.startLine, it.ignoredExceptions, it.calledByJava)
         })
     }
 
@@ -43,9 +43,9 @@ class KotlinWithJavaProcessorTest {
         }
         val incomprehensibleJavaFacadeNameIssue = issue<IncomprehensibleJavaFacadeNameIssue>()
         assertEquals(1, incomprehensibleJavaFacadeNameIssue.size)
-        assertArrayEquals(arrayOf(true, true, "IncomprehensibleClassNameKt"),
+        assertArrayEquals(arrayOf<Any?>(true, true, "IncomprehensibleClassNameKt"),
             incomprehensibleJavaFacadeNameIssue.firstOrNull()?.let {
-                arrayOf(it.hasTopLevelFunction, it.hasTopLevelProperty, it.javaFacadeName)
+                arrayOf<Any?>(it.hasTopLevelFunction, it.hasTopLevelProperty, it.javaFacadeName)
             })
     }
 
@@ -214,9 +214,9 @@ class KotlinWithJavaProcessorTest {
         }
         val nonJVMFieldCompanionValueIssue = issue<NonJVMFieldCompanionValueIssue>()
         assertEquals(1, nonJVMFieldCompanionValueIssue.size)
-        assertArrayEquals(arrayOf("nonJvmFieldCompanionValue.Test.Companion.strts", 6),
+        assertArrayEquals(arrayOf<Any?>("nonJvmFieldCompanionValue.Test.Companion.strts", 6),
             nonJVMFieldCompanionValueIssue.firstOrNull()?.let {
-                arrayOf(it.propertyName, it.startLine)
+                arrayOf<Any?>(it.propertyName, it.startLine)
             })
     }
 
@@ -229,9 +229,9 @@ class KotlinWithJavaProcessorTest {
         }
         val nonJVMStaticCompanionFunctionIssue = issue<NonJVMStaticCompanionFunctionIssue>()
         assertEquals(1, nonJVMStaticCompanionFunctionIssue.size)
-        assertArrayEquals(arrayOf("nonJVMStaticCompanionFunction.Test.Companion.test()", 5),
+        assertArrayEquals(arrayOf<Any?>("nonJVMStaticCompanionFunction.Test.Companion.test()", 5),
             nonJVMStaticCompanionFunctionIssue.firstOrNull()?.let {
-                arrayOf(it.functionSignature, it.startLine)
+                arrayOf<Any?>(it.functionSignature, it.startLine)
             })
     }
 
@@ -244,13 +244,13 @@ class KotlinWithJavaProcessorTest {
         }
         val provideImmutableCollectionIssue = issue<ProvideImmutableCollectionIssue>()
         assertEquals(1, provideImmutableCollectionIssue.size)
-        assertArrayEquals(arrayOf(
+        assertArrayEquals(arrayOf<Any?>(
             "provideImmutableCollection.kotlin.pInKotlin",
             "provideImmutableCollection.java.UseInJava",
             true
         ),
             provideImmutableCollectionIssue.firstOrNull()?.let {
-                arrayOf(it.providerKtElementFqName, it.useJavaClassFqName, it.isFunction)
+                arrayOf<Any?>(it.providerKtElementFqName, it.useJavaClassFqName, it.isFunction)
             })
     }
 

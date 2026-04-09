@@ -42,7 +42,6 @@ private fun initApplication(analyzerSpec: AnalyzerSpec) {
     val compilerThread = Callable {
         Thread.currentThread().name = "compilerThread"
         val cliCompilerEnvironmentContext = CliCompilerEnvironmentContext(analyzerSpec.kotlinCompilerSpec!!)
-        cliCompilerEnvironmentContext.initCompilerEnv()
         cliCompilerEnvironmentContext
     }
     val containerThread = Runnable {

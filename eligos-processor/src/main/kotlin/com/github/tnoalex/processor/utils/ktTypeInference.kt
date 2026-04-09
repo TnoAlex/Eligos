@@ -1,22 +1,16 @@
 package com.github.tnoalex.processor.utils
 
-import com.github.tnoalex.foundation.ApplicationContext
 import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
-import org.jetbrains.kotlin.references.fe10.base.KtFe10ReferenceResolutionHelper
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.typeUtil.supertypes
 
 val KtElement.bindingContext
-    get() = lazy {
-        ApplicationContext.getBeanOfType(KtFe10ReferenceResolutionHelper::class.java).first().partialAnalyze(
-            this
-        )
-    }.value
+    get() = BindingContext.EMPTY
 
 fun KtNamedFunction.resolveToDescriptorIfAny(): FunctionDescriptor? {
     return (this as KtDeclaration).resolveToDescriptorIfAny() as? FunctionDescriptor
