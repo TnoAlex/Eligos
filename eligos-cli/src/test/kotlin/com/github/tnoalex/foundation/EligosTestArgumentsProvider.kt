@@ -1,13 +1,10 @@
 package com.github.tnoalex.foundation
 
 import com.github.tnoalex.foundation.bean.container.SimpleSingletonBeanContainer
-import com.github.tnoalex.foundation.bean.inject.InjectBean
 import com.github.tnoalex.foundation.bean.register.DefaultBeanRegister
 import com.github.tnoalex.parser.CliCompilerEnvironmentContext
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.specs.KotlinCompilerSpec
-import com.github.tnoalex.utils.getMutablePropertiesAnnotateWith
-import com.github.tnoalex.utils.getPropertyAnnotation
 import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.provider.Arguments
@@ -62,7 +59,7 @@ class EligosTestArgumentsProvider : ArgumentsProvider {
             kotlinStdLibPath = defaultKotlinLib,
             disableCompilerLog = true
         )
-        val context = CliCompilerEnvironmentContext(compilerEnv).also { it.initCompilerEnv() }
+        val context = CliCompilerEnvironmentContext(compilerEnv)
         ApplicationContext.addBean(
             context.javaClass.simpleName,
             context,

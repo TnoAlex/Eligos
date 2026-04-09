@@ -25,9 +25,9 @@ class KotlinProcessorTest {
         val implicitSingleExprFunctionIssues = issue<ImplicitSingleExprFunctionIssue>()
         assertEquals(1, implicitSingleExprFunctionIssues.size)
         assertArrayEquals(
-            arrayOf(6, "fun test0() = java.lang.String.valueOf(1)"),
+            arrayOf<Any?>(6, "fun test0() = java.lang.String.valueOf(1)"),
             implicitSingleExprFunctionIssues.firstOrNull()?.let {
-                arrayOf(it.startLine, it.content)
+                arrayOf<Any?>(it.startLine, it.content)
             }
         )
     }
@@ -111,12 +111,12 @@ class KotlinProcessorTest {
         }
         val compareDataObjectWithReferenceIssue = issue<CompareDataObjectWithReferenceIssue>()
         assertEquals(1, compareDataObjectWithReferenceIssue.size)
-        assertArrayEquals(arrayOf(
+        assertArrayEquals(arrayOf<Any?>(
             "compareDataObjectWithReference.useDataObjectWithReference.rdobject",
             "compareDataObjectWithReference.useDataObjectWithReference.dobject",
             8),
             compareDataObjectWithReferenceIssue.firstOrNull()?.let {
-            arrayOf(it.leftPropertyFqName, it.rightPropertyFqName, it.startLine)
+            arrayOf<Any?>(it.leftPropertyFqName, it.rightPropertyFqName, it.startLine)
         })
     }
 }

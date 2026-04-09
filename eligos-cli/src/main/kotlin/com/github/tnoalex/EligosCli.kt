@@ -51,7 +51,7 @@ class EligosCli : CliktCommand(name = "eligos-cli") {
         help = "The lowest severity level recorded during the analysis"
     ).enum<Severity> { it.name }.default(Severity.SUGGESTION)
 
-    private val classPath by option(
+    private val classpath by option(
         "-ecp",
         "--class-path",
         help = "The classpath of the project to be analyzed. " +
@@ -80,7 +80,12 @@ class EligosCli : CliktCommand(name = "eligos-cli") {
         "-kv",
         "--kotlin-v",
         help = "The version of kotlin in the project"
-    ).default("1.9")
+    ).default("2.3")
+
+    private val apiVersion by option(
+        "--api-version",
+        help = "The api version of kotlin in the project"
+    ).default("2.3")
 
     private val jvmTarget by option("-jt", "--jvm-target", help = "The target of project's bytecode").default("1.8")
 

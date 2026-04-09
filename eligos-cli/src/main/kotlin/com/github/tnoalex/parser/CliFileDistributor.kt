@@ -31,19 +31,13 @@ class CliFileDistributor : FileDistributor {
 
     override fun dispatch() {
         val environment = ApplicationContext.getExactBean(CliCompilerEnvironmentContext::class.java)!!
-        environment.environment.getSourceFiles().forEach {
-            logger.info("Dispatching ${it.virtualFile.path}")
+        environment.ktSourceFiles.forEach {
+            logger.debug("Dispatching Kotlin File: ${it.virtualFile.path}")
             EventBus.post(it)
         }
-        val baseDir = environment.baseDir
-        baseDir.refresh(false, true)
-        visitVirtualFile(baseDir) {
-            if (it.extension == "java") {
-                psiManager.findFile(it)?.let { psi ->
-                    logger.info("Dispatching ${psi.virtualFile.path}")
-                    EventBus.post(psi)
-                }
-            }
+        environment.javaSourceFiles.forEach {
+            logger.debug("Dispatching Java File: ${it.virtualFile.path}")
+            EventBus.post(it)
         }
         EventBus.post(AllFileParsedEvent)
     }
