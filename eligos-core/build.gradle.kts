@@ -9,6 +9,9 @@ dependencies {
     implementation("org.mvel:mvel2:2.5.0.Final")
     implementation("org.reflections:reflections:0.10.2")
     compileOnly("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
+
+    compileOnly(project(":eligos-kotlin-analysis-api"))
+
 }
 
 tasks.register("writeProperties") {
