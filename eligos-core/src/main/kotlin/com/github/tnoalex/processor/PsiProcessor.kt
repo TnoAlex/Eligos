@@ -16,14 +16,3 @@ interface PsiProcessor : BaseProcessor {
         EventBus.unregister(this)
     }
 }
-interface KaaProcessor : BaseProcessor {
-    fun process(ktFile: KtFile)
-
-    fun registerListener() {
-        EventBus.register(this)
-    }
-
-    fun unregisterListener() {
-        EventBus.unregister(this)
-    }
-}
