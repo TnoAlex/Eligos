@@ -10,8 +10,8 @@ dependencies {
     implementation("org.reflections:reflections:0.10.2")
     compileOnly("org.jetbrains.kotlin:kotlin-compiler:1.9.22")
 
-    compileOnly(project(":eligos-kotlin-analysis-api"))
-
+    implementation(project(":eligos-kotlin-analysis-api"))
+    implementation(project(":eligos-kotlin-analysis-api-standalone"))
 }
 
 tasks.register("writeProperties") {
