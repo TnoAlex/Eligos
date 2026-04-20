@@ -10,7 +10,7 @@ import org.jetbrains.annotations.TestOnly
 @TestOnly
 fun psiFiles(): List<PsiFile> {
     val environmentContext = ApplicationContext.getExactBean(CliCompilerEnvironmentContext::class.java)!!
-    return environmentContext.ktSourceFiles.filterIsInstance<PsiFile>()
+    return environmentContext.allSourceFiles
 }
 
 private fun visitVirtualFile(virtualFile: VirtualFile, visitor: (file: VirtualFile) -> Unit) {
