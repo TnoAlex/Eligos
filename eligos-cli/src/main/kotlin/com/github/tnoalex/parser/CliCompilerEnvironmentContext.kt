@@ -73,6 +73,10 @@ class CliCompilerEnvironmentContext(compilerSpec: KotlinCompilerSpec) :
     val project: Project
     val baseDir: VirtualFile
 
+    val allSourceFiles: List<PsiFile> by lazy {
+        ktSourceFiles.filterIsInstance<PsiFile>() + javaSourceFiles
+    }
+
     @OptIn(KaExperimentalApi::class)
     val ktSourceFiles: List<PsiFileSystemItem> get() = sourceModule.psiRoots
 
