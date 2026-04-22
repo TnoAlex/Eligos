@@ -112,8 +112,8 @@ class KotlinProcessorTest {
         val compareDataObjectWithReferenceIssue = issue<CompareDataObjectWithReferenceIssue>()
         assertEquals(1, compareDataObjectWithReferenceIssue.size)
         assertArrayEquals(arrayOf<Any?>(
-            "compareDataObjectWithReference.useDataObjectWithReference.rdobject",
-            "compareDataObjectWithReference.useDataObjectWithReference.dobject",
+            "rdobject",
+            "dobject",
             8),
             compareDataObjectWithReferenceIssue.firstOrNull()?.let {
             arrayOf<Any?>(it.leftPropertyFqName, it.rightPropertyFqName, it.startLine)
