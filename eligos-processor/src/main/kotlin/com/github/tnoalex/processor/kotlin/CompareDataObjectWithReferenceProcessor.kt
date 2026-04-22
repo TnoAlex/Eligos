@@ -4,24 +4,24 @@ import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
 import com.github.tnoalex.foundation.eventbus.EventListener
-import com.github.tnoalex.foundation.language.JavaLanguage
 import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.CompareDataObjectWithReferenceIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
-import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
-import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiReference
-import org.jetbrains.kotlin.descriptors.ClassKind
-import org.jetbrains.kotlin.descriptors.buildPossiblyInnerType
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.symbols.KaClassSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaVariableSymbol
+import org.jetbrains.kotlin.analysis.api.types.symbol
+import org.jetbrains.kotlin.idea.references.mainReference
 import org.jetbrains.kotlin.lexer.KtTokens
-import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
-import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
+import org.jetbrains.kotlin.psi.KtBinaryExpression
+import org.jetbrains.kotlin.psi.KtExpression
+import org.jetbrains.kotlin.psi.KtFile
+import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
 import org.slf4j.LoggerFactory
 
 @Component
@@ -39,29 +39,22 @@ class CompareDataObjectWithReferenceProcessor : IssueProcessor {
 
     private val compareExpressionVisitor = object : KtTreeVisitorVoid() {
         override fun visitBinaryExpression(expression: KtBinaryExpression) {
-            if (expression.children.size != 3) return super.visitBinaryExpression(expression)
-            val (left, operator, right) = expression.children
-            ((operator as KtOperationReferenceExpression).operationSignTokenType == KtTokens.EQEQEQ).ifFalse {
-                return super.visitBinaryExpression(
-                    expression
-                )
+            val left = expression.left ?: return super.visitBinaryExpression(expression)
+            val operator = expression.operationToken
+            if (operator != KtTokens.EQEQEQ) {
+                return super.visitBinaryExpression(expression)
             }
+            val right = expression.right ?: return super.visitBinaryExpression(expression)
 
-            val leftRef = isDataObject(left.references)
-            val rightRef = isDataObject(right.references)
+            val leftRef = getTargetIfIsDataObject(left)
+            val rightRef = getTargetIfIsDataObject(right)
             if (leftRef != null && rightRef != null) {
                 context.reportIssue(
                     CompareDataObjectWithReferenceIssue(
                         expression.filePath,
                         expression.text,
-                        leftRef.resolveToDescriptorIfAny()?.fqNameOrNull()?.asString() ?: let {
-                            logger.nameCanNotResolveWarn("property", left)
-                            "Unknown property fqname"
-                        },
-                        rightRef.resolveToDescriptorIfAny()?.fqNameOrNull()?.asString() ?: let {
-                            logger.nameCanNotResolveWarn("property", right)
-                            "Unknown property fqname"
-                        },
+                        leftRef.name.asString(),
+                        rightRef.name.asString(),
                         expression.startLine
                     )
                 )
@@ -70,19 +63,17 @@ class CompareDataObjectWithReferenceProcessor : IssueProcessor {
         }
     }
 
-    private fun isDataObject(it: Array<PsiReference>): KtProperty? {
-        it.forEach {
-            val element = it.resolve()
-            if (element !is KtProperty) {
-                return@forEach
+    private fun getTargetIfIsDataObject(expr: KtExpression): KaVariableSymbol? {
+        analyze(expr) {
+            val ref = expr.mainReference ?: return null
+            val symbol = ref.resolveToSymbol()
+            if (symbol !is KaVariableSymbol) return null
+            val typeSymbol = symbol.returnType.symbol as? KaClassSymbol ?: return null
+            if (typeSymbol.classKind.isObject) {
+                return symbol
             }
-            val classDescriptor =
-                element.resolveToDescriptorIfAny()?.type?.buildPossiblyInnerType()?.classDescriptor
-            if (classDescriptor != null && classDescriptor.kind == ClassKind.OBJECT && classDescriptor.isData) {
-                return element
-            }
+            return null
         }
-        return null
     }
 
     companion object {
