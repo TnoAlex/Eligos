@@ -29,6 +29,7 @@ import org.jetbrains.kotlin.cli.common.setupLanguageVersionSettings
 import org.jetbrains.kotlin.cli.jvm.config.addJavaSourceRoots
 import org.jetbrains.kotlin.cli.jvm.config.addJvmClasspathRoots
 import org.jetbrains.kotlin.cli.jvm.config.configureJdkClasspathRoots
+import org.jetbrains.kotlin.cli.jvm.config.javaSourceRoots
 import org.jetbrains.kotlin.cli.jvm.config.jvmClasspathRoots
 import org.jetbrains.kotlin.cli.jvm.configureAdvancedJvmOptions
 import org.jetbrains.kotlin.cli.jvm.setupJvmSpecificArguments
@@ -149,6 +150,7 @@ class CliCompilerEnvironmentContext(compilerSpec: KotlinCompilerSpec) :
 
                 sourceModule = buildKtSourceModule {
                     addSourceRoots(configuration.kotlinSourceRoots.map { Path(it.path) })
+                    addSourceRoots(configuration.javaSourceRoots.map { Path(it) })
                     platform = targetPlatform
                     moduleName = "source"
 
