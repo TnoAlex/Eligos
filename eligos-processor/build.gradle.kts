@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 dependencies {
     api(project(":eligos-core"))
@@ -6,4 +7,8 @@ dependencies {
     implementation(project(":eligos-kotlin-analysis-api"))
     implementation(project(":eligos-kotlin-analysis-api-standalone"))
     testImplementation("org.jetbrains.kotlin:kotlin-test")
+}
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.compilerOptions {
+    freeCompilerArgs.set(listOf("-Xcontext-parameters"))
 }
