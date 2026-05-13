@@ -1,5 +1,8 @@
 package com.github.tnoalex.processor.utils
 
+import org.jetbrains.kotlin.analysis.api.KaContextParameterApi
+import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.descriptors.ConstructorDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
@@ -8,6 +11,9 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
 import org.jetbrains.kotlin.resolve.BindingContext
 import org.jetbrains.kotlin.types.typeUtil.supertypes
+
+import org.jetbrains.kotlin.analysis.api.symbols.KaNamedClassSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.symbol
 
 val KtElement.bindingContext
     get() = BindingContext.EMPTY
@@ -45,5 +51,8 @@ fun KtExpression.referenceExpressionSelfOrInChildren(): List<KtReferenceExpressi
 val KtClass.superTypes
     get() = this.bindingContext[BindingContext.CLASS, this]?.defaultType?.supertypes()
 
+@OptIn(KaContextParameterApi::class)
+context(_: KaSession)
 val KtObjectDeclaration.superTypes
-    get() = this.bindingContext[BindingContext.CLASS, this]?.defaultType?.supertypes()
+            get() =
+                (symbol as KaNamedClassSymbol).superTypes
