@@ -45,7 +45,7 @@ class ObjectExtendsThrowableProcessor : IssueProcessor {
         override fun visitObjectDeclaration(declaration: KtObjectDeclaration) {
             if (declaration.isCompanion()) return super.visitObjectDeclaration(declaration)
 
-            analyze(declaration) {
+            analyze {
                 declaration.superTypes.any { type ->
                     type.isSubtypeOf(StandardClassIds.Throwable)
                 }
