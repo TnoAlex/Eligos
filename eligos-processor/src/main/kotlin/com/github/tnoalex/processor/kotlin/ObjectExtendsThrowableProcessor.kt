@@ -14,6 +14,12 @@ import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.superTypes
 import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.components.expandedSymbol
+import org.jetbrains.kotlin.analysis.api.components.isSubtypeOf
+import org.jetbrains.kotlin.analysis.api.types.KaType
+import org.jetbrains.kotlin.name.ClassId
+import org.jetbrains.kotlin.name.StandardClassIds
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
@@ -37,13 +43,18 @@ class ObjectExtendsThrowableProcessor : IssueProcessor {
     private val objectVisitor = object : KtTreeVisitorVoid() {
 
         override fun visitObjectDeclaration(declaration: KtObjectDeclaration) {
-            if (declaration.isCompanion()) return  super.visitObjectDeclaration(declaration)
+            if (declaration.isCompanion()) return super.visitObjectDeclaration(declaration)
 
-            declaration.superTypes?.any { it.isNotNullThrowable() }?.ifTrue {
-                context.reportIssue(ObjectExtendsThrowableIssue(
+            analyze(declaration) {
+                declaration.superTypes.any { type ->
+                    type.isSubtypeOf(StandardClassIds.Throwable)
+                }
+            }.ifTrue {
+                context.reportIssue(
+                    ObjectExtendsThrowableIssue(
                     declaration.filePath,
                     declaration.fqName?.asString() ?: let {
-                        logger.nameCanNotResolveWarn("object",declaration)
+                        logger.nameCanNotResolveWarn("object", declaration)
                         "unknown object name"
                     }
                 )
