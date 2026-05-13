@@ -1,5 +1,6 @@
 package com.github.tnoalex.parser
 
+import com.github.tnoalex.Context
 import com.github.tnoalex.events.AllFileParsedEvent
 import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
@@ -11,6 +12,7 @@ import com.github.tnoalex.foundation.language.Language
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
+import org.jetbrains.kotlin.analysis.api.analyze
 import org.slf4j.LoggerFactory
 
 
@@ -31,15 +33,20 @@ class CliFileDistributor : FileDistributor {
 
     override fun dispatch() {
         val environment = ApplicationContext.getExactBean(CliCompilerEnvironmentContext::class.java)!!
-        environment.ktSourceFiles.forEach {
-            logger.debug("Dispatching Kotlin File: ${it.virtualFile.path}")
-            EventBus.post(it)
+        analyze(environment.module) {
+            val context = ApplicationContext.getExactBean(Context::class.java)!!
+            context.session = this
+            environment.ktSourceFiles.forEach {
+                logger.debug("Dispatching Kotlin File: ${it.virtualFile.path}")
+                EventBus.post(it)
+            }
+            environment.javaSourceFiles.forEach {
+                logger.debug("Dispatching Java File: ${it.virtualFile.path}")
+                EventBus.post(it)
+            }
+            EventBus.post(AllFileParsedEvent)
+            context.session = null
         }
-        environment.javaSourceFiles.forEach {
-            logger.debug("Dispatching Java File: ${it.virtualFile.path}")
-            EventBus.post(it)
-        }
-        EventBus.post(AllFileParsedEvent)
     }
 
     override fun virtualFileConvert(virtualFile: Any): PsiFile {
