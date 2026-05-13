@@ -4,6 +4,7 @@ import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.issues.ConfidenceLevel
 import com.github.tnoalex.issues.Issue
 import com.github.tnoalex.statistics.Statistics
+import org.jetbrains.kotlin.analysis.api.KaSession
 import kotlin.reflect.KClass
 
 @Component
@@ -14,6 +15,7 @@ class Context {
     var confidenceLevel: ConfidenceLevel = ConfidenceLevel.DEFAULT
     val issues = HashSet<Issue>()
     val stats = ArrayList<Statistics>()
+    var session: KaSession? = null
 
     fun reportIssue(issue: Issue) {
         // check confidence level that needed

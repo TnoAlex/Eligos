@@ -71,6 +71,8 @@ class CliCompilerEnvironmentContext(compilerSpec: KotlinCompilerSpec) :
     // This lateinit var can be changed to val if https://github.com/JetBrains/kotlin/pull/5703 is merged
     private lateinit var sourceModule: KaSourceModule
 
+    val module get() = sourceModule
+
     val project: Project
     val baseDir: VirtualFile
 

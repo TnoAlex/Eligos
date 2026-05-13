@@ -12,7 +12,7 @@ import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.PsiFile
-import org.jetbrains.kotlin.analysis.api.analyze
+import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.KaClassSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.KaVariableSymbol
 import org.jetbrains.kotlin.analysis.api.types.symbol
@@ -46,34 +46,34 @@ class CompareDataObjectWithReferenceProcessor : IssueProcessor {
             }
             val right = expression.right ?: return super.visitBinaryExpression(expression)
 
-            val leftRef = getTargetIfIsDataObject(left)
-            val rightRef = getTargetIfIsDataObject(right)
-            if (leftRef != null && rightRef != null) {
-                context.reportIssue(
-                    CompareDataObjectWithReferenceIssue(
-                        expression.filePath,
-                        expression.text,
-                        leftRef.name.asString(),
-                        rightRef.name.asString(),
-                        expression.startLine
+            analyze {
+                val leftRef = getTargetIfIsDataObject(left)
+                val rightRef = getTargetIfIsDataObject(right)
+                if (leftRef != null && rightRef != null) {
+                    context.reportIssue(
+                        CompareDataObjectWithReferenceIssue(
+                            expression.filePath,
+                            expression.text,
+                            leftRef.name.asString(),
+                            rightRef.name.asString(),
+                            expression.startLine
+                        )
                     )
-                )
+                }
             }
             super.visitBinaryExpression(expression)
         }
     }
 
-    private fun getTargetIfIsDataObject(expr: KtExpression): KaVariableSymbol? {
-        analyze(expr) {
-            val ref = expr.mainReference ?: return null
-            val symbol = ref.resolveToSymbol()
-            if (symbol !is KaVariableSymbol) return null
-            val typeSymbol = symbol.returnType.symbol as? KaClassSymbol ?: return null
-            if (typeSymbol.classKind.isObject) {
-                return symbol
-            }
-            return null
+    private fun KaSession.getTargetIfIsDataObject(expr: KtExpression): KaVariableSymbol? {
+        val ref = expr.mainReference ?: return null
+        val symbol = ref.resolveToSymbol()
+        if (symbol !is KaVariableSymbol) return null
+        val typeSymbol = symbol.returnType.symbol as? KaClassSymbol ?: return null
+        if (typeSymbol.classKind.isObject) {
+            return symbol
         }
+        return null
     }
 
     companion object {
