@@ -13,7 +13,6 @@ import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.PsiFile
 import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.analysis.api.analyze
 import org.jetbrains.kotlin.psi.*
 import org.slf4j.LoggerFactory
 
@@ -43,7 +42,7 @@ class ImplicitSingleExprFunctionProcessor : IssueProcessor {
                     KtBlockExpression::class.java
                 ) != null
             ) return super.visitNamedFunction(function)
-            analyze(function) {
+            analyze {
                 val returnType = function.symbol.returnType
 
                 if (returnType.isUnitType)
