@@ -93,13 +93,12 @@ class IgnoredExceptionProcessor : IssueProcessor {
     }
 
     private fun isAnnotatedWithThrows(element: KtElement): Boolean {
-        val symbol = analyze {
-            if (element is KtDeclaration) {
+        return analyze {
+            val symbol = if (element is KtDeclaration) {
                 element.symbol
             } else null
+            symbol?.annotations?.classIds?.contains(THROWS_CLASS_ID) ?: false
         }
-        if (symbol == null) return false
-        return symbol.annotations.classIds.contains(THROWS_CLASS_ID)
     }
 
     private inner class ThrowExpressionVisitor(

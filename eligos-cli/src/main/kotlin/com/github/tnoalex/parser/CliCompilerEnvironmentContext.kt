@@ -201,10 +201,6 @@ class CliCompilerEnvironmentContext(compilerSpec: KotlinCompilerSpec) :
     override fun close() {
         Disposer.dispose(disposable)
     }
-
-    fun resetEnvironment() {
-        // todo
-    }
 }
 
 /**
