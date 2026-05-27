@@ -127,6 +127,15 @@ class CliCompilerEnvironmentContext(compilerSpec: KotlinCompilerSpec) :
                     JvmPlatforms.jvmPlatformByTargetVersion(configuration.jvmTarget ?: JvmTarget.DEFAULT)
                 platform = targetPlatform
 
+                val stdlibPath = findStdlib()
+                val stdlibModule = if (stdlibPath != null) {
+                    buildKtLibraryModule {
+                        platform = targetPlatform
+                        addBinaryRoot(stdlibPath)
+                        libraryName = "kotlin-stdlib"
+                    }
+                } else null
+
                 val jdk = configuration.jdkHome?.let { jdkHome ->
                     buildKtSdkModule {
                         addBinaryRootsFromJdkHome(jdkHome.toPath(), isJre = false)
@@ -163,6 +172,9 @@ class CliCompilerEnvironmentContext(compilerSpec: KotlinCompilerSpec) :
                         addRegularDependency(it)
                     }
                     addRegularDependency(dependencies)
+                    if (stdlibModule != null) {
+                        addRegularDependency(stdlibModule)
+                    }
 
                     languageVersionSettings = configuration.languageVersionSettings
                 }
@@ -252,4 +264,8 @@ fun createCompilerConfiguration(
 
         configureJdkClasspathRoots()
     }
+}
+
+fun findStdlib(): Path? {
+    return Pair::class.java.protectionDomain?.codeSource?.location?.toURI()?.path?.let { Path(it) }
 }
