@@ -12,10 +12,12 @@ import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.NullablePassedToPlatformParamIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformCallerIssue
 import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpressionUsageIssue
+import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformTypeInPropertyIssue
 import com.github.tnoalex.issues.kotlin.withJava.nonnullAssertion.NonNullAssertionOnNullableTypeIssue
 import com.github.tnoalex.issues.kotlin.withJava.nonnullAssertion.NonNullAssertionOnPlatformTypeIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
+import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
 import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
 import com.github.tnoalex.processor.utils.typeCanNotResolveWarn
@@ -23,11 +25,24 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.resolution.KaCompoundArrayAccessCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaCompoundVariableAccessCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaFunctionCall
+import org.jetbrains.kotlin.analysis.api.resolution.KaSuccessCallInfo
+import org.jetbrains.kotlin.analysis.api.resolution.KaVariableAccessCall
+import org.jetbrains.kotlin.analysis.api.resolution.symbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaPropertySymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaVariableSymbol
+import org.jetbrains.kotlin.analysis.api.symbols.isLocal
+import org.jetbrains.kotlin.analysis.api.symbols.isTopLevel
 import org.jetbrains.kotlin.analysis.api.symbols.name
+import org.jetbrains.kotlin.analysis.api.symbols.symbol
 import org.jetbrains.kotlin.analysis.api.types.KaClassType
 import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.parents
 import org.jetbrains.kotlin.types.Variance
 import org.jetbrains.kotlin.types.isDynamic
 import org.slf4j.LoggerFactory
@@ -191,67 +206,75 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
         }
 
         private fun checkExpected(expression: KtExpression) {
-            /*val expectedType = bindingContext[BindingContext.EXPECTED_EXPRESSION_TYPE, expression]
-                ?: return
-            if (expectedType.isNullable() || expectedType.isFlexibleRecursive()) {
-                return
-            }
-            val type = bindingContext.getType(expression) ?: return
-            if (type.isDynamic()) return
-            val nullability = getNullability(bindingContext, expression, dataFlowValueFactory, type)
-            if (nullability != Nullability.NOT_NULL && type.isFlexibleRecursive()) {
-                val target = expression.mainReference?.resolve()
-                if (target !is KtProperty) {
-                    context.reportIssue(
-                        UncertainNullablePlatformExpressionUsageIssue(
-                            expression.filePath,
-                            expression.parent.text!!,
-                            expression.startLine,
-                            expectedType.toString(),
-                            type.toString(),
-                            nullability?.toString() ?: "no smart cast"
-                        )
-                    )
-                } else {
-                    reportProperty(target)
+            analyze {
+                val expectedType = expression.expectedType ?: return@analyze
+                if (expectedType.isNullable || expectedType.isFlexibleRecursive()) {
+                    return@analyze
                 }
-            }*/
+                val type = expression.expressionType ?: return@analyze
+                if ((type.hasFlexibleNullability || type.isNullable) && type.isFlexibleRecursive()) {
+                    val callInfo = expression.resolveToCall()
+                    if (callInfo !is KaSuccessCallInfo) return@analyze
+                    when (val call = callInfo.call) {
+                        is KaFunctionCall<*> -> {
+                            val content = if (expression.parent.expectedType != null) {
+                                expression.parent.text!!
+                            } else {
+                                expression.text
+                            }
+                            context.reportIssue(
+                                UncertainNullablePlatformExpressionUsageIssue(
+                                    expression.filePath,
+                                    content,
+                                    expression.startLine,
+                                    expectedType.toString(),
+                                    type.toString(),
+                                    expression.smartCastInfo?.smartCastType?.render(position = Variance.INVARIANT)
+                                        ?: "no smart cast"
+                                )
+                            )
+                        }
+
+                        is KaVariableAccessCall -> {
+                            tryReportProperty(call.symbol)
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
         }
 
 
         override fun visitProperty(property: KtProperty) {
             if (property.isLocal) return super.visitProperty(property)
-            reportProperty(property)
+            tryReportProperty(property)
             super.visitProperty(property)
         }
 
-        private fun reportProperty(property: KtProperty) {
-            val descriptor = property.resolveToDescriptorIfAny() ?: let {
-                logger.typeCanNotResolveWarn("property", property)
-                return
-            }
-            val propertyType = descriptor.type
-            // dynamic type can not be resolved
-            if (propertyType.isDynamic()) return
-            /*if (propertyType.isFlexibleRecursive()) {
+        private fun KaSession.tryReportProperty(property: KaVariableSymbol) {
+            val propertyType = property.returnType
+            if (propertyType.isFlexibleRecursive()) {
+                val psi = property.psi
                 //found platform type
                 context.reportIssue(
                     UncertainNullablePlatformTypeInPropertyIssue(
-                        property.filePath,
-                        property.text,
-                        property.name ?: let {
-                            logger.nameCanNotResolveWarn("property", property)
-                            "unknown property name"
-                        },
-                        property.startLine,
-                        propertyType.upperIfFlexible().toString(),
-                        propertyType.lowerIfFlexible().toString(),
+                        psi?.filePath ?: "unknown file",
+                        psi?.text ?: "unknown text",
+                        property.name.toString(),
+                        psi?.startLine ?: -1,
+                        propertyType.upperBoundIfFlexible().toString(),
+                        propertyType.lowerBoundIfFlexible().toString(),
                         property.isTopLevel,
                         property.isLocal
                     )
                 )
-            }*/
+            }
             return
+        }
+
+        private fun tryReportProperty(property: KtProperty) {
+            analyze { tryReportProperty(property.symbol) }
         }
     }
 
