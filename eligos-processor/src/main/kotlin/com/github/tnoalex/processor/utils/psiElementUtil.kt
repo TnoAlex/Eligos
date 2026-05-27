@@ -3,6 +3,11 @@ package com.github.tnoalex.processor.utils
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
 import com.intellij.psi.PsiElement
+import org.jetbrains.kotlin.analysis.api.KaContextParameterApi
+import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.components.isDenotable
+import org.jetbrains.kotlin.analysis.api.types.KaClassType
+import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.types.*
 
 internal val PsiElement.filePath
@@ -29,14 +34,17 @@ fun collectRecursively(type: KotlinType, result: MutableList<KotlinType>, condit
     }
 }
 
-fun checkAnyRecursively(type: KotlinType, condition: (KotlinType) -> Boolean): Boolean {
-    if (!type.constructor.isDenotable) {
+fun KaSession.checkAnyRecursively(type: KaType, condition: (KaType) -> Boolean): Boolean {
+    if (!type.isDenotable) {
         // for intersection type
-        if (type.constructor.supertypes.any { checkAnyRecursively(it, condition) }) {
+        if (type.allSupertypes.any { checkAnyRecursively(it, condition) }) {
             return true
         }
-    } else if (condition(type)) {
-        return true
+    } else if (type is KaClassType) {
+        return type.typeArguments.any {
+            val typeArg = it.type
+            typeArg != null && checkAnyRecursively(typeArg, condition)
+        }
     }
-    return type.arguments.any { (it !is StarProjectionImpl) && checkAnyRecursively(it.type, condition) }
+    return condition(type)
 }

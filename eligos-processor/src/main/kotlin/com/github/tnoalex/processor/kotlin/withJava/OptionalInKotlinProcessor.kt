@@ -16,8 +16,9 @@ import com.github.tnoalex.processor.utils.*
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.typeCanNotResolveWarn
 import com.intellij.psi.PsiFile
-import org.jetbrains.kotlin.descriptors.ValueDescriptor
-import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
+import org.jetbrains.kotlin.analysis.api.KaSession
+import org.jetbrains.kotlin.analysis.api.types.KaType
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.containingClass
 import org.jetbrains.kotlin.types.*
@@ -36,7 +37,9 @@ class OptionalInKotlinProcessor : IssueProcessor {
 
     private val visitor = object : KtTreeVisitorVoid() {
         override fun visitProperty(property: KtProperty) {
-            checkProperty(property)
+            analyze {
+                checkProperty(property)
+            }
             super.visitProperty(property)
         }
 
@@ -46,17 +49,15 @@ class OptionalInKotlinProcessor : IssueProcessor {
         }
 
         private fun checkFunction(function: KtNamedFunction) {
-            checkReturnType(function)
-            checkParameters(function)
+            analyze {
+                checkReturnType(function)
+                checkParameters(function)
+            }
         }
 
-        private fun checkReturnType(function: KtNamedFunction) {
-            val returnType = function.resolveToDescriptorIfAny()?.returnType
-                ?: let {
-                    logger.typeCanNotResolveWarn("return", function)
-                    return
-                }
-            if (checkAnyRecursively(returnType, ::isOptional)) {
+        private fun KaSession.checkReturnType(function: KtNamedFunction) {
+            val returnType = function.symbol.returnType
+            if (checkAnyRecursively(returnType) { isOptional(it) }) {
                 context.reportIssue(
                     ReturnOptionalIssue(
                         function.filePath,
@@ -68,15 +69,13 @@ class OptionalInKotlinProcessor : IssueProcessor {
             }
         }
 
-        private fun checkParameters(function: KtNamedFunction) {
+        private fun KaSession.checkParameters(function: KtNamedFunction) {
             val valueParameters = function.valueParameters
             val optionalIndices = mutableListOf<Int>()
             for ((index, parameter) in valueParameters.withIndex()) {
-                val descriptor = parameter.resolveToDescriptorIfAny() ?: continue
-                if (descriptor is ValueDescriptor) {
-                    if (checkAnyRecursively(descriptor.type, ::isOptional)) {
-                        optionalIndices.add(index)
-                    }
+                val parameterType = parameter.expressionType ?: continue
+                if (checkAnyRecursively(parameterType) { isOptional(it) }) {
+                    optionalIndices.add(index)
                 }
             }
             if (optionalIndices.isNotEmpty()) {
@@ -92,19 +91,13 @@ class OptionalInKotlinProcessor : IssueProcessor {
             }
         }
 
-        private fun isOptional(kotlinType: KotlinType): Boolean {
-            if (kotlinType.isDynamic()) return false
-            // dynamic type can not be resolved
-            val fqName = kotlinType.getKotlinTypeFqName(false)
-            return fqName == OPTIONAL_NAME
+        private fun KaSession.isOptional(kotlinType: KaType): Boolean {
+            return kotlinType.isClassType(OPTIONAL_CLASS_ID)
         }
 
-        private fun checkProperty(property: KtProperty) {
-            val descriptor = property.resolveToDescriptorIfAny() ?: let {
-                logger.typeCanNotResolveWarn("property", property)
-                return
-            }
-            if (checkAnyRecursively(descriptor.type, ::isOptional)) {
+        private fun KaSession.checkProperty(property: KtProperty) {
+            val propertyType = property.expressionType ?: return
+            if (checkAnyRecursively(propertyType) { isOptional(it) }) {
                 context.reportIssue(
                     PropertyIsOptionalIssue(
                         property.filePath,
@@ -122,6 +115,6 @@ class OptionalInKotlinProcessor : IssueProcessor {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(UncertainNullablePlatformTypeProcessor::class.java)
 
-        private const val OPTIONAL_NAME = "java.util.Optional"
+        private val OPTIONAL_CLASS_ID = ClassId.fromString("java/util/Optional")
     }
 }

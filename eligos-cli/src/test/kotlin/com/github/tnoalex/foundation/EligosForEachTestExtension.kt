@@ -30,7 +30,7 @@ class EligosForEachTestExtension : BeforeEachCallback, AfterEachCallback, Invoca
         ApplicationContext.removeBeanOfType(testProcessor.java)
         ApplicationContext.removeBeanOfType(Context::class.java)
         ApplicationContext.removeBeanOfType(DataFlowValueFactory::class.java)
-        ApplicationContext.getExactBean(CliCompilerEnvironmentContext::class.java)!!.resetEnvironment()
+        ApplicationContext.getExactBean(CliCompilerEnvironmentContext::class.java)!!.close()
         ApplicationContext.removeBeanOfType(CliCompilerEnvironmentContext::class.java)
     }
 
