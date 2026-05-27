@@ -36,16 +36,15 @@ class InternalExposedProcessor : IssueProcessor {
     }
 
     private val javaClassVisitor = object : JavaRecursiveElementVisitor() {
-        override fun visitMethod(method: PsiMethod?) {
-            if (method == null) return
+        override fun visitMethod(method: PsiMethod) {
             if (!isAllPublic(method)) return
             checkMethodReturnType(method)
             checkMethodParameters(method)
             super.visitMethod(method)
         }
 
-        override fun visitClass(aClass: PsiClass?) {
-            checkExtendOrImpl(aClass ?: return)
+        override fun visitClass(aClass: PsiClass) {
+            checkExtendOrImpl(aClass)
             super.visitClass(aClass)
         }
 
