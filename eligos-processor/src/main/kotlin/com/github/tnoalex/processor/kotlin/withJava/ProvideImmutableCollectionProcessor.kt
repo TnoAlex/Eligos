@@ -13,13 +13,14 @@ import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.*
 import com.intellij.psi.*
 import com.intellij.psi.util.PsiTreeUtil
+import org.jetbrains.kotlin.analysis.api.symbols.KaCallableSymbol
+import org.jetbrains.kotlin.analysis.api.types.symbol
 import org.jetbrains.kotlin.asJava.elements.KtLightElement
-import org.jetbrains.kotlin.descriptors.PropertyDescriptor
-import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
+import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtParameter
-import org.jetbrains.kotlin.types.KotlinType
 import org.slf4j.LoggerFactory
 
 @Component
@@ -43,7 +44,7 @@ class ProvideImmutableCollectionProcessor : IssueProcessor {
                     logger.refCanNotResolveWarn(expression)
                     return super.visitMethodCallExpression(expression)
                 }
-            } catch (e: RuntimeException) {
+            } catch (_: RuntimeException) {
                 logger.refCanNotResolveWarn(expression)
             }
             if (targetFunc !is KtLightElement<*, *>) return super.visitMethodCallExpression(expression)
@@ -51,41 +52,36 @@ class ProvideImmutableCollectionProcessor : IssueProcessor {
                 logger.kotlinOriginCanNotResolveWarn("expression", expression)
                 return super.visitMethodCallExpression(expression)
             }
-            val returnType: KotlinType? = when (ktOrigin) {
-                is KtNamedFunction -> {
-                    ktOrigin.resolveToDescriptorIfAny()?.returnType
+            analyze {
+                ktOrigin as? KtDeclaration ?: return@analyze
+                val returnType = when (val symbol = ktOrigin.symbol) {
+                    is KaCallableSymbol -> symbol.returnType
+                    else -> null
                 }
 
-                is KtParameter -> {
-                    (ktOrigin.resolveToDescriptorIfAny() as PropertyDescriptor).returnType
+                if (returnType == null) {
+                    logger.nameCanNotResolveWarn("return type", expression)
+                    return@analyze
                 }
-
-                else -> {
-                    null
-                }
-            }
-            if (returnType == null) {
-                logger.nameCanNotResolveWarn("return type", expression)
-                return super.visitMethodCallExpression(expression)
-            }
-            if (returnType.getKotlinTypeFqName(false) !in KOTLIN_IMMUTABLE_FQ_NAME)
-                return super.visitMethodCallExpression(expression)
-            val className = PsiTreeUtil.getParentOfType(expression, PsiClass::class.java)?.qualifiedName
-                ?: "AnonymousInnerClass"
-            context.reportIssue(
-                ProvideImmutableCollectionIssue(
-                    hashSetOf(expression.filePath, ktOrigin.filePath),
-                    (ktOrigin as KtCallableDeclaration).fqName?.asString() ?: let {
-                        logger.nameCanNotResolveWarn("function", ktOrigin)
-                        "unknown func name"
-                    },
-                    ktOrigin is KtNamedFunction,
-                    ktOrigin is KtParameter,
-                    expression.startLine,
-                    expression.text,
-                    className
+                if (returnType.symbol?.classId !in KOTLIN_IMMUTABLE_CLASS_IDS)
+                    return@analyze
+                val className = PsiTreeUtil.getParentOfType(expression, PsiClass::class.java)?.qualifiedName
+                    ?: "AnonymousInnerClass"
+                context.reportIssue(
+                    ProvideImmutableCollectionIssue(
+                        hashSetOf(expression.filePath, ktOrigin.filePath),
+                        (ktOrigin as KtCallableDeclaration).fqName?.asString() ?: let {
+                            logger.nameCanNotResolveWarn("function", ktOrigin)
+                            "unknown func name"
+                        },
+                        ktOrigin is KtNamedFunction,
+                        ktOrigin is KtParameter,
+                        expression.startLine,
+                        expression.text,
+                        className
+                    )
                 )
-            )
+            }
             super.visitMethodCallExpression(expression)
         }
     }
@@ -94,7 +90,8 @@ class ProvideImmutableCollectionProcessor : IssueProcessor {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(ProvideImmutableCollectionProcessor::class.java)
 
-        private val KOTLIN_IMMUTABLE_FQ_NAME =
-            listOf("kotlin.collections.List", "kotlin.collections.Set", "kotlin.collections.Map")
+        private val KOTLIN_IMMUTABLE_CLASS_IDS =
+            listOf("kotlin/collections/List", "kotlin/collections/Set", "kotlin/collections/Map")
+                .map { ClassId.fromString(it) }
     }
 }
