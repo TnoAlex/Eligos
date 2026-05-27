@@ -10,6 +10,9 @@ public class A {
         System.out.println(a.a);
     }
 
+    /**
+     * in Kotlin K2 the type T is specified as a platform type.
+     */
     public static <T> T func2(T t) {
         return null;
     }
