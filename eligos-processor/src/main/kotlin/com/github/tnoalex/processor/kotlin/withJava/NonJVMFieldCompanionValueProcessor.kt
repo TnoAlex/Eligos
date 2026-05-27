@@ -12,15 +12,15 @@ import com.github.tnoalex.issues.kotlin.withJava.NonJVMFieldCompanionValueIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
 import com.github.tnoalex.processor.utils.nameCanNotResolveWarn
-import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.github.tnoalex.processor.utils.startLine
 import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.analysis.api.symbols.KaKotlinPropertySymbol
+import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolVisibility
+import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtTreeVisitorVoid
-import org.jetbrains.kotlin.resolve.descriptorUtil.isEffectivelyPublicApi
-import org.jetbrains.kotlin.resolve.jvm.annotations.findJvmFieldAnnotation
 import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 import org.slf4j.LoggerFactory
 
@@ -46,27 +46,33 @@ class NonJVMFieldCompanionValueProcessor : IssueProcessor {
     private val propertyVisitorVoid = object : KtTreeVisitorVoid() {
         override fun visitProperty(property: KtProperty) {
             if (property.hasDelegate()) return super.visitProperty(property)
-            property.resolveToDescriptorIfAny()?.let {
-                if (!it.isEffectivelyPublicApi) return super.visitProperty(property)
-                if (it.isConst) return super.visitProperty(property)
-                if (it.findJvmFieldAnnotation() != null) return super.visitProperty(property)
-            } ?: return super.visitProperty(property)
-            context.reportIssue(
-                NonJVMFieldCompanionValueIssue(
-                    property.filePath,
-                    property.fqName?.asString() ?: let {
-                        logger.nameCanNotResolveWarn("property", property)
-                        "unknown property name"
-                    },
-                    property.text,
-                    property.startLine
-                )
-            )
+            if (property.isLocal) return super.visitProperty(property)
+            analyze {
+                val symbol = property.symbol
+                if (symbol.visibility != KaSymbolVisibility.PUBLIC) return@analyze
+                if (symbol !is KaKotlinPropertySymbol) return@analyze
+                if (symbol.isConst) return@analyze
+                val backingFieldSymbol = symbol.backingFieldSymbol ?: return@analyze
+                if (!backingFieldSymbol.annotations.classIds.contains(JVM_FIELD_CLASS_ID)) {
+                    context.reportIssue(
+                        NonJVMFieldCompanionValueIssue(
+                            property.filePath,
+                            property.fqName?.asString() ?: let {
+                                logger.nameCanNotResolveWarn("property", property)
+                                "unknown property name"
+                            },
+                            property.text,
+                            property.startLine
+                        )
+                    )
+                }
+            }
             super.visitProperty(property)
         }
     }
 
     companion object {
         private val logger = LoggerFactory.getLogger(NonJVMFieldCompanionValueProcessor::class.java)
+        private val JVM_FIELD_CLASS_ID = ClassId.fromString("kotlin/jvm/JvmField")
     }
 }
