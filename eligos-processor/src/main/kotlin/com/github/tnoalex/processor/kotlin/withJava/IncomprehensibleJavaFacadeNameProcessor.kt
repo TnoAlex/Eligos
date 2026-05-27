@@ -11,15 +11,13 @@ import com.github.tnoalex.issues.Severity
 import com.github.tnoalex.issues.kotlin.withJava.IncomprehensibleJavaFacadeNameIssue
 import com.github.tnoalex.processor.IssueProcessor
 import com.github.tnoalex.processor.utils.filePath
-import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
 import com.intellij.psi.PsiFile
+import org.jetbrains.kotlin.analysis.api.symbols.KaSymbolVisibility
 import org.jetbrains.kotlin.fileClasses.javaFileFacadeFqName
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.psiUtil.getChildrenOfType
-import org.jetbrains.kotlin.resolve.descriptorUtil.isEffectivelyPublicApi
-import org.jetbrains.kotlin.utils.addToStdlib.ifFalse
 
 @Component
 @Suitable(LaunchEnvironment.CLI)
@@ -30,20 +28,23 @@ class IncomprehensibleJavaFacadeNameProcessor : IssueProcessor {
     @EventListener(filterClazz = [KtFile::class])
     override fun process(psiFile: PsiFile) {
         psiFile as KtFile
-        val namedFunctions = psiFile.getChildrenOfType<KtNamedFunction>()
-            .filter { it.resolveToDescriptorIfAny()?.isEffectivelyPublicApi == true }
-        val ktProperties = psiFile.getChildrenOfType<KtProperty>()
-            .filter { it.resolveToDescriptorIfAny()?.isEffectivelyPublicApi == true }
-        if (namedFunctions.isEmpty() && ktProperties.isEmpty()) return
-        val javaFacadeName = psiFile.javaFileFacadeFqName.shortName().asString()
-        javaFacadeName.endsWith("Kt").ifFalse { return }
-        context.reportIssue(
-            IncomprehensibleJavaFacadeNameIssue(
-                psiFile.filePath,
-                javaFacadeName,
-                ktProperties.isNotEmpty(),
-                namedFunctions.isNotEmpty()
+        analyze {
+            val javaFacadeName = psiFile.javaFileFacadeFqName.shortName().asString()
+            if (!javaFacadeName.endsWith("Kt")) return@analyze
+            val namedFunctions = psiFile.getChildrenOfType<KtNamedFunction>()
+                .filter { it.symbol.visibility == KaSymbolVisibility.PUBLIC }
+            val ktProperties = psiFile.getChildrenOfType<KtProperty>()
+                .filter { it.symbol.visibility == KaSymbolVisibility.PUBLIC }
+            if (namedFunctions.isEmpty() && ktProperties.isEmpty()) return@analyze
+
+            context.reportIssue(
+                IncomprehensibleJavaFacadeNameIssue(
+                    psiFile.filePath,
+                    javaFacadeName,
+                    ktProperties.isNotEmpty(),
+                    namedFunctions.isNotEmpty()
+                )
             )
-        )
+        }
     }
 }
