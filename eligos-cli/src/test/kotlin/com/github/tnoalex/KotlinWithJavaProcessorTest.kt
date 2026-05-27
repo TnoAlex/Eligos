@@ -289,11 +289,15 @@ class KotlinWithJavaProcessorTest {
             }
         }
         val callerPlatformType = issue<NullablePassedToPlatformParamIssue>()
-        assertEquals(1, callerPlatformType.size)
+        assertEquals(2, callerPlatformType.size)
         val issue = callerPlatformType[0]
         assertEquals(4, issue.startLine)
         assertEquals(9, issue.calledFunctionStartLine)
         assertEquals("func1", issue.calledFunctionName)
+        val issue1 = callerPlatformType[1]
+        assertEquals(5, issue1.startLine)
+        assertEquals(13, issue1.calledFunctionStartLine)
+        assertEquals("func2", issue1.calledFunctionName)
     }
 
     @RequireTestProcessor("resources@nonnullAssertionOnPlatformType")

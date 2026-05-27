@@ -1,6 +1,5 @@
 package com.github.tnoalex.processor.kotlin.withJava
 
-import com.github.tnoalex.foundation.ApplicationContext
 import com.github.tnoalex.foundation.LaunchEnvironment
 import com.github.tnoalex.foundation.bean.Component
 import com.github.tnoalex.foundation.bean.Suitable
@@ -10,24 +9,24 @@ import com.github.tnoalex.foundation.language.KotlinLanguage
 import com.github.tnoalex.foundation.language.Language
 import com.github.tnoalex.issues.ConfidenceLevel
 import com.github.tnoalex.issues.Severity
-import com.github.tnoalex.issues.kotlin.withJava.*
+import com.github.tnoalex.issues.kotlin.withJava.NullablePassedToPlatformParamIssue
+import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformCallerIssue
+import com.github.tnoalex.issues.kotlin.withJava.UncertainNullablePlatformExpressionUsageIssue
 import com.github.tnoalex.issues.kotlin.withJava.nonnullAssertion.NonNullAssertionOnNullableTypeIssue
 import com.github.tnoalex.issues.kotlin.withJava.nonnullAssertion.NonNullAssertionOnPlatformTypeIssue
 import com.github.tnoalex.processor.IssueProcessor
-import com.github.tnoalex.processor.utils.*
+import com.github.tnoalex.processor.utils.filePath
+import com.github.tnoalex.processor.utils.resolveToDescriptorIfAny
+import com.github.tnoalex.processor.utils.startLine
+import com.github.tnoalex.processor.utils.typeCanNotResolveWarn
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiMethod
-import com.intellij.psi.PsiModifierListOwner
-import com.intellij.psi.impl.source.PsiClassReferenceType
 import com.intellij.psi.impl.source.tree.LeafPsiElement
-import org.jetbrains.kotlin.idea.references.mainReference
+import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
+import org.jetbrains.kotlin.analysis.api.symbols.name
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
-import org.jetbrains.kotlin.resolve.calls.smartcasts.Nullability
-import org.jetbrains.kotlin.types.*
-import org.jetbrains.kotlin.types.checker.SimpleClassicTypeSystemContext.isNullableType
+import org.jetbrains.kotlin.types.Variance
+import org.jetbrains.kotlin.types.isDynamic
 import org.slf4j.LoggerFactory
 
 @Component
@@ -35,16 +34,13 @@ import org.slf4j.LoggerFactory
 class UncertainNullablePlatformTypeProcessor : IssueProcessor {
     override val severity: Severity = Severity.CODE_SMELL
     override val supportLanguage: List<Language> = listOf(JavaLanguage, KotlinLanguage)
-    // todo fix no data flow in kaa
-    val dataFlowValueFactory by lazy {
-        ApplicationContext.getBeanOfType(DataFlowValueFactory::class.java).first()
-    }
 
     @EventListener(filterClazz = [KtFile::class])
     override fun process(psiFile: PsiFile) {
         psiFile.accept(kotlinPropertyVisitor)
     }
 
+    @OptIn(KaExperimentalApi::class)
     private val kotlinPropertyVisitor = object : KtTreeVisitorVoid() {
         override fun visitCallExpression(expression: KtCallExpression) {
             if (context.confidenceLevel <= NullablePassedToPlatformParamIssue.normal) {
@@ -64,32 +60,28 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
 
         private fun checkNonNullAssertion(expression: KtPostfixExpression) {
             if (expression.operationToken != KtTokens.EXCLEXCL) return
-            val baseExpr = expression.baseExpression ?: return
-            val bindingContext = expression.bindingContext
-            val type = bindingContext.getType(baseExpr) ?: return
-            if (type.isDynamic()) return
-            val nullability = getNullability(bindingContext, baseExpr, dataFlowValueFactory, type)
-            if (nullability != Nullability.NOT_NULL) {
-                if (context.confidenceLevel <= NonNullAssertionOnPlatformTypeIssue.normal
-                    && type.isFlexibleRecursive()
-                ) {
-                    context.reportIssue(
-                        NonNullAssertionOnPlatformTypeIssue(
-                            expression.filePath,
-                            expression.text.orEmpty(),
-                            expression.startLine
+            analyze {
+                val type = expression.expressionType ?: return@analyze
+                if (type.hasFlexibleNullability) {
+                    if (context.confidenceLevel <= NonNullAssertionOnPlatformTypeIssue.normal) {
+                        context.reportIssue(
+                            NonNullAssertionOnPlatformTypeIssue(
+                                expression.filePath,
+                                expression.text.orEmpty(),
+                                expression.startLine
+                            )
                         )
-                    )
-                } else if (context.confidenceLevel <= NonNullAssertionOnNullableTypeIssue.normal
-                    && type.isNullableType()
-                ) {
-                    context.reportIssue(
-                        NonNullAssertionOnNullableTypeIssue(
-                            expression.filePath,
-                            expression.text.orEmpty(),
-                            expression.startLine
+                    } else if (context.confidenceLevel <= NonNullAssertionOnNullableTypeIssue.normal
+                        && type.isNullable
+                    ) {
+                        context.reportIssue(
+                            NonNullAssertionOnNullableTypeIssue(
+                                expression.filePath,
+                                expression.text.orEmpty(),
+                                expression.startLine
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -102,85 +94,81 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
         }
 
         private fun checkCast(expression: KtBinaryExpressionWithTypeRHS) {
-            val expectedTypePsi = expression.right ?: return
             val elementType = expression.operationReference.getReferencedNameElementType()
             if (elementType != KtTokens.AS_KEYWORD) return
-            val bindingContext = expression.bindingContext
-            val expectedType = bindingContext[BindingContext.TYPE, expectedTypePsi] ?: return
-            val leftExpr = expression.left
-            val leftType = bindingContext.getType(leftExpr) ?: return
-            val nullability = getNullability(bindingContext, leftExpr, dataFlowValueFactory, leftType)
-            if (!expectedType.isMarkedNullable &&
-                nullability != Nullability.NOT_NULL && leftType.isFlexibleRecursive()
-            ) {
-                context.reportIssue(
-                    UncertainNullablePlatformExpressionUsageIssue(
-                        expression.filePath,
-                        expression.text ?: "",
-                        expression.startLine,
-                        expectedType.toString(),
-                        leftType.toString(),
-                        nullability?.toString() ?: "no smart cast",
-                        ConfidenceLevel.LOW
+            analyze {
+                val expectedType = expression.expectedType ?: return@analyze
+                val leftExpr = expression.left
+                val leftType = leftExpr.expressionType ?: return@analyze
+                if (!leftType.isMarkedNullable && expectedType.isNullable) {
+                    context.reportIssue(
+                        UncertainNullablePlatformExpressionUsageIssue(
+                            expression.filePath,
+                            expression.text ?: "",
+                            expression.startLine,
+                            expectedType.toString(),
+                            leftType.toString(),
+                            expectedType.render(position = Variance.INVARIANT),
+                            ConfidenceLevel.LOW
+                        )
                     )
-                )
+                }
             }
         }
 
         override fun visitExpression(expression: KtExpression) {
-            val bindingContext = expression.bindingContext
             if (context.confidenceLevel <= UncertainNullablePlatformExpressionUsageIssue.normal) {
-                checkExpected(bindingContext, expression)
+                checkExpected(expression)
             }
             if (context.confidenceLevel <= UncertainNullablePlatformCallerIssue.normal) {
-                checkCaller(bindingContext, expression)
+                checkCaller(expression)
             }
             super.visitExpression(expression)
         }
 
         private fun checkParameter(expression: KtCallExpression) {
-            val bindingContext = expression.bindingContext
-            val callee = expression.calleeExpression ?: return
-            val calleeTarget = callee.mainReference?.resolve() ?: return
-            if (calleeTarget is KtElement) return
-            if (calleeTarget !is PsiMethod) return
-            val args = expression.valueArguments
-            val typeParams = calleeTarget.typeParameters
-            if (calleeTarget.parameters.size != args.size) return
-            for ((index, pair) in args.zip(calleeTarget.parameters).withIndex()) {
-                val (actualArg, needArg) = pair
-                val argumentExpression = actualArg.getArgumentExpression() ?: continue
-                val actualType = bindingContext.getType(argumentExpression) ?: continue
-                if (!actualType.isMarkedNullable) continue
-                if (needArg !is PsiModifierListOwner) continue
-                val isNotPlatformType = needArg.annotations.any {
-                    val qn = (it.qualifiedName ?: return@any false).split(".")
-                    qn.contains("NotNull") || qn.contains("Nullable")
+            expression.calleeExpression ?: return
+            analyze {
+                val calleeTarget = expression.resolveSymbol() ?: return@analyze
+                val args = expression.valueArguments
+                val valueParameters = calleeTarget.valueParameters
+                if (valueParameters.size != args.size) return@analyze
+                for ((index, pair) in args.zip(valueParameters).withIndex()) {
+                    val (actualArg, needArg) = pair
+                    val argumentExpression = actualArg.getArgumentExpression() ?: continue
+                    val actualType = argumentExpression.expressionType ?: continue
+                    if (!actualType.isMarkedNullable) continue
+                    val isNotPlatformType = needArg.annotations.classIds.any {
+                        val qn = it.asFqNameString()
+                        qn.contains("NotNull") || qn.contains("Nullable")
+                    }
+                    if (isNotPlatformType) continue
+                    val needType = needArg.returnType
+                    if (needType.hasFlexibleNullability) {
+                        val targetPsi = calleeTarget.psi
+                        context.reportIssue(
+                            NullablePassedToPlatformParamIssue(
+                                expression.filePath,
+                                expression.text!!,
+                                expression.startLine,
+                                targetPsi?.containingFile?.filePath ?: "unknown file",
+                                calleeTarget.name?.toString() ?: "unknown method",
+                                targetPsi?.startLine ?: -1,
+                                index
+                            )
+                        )
+                    }
                 }
-                if (isNotPlatformType) continue
-                val needType = needArg.type
-                if (needType is PsiClassReferenceType && needType.reference.resolve() in typeParams) continue
-                context.reportIssue(
-                    NullablePassedToPlatformParamIssue(
-                        expression.filePath,
-                        expression.text!!,
-                        expression.startLine,
-                        calleeTarget.filePath,
-                        calleeTarget.name,
-                        calleeTarget.startLine,
-                        index
-                    )
-                )
             }
         }
 
-        private fun checkCaller(bindingContext: BindingContext, expression: KtExpression) {
+        private fun checkCaller(expression: KtExpression) {
             val prevSibling = expression.prevSibling
             if (prevSibling !is LeafPsiElement) return
             if (prevSibling.elementType != KtTokens.DOT) return
             val callerExpr = prevSibling.prevSibling ?: return
             if (callerExpr !is KtExpression) return
-            val callerType = bindingContext.getType(callerExpr) ?: return
+            /*val callerType = bindingContext.getType(callerExpr) ?: return
             if (callerType.isDynamic()) return
             val nullability = getNullability(bindingContext, callerExpr, dataFlowValueFactory, callerType)
             if (nullability != Nullability.NOT_NULL && callerType.isFlexibleRecursive()) {
@@ -193,11 +181,11 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                         callerExpr.text!!
                     )
                 )
-            }
+            }*/
         }
 
-        private fun checkExpected(bindingContext: BindingContext, expression: KtExpression) {
-            val expectedType = bindingContext[BindingContext.EXPECTED_EXPRESSION_TYPE, expression]
+        private fun checkExpected(expression: KtExpression) {
+            /*val expectedType = bindingContext[BindingContext.EXPECTED_EXPRESSION_TYPE, expression]
                 ?: return
             if (expectedType.isNullable() || expectedType.isFlexibleRecursive()) {
                 return
@@ -221,7 +209,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                 } else {
                     reportProperty(target)
                 }
-            }
+            }*/
         }
 
 
@@ -239,7 +227,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
             val propertyType = descriptor.type
             // dynamic type can not be resolved
             if (propertyType.isDynamic()) return
-            if (propertyType.isFlexibleRecursive()) {
+            /*if (propertyType.isFlexibleRecursive()) {
                 //found platform type
                 context.reportIssue(
                     UncertainNullablePlatformTypeInPropertyIssue(
@@ -256,7 +244,7 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
                         property.isLocal
                     )
                 )
-            }
+            }*/
             return
         }
     }
@@ -266,8 +254,4 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
         private val logger = LoggerFactory.getLogger(UncertainNullablePlatformTypeProcessor::class.java)
     }
 
-    private fun KotlinType.isFlexibleRecursive(): Boolean {
-        if (isFlexible()) return true
-        return arguments.any { !it.isStarProjection && it.type.isFlexibleRecursive() }
-    }
 }
