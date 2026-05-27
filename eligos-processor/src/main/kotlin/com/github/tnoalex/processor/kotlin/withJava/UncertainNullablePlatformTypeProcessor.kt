@@ -22,7 +22,10 @@ import com.github.tnoalex.processor.utils.typeCanNotResolveWarn
 import com.intellij.psi.PsiFile
 import com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
+import org.jetbrains.kotlin.analysis.api.KaSession
 import org.jetbrains.kotlin.analysis.api.symbols.name
+import org.jetbrains.kotlin.analysis.api.types.KaClassType
+import org.jetbrains.kotlin.analysis.api.types.KaType
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.types.Variance
@@ -61,9 +64,11 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
         private fun checkNonNullAssertion(expression: KtPostfixExpression) {
             if (expression.operationToken != KtTokens.EXCLEXCL) return
             analyze {
-                val type = expression.expressionType ?: return@analyze
-                if (type.hasFlexibleNullability) {
-                    if (context.confidenceLevel <= NonNullAssertionOnPlatformTypeIssue.normal) {
+                // in a.b!! a.b is the base expression
+                val base = expression.baseExpression ?: return@analyze
+                val type = base.expressionType ?: return@analyze
+                if (type.hasFlexibleNullability || type.isNullable) {
+                    if (context.confidenceLevel <= NonNullAssertionOnPlatformTypeIssue.normal && type.isFlexibleRecursive()) {
                         context.reportIssue(
                             NonNullAssertionOnPlatformTypeIssue(
                                 expression.filePath,
@@ -168,20 +173,21 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
             if (prevSibling.elementType != KtTokens.DOT) return
             val callerExpr = prevSibling.prevSibling ?: return
             if (callerExpr !is KtExpression) return
-            /*val callerType = bindingContext.getType(callerExpr) ?: return
-            if (callerType.isDynamic()) return
-            val nullability = getNullability(bindingContext, callerExpr, dataFlowValueFactory, callerType)
-            if (nullability != Nullability.NOT_NULL && callerType.isFlexibleRecursive()) {
-                context.reportIssue(
-                    UncertainNullablePlatformCallerIssue(
-                        callerExpr.filePath,
-                        callerExpr.text!!,
-                        callerExpr.startLine,
-                        nullability?.toString() ?: "no smart cast",
-                        callerExpr.text!!
+            analyze {
+                val callerType = callerExpr.expressionType ?: return@analyze
+                if (callerType.isNullable && callerType.isFlexibleRecursive()) {
+                    context.reportIssue(
+                        UncertainNullablePlatformCallerIssue(
+                            callerExpr.filePath,
+                            callerExpr.text!!,
+                            callerExpr.startLine,
+                            callerExpr.smartCastInfo?.smartCastType?.render(position = Variance.INVARIANT)
+                                ?: "no smart cast",
+                            callerExpr.text!!
+                        )
                     )
-                )
-            }*/
+                }
+            }
         }
 
         private fun checkExpected(expression: KtExpression) {
@@ -254,4 +260,14 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
         private val logger = LoggerFactory.getLogger(UncertainNullablePlatformTypeProcessor::class.java)
     }
 
+    context(session: KaSession)
+    private fun KaType.isFlexibleRecursive(): Boolean {
+        with(session) {
+            if (hasFlexibleNullability) return true
+            if (this is KaClassType) {
+                return typeArguments.any { it.type?.isFlexibleRecursive() == true }
+            }
+            return false
+        }
+    }
 }
