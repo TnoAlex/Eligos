@@ -12,6 +12,7 @@ import com.intellij.pom.tree.TreeAspect
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
+import org.jetbrains.annotations.Nullable
 import org.jetbrains.kotlin.analysis.api.KaExperimentalApi
 import org.jetbrains.kotlin.analysis.api.projectStructure.KaSourceModule
 import org.jetbrains.kotlin.analysis.api.standalone.buildStandaloneAnalysisAPISession
@@ -136,6 +137,15 @@ class CliCompilerEnvironmentContext(compilerSpec: KotlinCompilerSpec) :
                     }
                 } else null
 
+                val jetbrainsAnnoPath = findJetbrainsAnno()
+                val jetbrainsAnnoModule = if (jetbrainsAnnoPath != null) {
+                    buildKtLibraryModule {
+                        platform = targetPlatform
+                        addBinaryRoot(jetbrainsAnnoPath)
+                        libraryName = "jetbrains-annotations"
+                    }
+                } else null
+
                 val jdk = configuration.jdkHome?.let { jdkHome ->
                     buildKtSdkModule {
                         addBinaryRootsFromJdkHome(jdkHome.toPath(), isJre = false)
@@ -174,6 +184,9 @@ class CliCompilerEnvironmentContext(compilerSpec: KotlinCompilerSpec) :
                     addRegularDependency(dependencies)
                     if (stdlibModule != null) {
                         addRegularDependency(stdlibModule)
+                    }
+                    if (jetbrainsAnnoModule != null) {
+                        addRegularDependency(jetbrainsAnnoModule)
                     }
 
                     languageVersionSettings = configuration.languageVersionSettings
@@ -268,4 +281,8 @@ fun createCompilerConfiguration(
 
 fun findStdlib(): Path? {
     return Pair::class.java.protectionDomain?.codeSource?.location?.toURI()?.path?.let { Path(it) }
+}
+
+fun findJetbrainsAnno(): Path? {
+    return Nullable::class.java.protectionDomain?.codeSource?.location?.toURI()?.path?.let { Path(it) }
 }
