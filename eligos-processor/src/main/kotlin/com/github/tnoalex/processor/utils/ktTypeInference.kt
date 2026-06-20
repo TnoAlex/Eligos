@@ -2,7 +2,6 @@ package com.github.tnoalex.processor.utils
 
 import org.jetbrains.kotlin.analysis.api.KaContextParameterApi
 import org.jetbrains.kotlin.analysis.api.KaSession
-import org.jetbrains.kotlin.analysis.api.symbols.KaNamedClassSymbol
 import org.jetbrains.kotlin.analysis.api.symbols.symbol
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtObjectDeclaration
@@ -20,5 +19,4 @@ fun KtExpression.referenceExpressionSelfOrInChildren(): List<KtReferenceExpressi
 @OptIn(KaContextParameterApi::class)
 context(_: KaSession)
 val KtObjectDeclaration.superTypes
-            get() =
-                (symbol as KaNamedClassSymbol).superTypes
+    get() = symbol.superTypes

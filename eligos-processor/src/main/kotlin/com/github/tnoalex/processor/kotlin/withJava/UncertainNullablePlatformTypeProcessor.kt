@@ -243,6 +243,8 @@ class UncertainNullablePlatformTypeProcessor : IssueProcessor {
         }
 
         private fun KaSession.tryReportProperty(property: KaVariableSymbol) {
+            // skip libraries
+            if (property.containingFile == null) return
             val propertyType = property.returnType
             if (propertyType.isFlexibleRecursive()) {
                 val psi = property.psi
