@@ -17,6 +17,7 @@ import java.io.File
 import kotlin.io.path.Path
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.isAccessible
+import kotlin.system.exitProcess
 
 @Suppress("unused")
 class EligosCli : CliktCommand(name = "eligos-cli") {
@@ -142,6 +143,7 @@ class EligosCli : CliktCommand(name = "eligos-cli") {
         val arguments =
             this::class.declaredMemberProperties.associate { it.isAccessible = true; it.name to it.getter.call(this) }
         parseArguments(arguments)
+        exitProcess(0)
     }
 
     companion object {
