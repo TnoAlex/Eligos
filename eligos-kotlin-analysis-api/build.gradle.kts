@@ -4,7 +4,7 @@ plugins {
 group = "com.github.tnoalex"
 version = "1.0-SNAPSHOT"
 
-val ktVersion = "2.3.20"
+val ktVersion = "2.4.0"
 
 dependencies {
     api("org.jetbrains.kotlin:analysis-api-for-ide:$ktVersion") { isTransitive = false }

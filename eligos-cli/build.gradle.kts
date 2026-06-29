@@ -9,7 +9,7 @@ dependencies {
     api(project(":eligos-core"))
     runtimeOnly(project(":eligos-processor"))
     implementation(project(":eligos-formatter"))
-    api("org.jetbrains.kotlin:kotlin-compiler:2.3.20")
+    api("org.jetbrains.kotlin:kotlin-compiler:2.4.0")
     implementation(project(":eligos-kotlin-analysis-api"))
     implementation(project(":eligos-kotlin-analysis-api-standalone"))
     implementation("com.github.ajalt.clikt:clikt:4.2.2")
